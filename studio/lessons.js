@@ -282,5 +282,73 @@ window.BLOCKWISE_LESSONS = [
       {"name": "to_quantity", "parameters": [{"name": "text", "type": "str"}, {"name": "fallback", "type": "int", "default": "0"}], "returns": "int", "requirements": ["Return fallback when text is not a whole number."], "body": [
         {"kind": "try", "body": [{"kind": "return", "expression": "int(text)"}], "exception": "ValueError", "alias": "",
          "handler": [{"kind": "return", "expression": "fallback"}], "finally": []}]}]}]}
+  },
+  {
+    "id": "while-digits",
+    "title": "10 · Repeat while: add up the digits",
+    "level": "Intermediate",
+    "minutes": 12,
+    "goal": "Add up the digits of a whole number: 123 gives 1 + 2 + 3 = 6.",
+    "concepts": ["while loop", "augmented assignment", "variable"],
+    "steps": [
+      {"title": "Read the loop", "text": "Repeat while runs its inside again and again as long as its condition, n > 0, is true. Something inside must make n smaller, or it never stops."},
+      {"title": "Take the last digit", "text": "Replace the TODO with Set variable: total, choose += in the middle box, and type n % 10. n % 10 is the last digit (123 % 10 is 3), and += adds it on."},
+      {"title": "Drop the last digit", "text": "Add another Set variable: n, choose //=, and type 10. n //= 10 divides and drops the remainder, so 123 becomes 12. This is what makes the loop stop."},
+      {"title": "Check and run", "text": "Check your work, then Run tests. If you ever make a loop that never stops, Run stops it after 10 seconds."}
+    ],
+    "explain": "Use Repeat for each when you have a list to walk through, and Repeat while when you repeat until something changes. total += x is short for total = total + x.",
+    "tests": [
+      {"call": "digit_sum(123)", "expect": "6"},
+      {"call": "digit_sum(1005)", "expect": "6"},
+      {"call": "digit_sum(9)", "expect": "9"},
+      {"call": "digit_sum(0)", "expect": "0"}
+    ],
+    "starter": {"format": "blockwise-plan-v1", "title": "Digits", "modules": [{"path": "digits.py", "imports": [], "functions": [
+      {"name": "digit_sum", "parameters": [{"name": "n", "type": "int"}], "returns": "int", "requirements": ["n is 0 or more."], "body": [
+        {"kind": "assign", "target": "total", "expression": "0"},
+        {"kind": "while", "condition": "n > 0", "body": [
+          {"kind": "hole", "label": "Add the last digit to total, then drop it from n", "allowed_calls": []}]},
+        {"kind": "return", "expression": "total"}]}]}]},
+    "solution": {"format": "blockwise-plan-v1", "title": "Digits", "modules": [{"path": "digits.py", "imports": [], "functions": [
+      {"name": "digit_sum", "parameters": [{"name": "n", "type": "int"}], "returns": "int", "requirements": ["n is 0 or more."], "body": [
+        {"kind": "assign", "target": "total", "expression": "0"},
+        {"kind": "while", "condition": "n > 0", "body": [
+          {"kind": "assign", "target": "total", "operator": "+=", "expression": "n % 10"},
+          {"kind": "assign", "target": "n", "operator": "//=", "expression": "10"}]},
+        {"kind": "return", "expression": "total"}]}]}]}
+  },
+  {
+    "id": "break-early",
+    "title": "11 · Stop early with break",
+    "level": "Intermediate",
+    "minutes": 8,
+    "goal": "Find the first negative number in a list, or None if there isn't one, without looking further than you need to.",
+    "concepts": ["break / continue", "loop", "condition"],
+    "steps": [
+      {"title": "Look at the plan", "text": "result starts as None (Python's word for 'nothing'). The loop walks through numbers, and the function returns result at the end."},
+      {"title": "Spot a negative", "text": "Inside the loop add If with condition n < 0."},
+      {"title": "Remember it and stop", "text": "Inside that If add Set variable: result = n, then a Stop loop block. Stop loop is Python's break: it leaves the loop right away."},
+      {"title": "Check and run", "text": "Check your work, then Run tests. Without the Stop loop, you'd get the last negative instead of the first: try it and see."}
+    ],
+    "explain": "break leaves a loop early; its partner continue (Skip to next) jumps straight to the next item. Stopping as soon as you have the answer saves work on long lists.",
+    "tests": [
+      {"call": "first_negative([3, -1, -5])", "expect": "-1"},
+      {"call": "first_negative([-4])", "expect": "-4"},
+      {"call": "first_negative([1, 2])", "expect": "None"},
+      {"call": "first_negative([])", "expect": "None"}
+    ],
+    "starter": {"format": "blockwise-plan-v1", "title": "First negative", "modules": [{"path": "search.py", "imports": [], "functions": [
+      {"name": "first_negative", "parameters": [{"name": "numbers", "type": "list"}], "returns": "int | None", "requirements": [], "body": [
+        {"kind": "assign", "target": "result", "expression": "None"},
+        {"kind": "loop", "target": "n", "iterable": "numbers", "body": []},
+        {"kind": "return", "expression": "result"}]}]}]},
+    "solution": {"format": "blockwise-plan-v1", "title": "First negative", "modules": [{"path": "search.py", "imports": [], "functions": [
+      {"name": "first_negative", "parameters": [{"name": "numbers", "type": "list"}], "returns": "int | None", "requirements": [], "body": [
+        {"kind": "assign", "target": "result", "expression": "None"},
+        {"kind": "loop", "target": "n", "iterable": "numbers", "body": [
+          {"kind": "branch", "condition": "n < 0", "body": [
+            {"kind": "assign", "target": "result", "expression": "n"},
+            {"kind": "break"}], "otherwise": []}]},
+        {"kind": "return", "expression": "result"}]}]}]}
   }
 ];

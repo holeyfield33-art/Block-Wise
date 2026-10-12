@@ -848,6 +848,277 @@ window.BLOCKWISE_PRESETS = [
   "preview": "def to_int(text: str, fallback: int=0) -> int:\n    try:\n        return int(text)\n    except (TypeError, ValueError):\n        return fallback\n"
  },
  {
+  "id": "first_match",
+  "title": "First item that matches, or a default",
+  "category": "data",
+  "summary": "Walk a list and return the first item meeting a condition; stop looking as soon as one is found.",
+  "params": {
+   "function": {
+    "kind": "identifier",
+    "default": "first_active"
+   },
+   "items": {
+    "kind": "identifier",
+    "default": "items"
+   },
+   "condition": {
+    "kind": "expression",
+    "default": "item.get('active') is True"
+   },
+   "default": {
+    "kind": "identifier",
+    "default": "default"
+   }
+  },
+  "function": {
+   "name": "{{function}}",
+   "parameters": [
+    {
+     "name": "{{items}}",
+     "type": "list"
+    },
+    {
+     "name": "{{default}}",
+     "type": "object",
+     "default": "None"
+    }
+   ],
+   "returns": "object",
+   "body": [
+    {
+     "kind": "assign",
+     "target": "found",
+     "expression": "{{default}}"
+    },
+    {
+     "kind": "loop",
+     "target": "item",
+     "iterable": "{{items}}",
+     "body": [
+      {
+       "kind": "branch",
+       "condition": "{{condition}}",
+       "body": [
+        {
+         "kind": "assign",
+         "target": "found",
+         "expression": "item"
+        },
+        {
+         "kind": "break"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "kind": "return",
+     "expression": "found"
+    }
+   ]
+  },
+  "examples": [
+   {
+    "args": [
+     [
+      {
+       "id": 1,
+       "active": false
+      },
+      {
+       "id": 2,
+       "active": true
+      },
+      {
+       "id": 3,
+       "active": true
+      }
+     ]
+    ],
+    "returns": {
+     "id": 2,
+     "active": true
+    }
+   },
+   {
+    "args": [
+     [
+      {
+       "id": 1,
+       "active": false
+      }
+     ]
+    ],
+    "returns": null
+   },
+   {
+    "args": [
+     [],
+     "none"
+    ],
+    "returns": "none"
+   }
+  ],
+  "preview": "def first_active(items: list, default: object=None) -> object:\n    found = default\n    for item in items:\n        if item.get('active') is True:\n            found = item\n            break\n    return found\n"
+ },
+ {
+  "id": "binary_search",
+  "title": "Find a value in a sorted list, fast",
+  "category": "data",
+  "summary": "Binary search: return the index of target in a sorted list, or -1. Halves the search range each step.",
+  "params": {
+   "function": {
+    "kind": "identifier",
+    "default": "index_of"
+   },
+   "items": {
+    "kind": "identifier",
+    "default": "items"
+   },
+   "target": {
+    "kind": "identifier",
+    "default": "target"
+   }
+  },
+  "function": {
+   "name": "{{function}}",
+   "parameters": [
+    {
+     "name": "{{items}}",
+     "type": "list"
+    },
+    {
+     "name": "{{target}}",
+     "type": "object"
+    }
+   ],
+   "returns": "int",
+   "requirements": [
+    "items must be sorted in ascending order."
+   ],
+   "body": [
+    {
+     "kind": "assign",
+     "target": "low",
+     "expression": "0"
+    },
+    {
+     "kind": "assign",
+     "target": "high",
+     "expression": "len({{items}}) - 1"
+    },
+    {
+     "kind": "while",
+     "condition": "low <= high",
+     "body": [
+      {
+       "kind": "assign",
+       "target": "middle",
+       "expression": "(low + high) // 2"
+      },
+      {
+       "kind": "branch",
+       "condition": "{{items}}[middle] == {{target}}",
+       "body": [
+        {
+         "kind": "return",
+         "expression": "middle"
+        }
+       ],
+       "otherwise": [
+        {
+         "kind": "branch",
+         "condition": "{{items}}[middle] < {{target}}",
+         "body": [
+          {
+           "kind": "assign",
+           "target": "low",
+           "expression": "middle + 1"
+          }
+         ],
+         "otherwise": [
+          {
+           "kind": "assign",
+           "target": "high",
+           "expression": "middle - 1"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "kind": "return",
+     "expression": "-1"
+    }
+   ]
+  },
+  "examples": [
+   {
+    "args": [
+     [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11
+     ],
+     7
+    ],
+    "returns": 3
+   },
+   {
+    "args": [
+     [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11
+     ],
+     1
+    ],
+    "returns": 0
+   },
+   {
+    "args": [
+     [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11
+     ],
+     11
+    ],
+    "returns": 5
+   },
+   {
+    "args": [
+     [
+      1,
+      3,
+      5
+     ],
+     4
+    ],
+    "returns": -1
+   },
+   {
+    "args": [
+     [],
+     4
+    ],
+    "returns": -1
+   }
+  ],
+  "preview": "def index_of(items: list, target: object) -> int:\n    \"\"\"Requirements:\nitems must be sorted in ascending order.\"\"\"\n    low = 0\n    high = len(items) - 1\n    while low <= high:\n        middle = (low + high) // 2\n        if items[middle] == target:\n            return middle\n        elif items[middle] < target:\n            low = middle + 1\n        else:\n            high = middle - 1\n    return -1\n"
+ },
+ {
   "id": "read_text_file",
   "title": "Read a whole text file",
   "category": "files",

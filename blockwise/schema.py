@@ -10,9 +10,13 @@ FORMAT = "blockwise-plan-v1"
 # Scores exported by Sonic Code Studio use the same grammar and remain accepted.
 LEGACY_FORMATS = ("sonic-template-v1",)
 NOTES = {"function": 60, "validate": 62, "branch": 64, "loop": 65,
-         "call": 67, "raise": 69, "return": 71, "hole": 72, "assign": 74, "try": 76, "with": 77}
+         "call": 67, "raise": 69, "return": 71, "hole": 72, "assign": 74, "try": 76, "with": 77,
+         "while": 78, "break": 79, "continue": 80}
 # Nested statement lists, by element kind.
-CHILDREN = {"branch": ("body", "otherwise"), "loop": ("body",), "try": ("body", "handler", "finally"), "with": ("body",)}
+CHILDREN = {"branch": ("body", "otherwise"), "loop": ("body",), "try": ("body", "handler", "finally"), "with": ("body",),
+            "while": ("body",)}
+# Assignment operators: "=" plus every augmented form (total += price).
+ASSIGN_OPERATORS = ("=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "@=", "&=", "|=", "^=", "<<=", ">>=")
 MAX_NODES = 256
 MAX_DEPTH = 16
 
@@ -98,7 +102,7 @@ def validate_score(score):
         raise ScoreError("Score requires 1 to 32 modules")
     paths, count = set(), [0]
 
-    def nodes(body, depth=0):
+    def nodes(body, depth=0, in_loop=False):
         if not isinstance(body, list) or len(body) > MAX_NODES or depth > MAX_DEPTH:
             raise ScoreError("Invalid or excessively nested template body")
         for node in body:
@@ -113,7 +117,9 @@ def validate_score(score):
             if kind in ("validate", "call", "return", "raise"):
                 fields.add("expression")
             elif kind == "assign":
-                fields |= {"target", "expression"}
+                fields |= {"target", "expression", "operator"}
+            elif kind == "while":
+                fields |= {"condition", "body"}
             elif kind == "branch":
                 fields |= {"condition", "body", "otherwise"}
             elif kind == "loop":
@@ -124,7 +130,7 @@ def validate_score(score):
                 fields |= {"body", "exception", "alias", "handler", "finally"}
             elif kind == "with":
                 fields |= {"context", "alias", "body"}
-            required = fields - {"otherwise", "allowed_calls", "alias", "handler", "finally"}
+            required = fields - {"otherwise", "allowed_calls", "alias", "handler", "finally", "operator"}
             keys(node, fields, required, f"{kind} element")
             if "expression" in fields:
                 parsed = expression(node["expression"], kind)
@@ -132,14 +138,23 @@ def validate_score(score):
                     raise ScoreError(f"{kind} requires a function call expression")
             if "target" in fields:
                 identifier(node["target"], f"{kind} target")
+            if kind == "assign":
+                node.setdefault("operator", "=")
+                if node["operator"] not in ASSIGN_OPERATORS:
+                    raise ScoreError(f"Assignment operator must be one of {' '.join(ASSIGN_OPERATORS)}")
+            if kind in ("break", "continue") and not in_loop:
+                raise ScoreError(f"{kind} must be inside a loop (and not directly inside a finally side)")
             if kind == "branch":
                 expression(node["condition"], "Branch condition")
                 node.setdefault("otherwise", [])
-                nodes(node["body"], depth + 1)
-                nodes(node["otherwise"], depth + 1)
+                nodes(node["body"], depth + 1, in_loop)
+                nodes(node["otherwise"], depth + 1, in_loop)
             if kind == "loop":
                 expression(node["iterable"], "Loop iterable")
-                nodes(node["body"], depth + 1)
+                nodes(node["body"], depth + 1, True)
+            if kind == "while":
+                expression(node["condition"], "While condition")
+                nodes(node["body"], depth + 1, True)
             if kind in ("try", "with"):
                 node.setdefault("alias", "")
                 if node["alias"] != "":
@@ -151,11 +166,12 @@ def validate_score(score):
                     raise ScoreError("Exception type must be a name like ValueError or a tuple of names")
                 node.setdefault("handler", [])
                 node.setdefault("finally", [])
-                for key in CHILDREN["try"]:
-                    nodes(node[key], depth + 1)
+                nodes(node["body"], depth + 1, in_loop)
+                nodes(node["handler"], depth + 1, in_loop)
+                nodes(node["finally"], depth + 1)  # break/continue in finally is discouraged (PEP 765)
             if kind == "with":
                 expression(node["context"], "With context")
-                nodes(node["body"], depth + 1)
+                nodes(node["body"], depth + 1, in_loop)
             if kind == "hole":
                 text(node["label"], "Hole label", 512)
                 node.setdefault("allowed_calls", [])

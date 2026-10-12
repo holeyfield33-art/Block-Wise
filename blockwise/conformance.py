@@ -51,6 +51,10 @@ def matches_node(expected, actual):
         return (isinstance(actual, ast.For) and isinstance(actual.target, ast.Name) and actual.target.id == expected["target"]
                 and fingerprint(actual.iter) == fingerprint(ast.parse(expected["iterable"], mode="eval").body)
                 and not actual.orelse and matches_body(expected["body"], actual.body))
+    if kind == "while":
+        return (isinstance(actual, ast.While) and not actual.orelse
+                and fingerprint(actual.test) == fingerprint(ast.parse(expected["condition"], mode="eval").body)
+                and matches_body(expected["body"], actual.body))
     if kind == "try":
         if not (isinstance(actual, ast.Try) and len(actual.handlers) == 1 and not actual.orelse):
             return False

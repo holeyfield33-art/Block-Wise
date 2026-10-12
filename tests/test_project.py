@@ -99,7 +99,7 @@ def test_mcp_tools_return_short_results(tmp_path):
     assert mcp_server.check_project(str(tmp_path))["ok"] is True
     assert mcp_server.apply_preset("clamp", "../escape.py", {}, str(tmp_path))["ok"] is False
     assert mcp_server.find_presets("reject negative number")[0]["id"] == "require_positive"
-    assert mcp_server.coverage("while x:\n    pass")["unsupported"][0]["id"] == "while-loop"
+    assert mcp_server.coverage("class A:\n    pass")["unsupported"][0]["id"] == "classes"
     assert mcp_server.coverage("def (")["ok"] is False and mcp_server.coverage()["planned"] > 0
 
 

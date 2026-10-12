@@ -90,10 +90,10 @@ def test_cli_coverage(tmp_path, capsys):
     assert counts["block"] + counts["expression"] + counts["planned"] == counts["concepts"]
     good, bad = tmp_path / "good.py", tmp_path / "bad.py"
     good.write_text("def f(x: int) -> int:\n    return x\n")
-    bad.write_text("def f(xs: list) -> int:\n    total = 0\n    for x in xs:\n        total += x\n    return total\n")
+    bad.write_text("def f(xs: list) -> None:\n    for x in xs:\n        xs[0] += x\n")
     assert main(["coverage", "--file", str(good)]) == 0
     capsys.readouterr()
     assert main(["coverage", "--file", str(bad)]) == 1
-    assert json.loads(capsys.readouterr().out)["unsupported"][0]["id"] == "augmented-assign"
+    assert json.loads(capsys.readouterr().out)["unsupported"][0]["id"] == "target-assign"
     assert main(["coverage", "--status", "planned", "--domain", "control flow"]) == 0
-    assert {r["id"] for r in json.loads(capsys.readouterr().out)} >= {"while-loop", "match"}
+    assert {r["id"] for r in json.loads(capsys.readouterr().out)} >= {"for-else", "match"}

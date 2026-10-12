@@ -109,6 +109,7 @@ def test_studio_runs_without_errors_and_lessons_check(e2e):
     assert ui["preset_filter_count"] >= 1 and ui["glossary_jump"]
     assert ui["bad_exception_flagged"] and "needs a default" in ui["default_order_message"]
     assert ui["kinds_without_color"] == []
+    assert ui["while_lesson_by_clicks"] and ui["stray_break_tip"]
     assert ui["try_code"] == ("LIMIT = 10\n\n\ndef to_int(text: str, fallback: int=0) -> None:\n    try:\n        return int(text)\n"
                               "    except (ValueError, TypeError):\n        return fallback\n")
 
