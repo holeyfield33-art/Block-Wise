@@ -1,21 +1,41 @@
 // End-to-end check of studio/index.html in headless Chromium.
 // usage: node tests/studio_e2e.cjs <out_dir>
 // Writes <out_dir>/studio_e2e.json (results + JS-generated Python per lesson) and screenshots.
+// Running Python (Pyodide) needs the network, so it is covered by the harness tests in test_studio.py instead.
 const path = require("path");
 const fs = require("fs");
+const { pathToFileURL } = require("url");
 const { chromium } = require("playwright");
 
 (async () => {
   const out = process.argv[2] || "output";
   fs.mkdirSync(out, { recursive: true });
-  const url = "file://" + path.resolve(__dirname, "..", "studio", "index.html");
+  const url = pathToFileURL(path.resolve(__dirname, "..", "studio", "index.html")).href;
   const browser = await chromium.launch();
   const result = { errors: [], lessons: {}, generated: {}, ui: {} };
+  const watch = (page, tag = "") => {
+    page.on("pageerror", e => result.errors.push(tag + String(e)));
+    // Fonts are blocked on purpose (offline test); any other failed request or console error is a failure.
+    page.on("requestfailed", r => { if (!/fonts\.(googleapis|gstatic)\.com/.test(r.url())) result.errors.push(tag + "request failed: " + r.url()); });
+    page.on("console", m => { if (m.type() === "error" && !/net::ERR_FAILED/.test(m.text())) result.errors.push(tag + m.text()); });
+  };
+  const skipWelcome = () => { try { localStorage.setItem("blockwise-welcomed", "1"); } catch { /* ignore */ } };
+
+  // 0. First visit: the welcome dialog opens, and its main button starts lesson 1.
+  const fresh = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  watch(fresh, "fresh: ");
+  await fresh.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+  await fresh.goto(url);
+  result.ui.welcome_on_first_visit = await fresh.isVisible("#welcome[open]");
+  await fresh.screenshot({ path: path.join(out, "studio-welcome.png") });
+  await fresh.click("#welcomeLearn");
+  result.ui.welcome_starts_lesson = !(await fresh.isVisible("#welcome[open]"))
+    && (await fresh.textContent("#lessonPanel")).includes("Your first function");
+  await fresh.close();
+
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
-  page.on("pageerror", e => result.errors.push(String(e)));
-  // Fonts are blocked on purpose (offline test); any other failed request or console error is a failure.
-  page.on("requestfailed", r => { if (!/fonts\.(googleapis|gstatic)\.com/.test(r.url())) result.errors.push("request failed: " + r.url()); });
-  page.on("console", m => { if (m.type() === "error" && !/net::ERR_FAILED/.test(m.text())) result.errors.push(m.text()); });
+  watch(page);
+  await page.addInitScript(skipWelcome);
   await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await page.goto(url);
 
@@ -49,19 +69,37 @@ const { chromium } = require("playwright");
   result.ui.code_after_clicks = await page.textContent("#code");
   await page.screenshot({ path: path.join(out, "studio-desktop.png"), fullPage: true });
 
+  // 2b. Undo removes the last edit; redo puts it back.
+  const kinds = () => page.evaluate(() => JSON.stringify(state.plan));
+  const before = await kinds();
+  await page.click("#undoBtn");
+  const undone = await kinds();
+  await page.click("#fnTitle");
+  await page.keyboard.press("Control+Shift+Z");
+  result.ui.undo_restores = undone !== before;
+  result.ui.redo_reapplies = (await kinds()) === before;
+
   // 3. Wrong boundary is caught with a hint, not the answer.
   await page.locator('#builder input[aria-label="If / Else condition"]').fill("age > 18");
   await page.click("#checkWork");
   result.ui.wrong_condition_message = await page.textContent("#resultBox");
 
-  // 4. Invalid field is flagged and not applied.
+  // 4. Invalid field is flagged with a plain-language reason and not applied.
   await page.fill("#fnName", "2bad");
   result.ui.bad_name_flagged = await page.evaluate(() => document.querySelector("#fnName").classList.contains("bad") && state.plan.modules[0].functions[0].name === "can_vote");
+  result.ui.bad_name_message = await page.textContent("#fieldMsg");
 
-  // 5. Insert a preset into the current file.
-  await page.click('.tab[data-tab="presets"]');
+  // 5. Templates: filter by category, then insert one into the current file.
+  await page.click("#trackLibrary");
+  await page.click('#presetCats button[data-cat="auth"]');
+  result.ui.preset_filter_count = await page.locator(".preset").count();
   await page.locator(".preset", { hasText: "Allow only certain roles" }).locator("button").click();
   result.ui.preset_inserted = (await page.textContent("#code")).includes("def require_admin(role: str) -> None:");
+
+  // 5b. Concept pills open the glossary entry.
+  await page.click('.tab[data-tab="lesson"]');
+  await page.locator('#lessonPanel [data-word="condition"]').click();
+  result.ui.glossary_jump = await page.isVisible("#word-condition.hit");
 
   // 6. Advisor reacts to deep nesting.
   await page.evaluate(() => {
@@ -74,12 +112,20 @@ const { chromium } = require("playwright");
   await page.evaluate(() => { state.plan = normalize({ modules: [{ path: "m.py", functions: [{ name: "f", parameters: [], body: [{ kind: "branch", condition: "x", body: [{ kind: "loop", target: "i", iterable: "y" }] }] }] }] }); state.m = 0; state.f = 0; render(); });
   result.ui.sparse_plan_renders = (await page.textContent("#code")).includes("for i in y:");
 
+  // 6c. Dark theme screenshot for review.
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem("blockwise-welcomed", "1"); });
+  await page.reload();
+  await page.click("#themeToggle");
+  await page.screenshot({ path: path.join(out, "studio-dark.png"), fullPage: true });
+
   // 7. Phone layout: no horizontal scroll, bottom navigation works.
   const phone = await browser.newPage({ viewport: { width: 375, height: 760 } });
-  phone.on("pageerror", e => result.errors.push("phone: " + String(e)));
+  watch(phone, "phone: ");
+  await phone.addInitScript(skipWelcome);
   await phone.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await phone.goto(url);
   result.ui.phone_no_hscroll = await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+  await phone.screenshot({ path: path.join(out, "studio-phone-build.png") });
   await phone.click('.mobile-nav button[data-show="side-right"]');
   result.ui.phone_nav_shows_code = await phone.isVisible("#code");
   await phone.screenshot({ path: path.join(out, "studio-phone.png") });
