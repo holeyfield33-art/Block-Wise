@@ -1,0 +1,62 @@
+{
+  "id": "csv_report",
+  "title": "CSV report: group and total",
+  "category": "blueprint",
+  "summary": "A runnable report tool: reads a CSV, groups rows by one column, totals another, prints the groups largest first. Tolerates blank and bad numbers.",
+  "params": {
+    "file": {"kind": "identifier", "default": "report"}
+  },
+  "try": "python {path} sales.csv region amount",
+  "plan": {
+    "modules": [{
+      "path": "{{file}}.py",
+      "imports": ["import csv", "import sys"],
+      "functions": [
+        {"name": "read_rows", "parameters": [{"name": "path", "type": "str"}], "returns": "list", "body": [
+          {"kind": "with", "context": "open(path, newline='', encoding='utf-8')", "alias": "handle", "body": [
+            {"kind": "return", "expression": "list(csv.DictReader(handle))"}]}]},
+        {"name": "parse_amount", "parameters": [{"name": "text", "type": "str"}], "returns": "float",
+         "requirements": ["Commas are thousands separators; anything that isn't a number counts as 0."], "body": [
+          {"kind": "try", "exception": "ValueError", "body": [
+            {"kind": "return", "expression": "float(text.replace(',', ''))"}],
+           "handler": [{"kind": "return", "expression": "0.0"}]}]},
+        {"name": "totals_by", "parameters": [{"name": "rows", "type": "list"}, {"name": "group", "type": "str"}, {"name": "amount", "type": "str"}],
+         "returns": "dict", "body": [
+          {"kind": "assign", "target": "totals", "expression": "{}"},
+          {"kind": "loop", "target": "row", "iterable": "rows", "body": [
+            {"kind": "assign", "target": "key", "expression": "row.get(group) or '(blank)'"},
+            {"kind": "call", "expression": "totals.update({key: totals.get(key, 0.0) + parse_amount(row.get(amount) or '')})"}]},
+          {"kind": "return", "expression": "totals"}]},
+        {"name": "format_report", "parameters": [{"name": "totals", "type": "dict"}], "returns": "str", "body": [
+          {"kind": "assign", "target": "lines", "expression": "[]"},
+          {"kind": "loop", "target": "key", "iterable": "sorted(totals, key=totals.get, reverse=True)", "body": [
+            {"kind": "call", "expression": "lines.append(f'{key}: {totals[key]:.2f}')"}]},
+          {"kind": "call", "expression": "lines.append(f'total: {sum(totals.values()):.2f}')"},
+          {"kind": "return", "expression": "'\\n'.join(lines)"}]},
+        {"name": "main", "parameters": [{"name": "args", "type": "list"}], "returns": "int",
+         "requirements": ["Usage: FILE GROUP_COLUMN AMOUNT_COLUMN. Returns the exit code."], "body": [
+          {"kind": "branch", "condition": "len(args) != 3", "body": [
+            {"kind": "call", "expression": "print('usage: {{file}}.py FILE GROUP_COLUMN AMOUNT_COLUMN')"},
+            {"kind": "return", "expression": "2"}]},
+          {"kind": "try", "exception": "OSError", "body": [
+            {"kind": "assign", "target": "rows", "expression": "read_rows(args[0])"}],
+           "handler": [
+            {"kind": "call", "expression": "print(f'error: cannot read {args[0]}')"},
+            {"kind": "return", "expression": "1"}]},
+          {"kind": "branch", "condition": "rows and args[1] not in rows[0]", "body": [
+            {"kind": "call", "expression": "print(f'error: no column {args[1]}')"},
+            {"kind": "return", "expression": "1"}]},
+          {"kind": "call", "expression": "print(format_report(totals_by(rows, args[1], args[2])))"},
+          {"kind": "return", "expression": "0"}]}
+      ],
+      "entry": [{"kind": "call", "expression": "sys.exit(main(sys.argv[1:]))"}]
+    }]
+  },
+  "examples": [
+    {"files": {"sales.csv": "region,amount\nnorth,10\nsouth,5.5\nnorth,\"1,200\"\n,3\nsouth,oops\n"},
+     "argv": ["sales.csv", "region", "amount"], "stdout": "north: 1210.00\nsouth: 5.50\n(blank): 3.00\ntotal: 1218.50\n", "exit": 0},
+    {"argv": ["sales.csv", "city", "amount"], "stdout": "error: no column city\n", "exit": 1},
+    {"argv": ["missing.csv", "region", "amount"], "stdout": "error: cannot read missing.csv\n", "exit": 1},
+    {"argv": ["sales.csv"], "stdout": "usage: report.py FILE GROUP_COLUMN AMOUNT_COLUMN\n", "exit": 2}
+  ]
+}

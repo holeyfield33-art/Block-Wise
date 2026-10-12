@@ -517,6 +517,22 @@ def short(error):
     return f"{type(error).__name__}: {error}"
 
 
+def run_file(path, argv):
+    """Run a file as a program (its main block runs). Returns (exit code, error text or None)."""
+    saved_argv, sys.argv = sys.argv, [path, *argv]
+    try:
+        runpy.run_module(path[:-3].replace("/", "."), run_name="__main__")
+        return 0, None
+    except SystemExit as stop:
+        if not isinstance(stop.code, (int, type(None))):
+            print(stop.code)
+        return (0 if stop.code is None else stop.code if isinstance(stop.code, int) else 1), None
+    except Exception as error:
+        return 1, short(error)
+    finally:
+        sys.argv = saved_argv
+
+
 names = {}
 result = {"load_error": None, "tests": [], "value": None, "error": False, "output": ""}
 printed = io.StringIO()
@@ -529,6 +545,14 @@ with contextlib.redirect_stdout(printed):
         result["load_error"] = short(error)
     if result["load_error"] is None:
         for test in req.get("tests", []):
+            if "run" in test:  # run the file with arguments and compare what it prints
+                captured = io.StringIO()
+                with contextlib.redirect_stdout(captured):
+                    code, problem = run_file(test["run"], test.get("argv", []))
+                got = captured.getvalue() + (problem or "")
+                result["tests"].append({"call": " ".join(["$ python", test["run"], *test.get("argv", [])]),
+                                        "ok": got == test["stdout"], "got": repr(got), "want": repr(test["stdout"])})
+                continue
             row = {"call": test["call"]}
             want = f"raises {test['raises']}" if "raises" in test else test["expect"]
             try:
@@ -552,18 +576,9 @@ with contextlib.redirect_stdout(printed):
             except Exception as error:
                 result["value"], result["error"] = short(error), True
         if req.get("run"):
-            saved_argv, result["exit"] = sys.argv, 0
-            sys.argv = [req["run"], *req.get("argv", [])]
-            try:
-                runpy.run_module(req["run"][:-3].replace("/", "."), run_name="__main__")
-            except SystemExit as stop:
-                result["exit"] = 0 if stop.code is None else stop.code if isinstance(stop.code, int) else 1
-                if not isinstance(stop.code, (int, type(None))):
-                    print(stop.code)
-            except Exception as error:
-                result["value"], result["error"], result["exit"] = short(error), True, 1
-            finally:
-                sys.argv = saved_argv
+            result["exit"], problem = run_file(req["run"], req.get("argv", []))
+            if problem:
+                result["value"], result["error"] = problem, True
 result["output"] = printed.getvalue()[-4000:]
 sys.path.remove(root)
 os.chdir(previous_dir)
@@ -620,6 +635,8 @@ const GLOSSARY = [
   ["while loop", "Repeats its inside for as long as a condition is true. Something inside must change, or it repeats forever."],
   ["augmented assignment", "A short way to change a variable: total += 5 means total = total + 5. There are also -=, *=, //= and more."],
   ["break / continue", "break (Stop loop) leaves a loop right away. continue (Skip to next) skips the rest of this turn and goes to the next item."],
+  ["main block", "The part of a file under if __name__ == '__main__':. It runs when you start the file (python greet.py), but not when another file imports it."],
+  ["command-line arguments", "The words typed after the file name: in python greet.py Ana, sys.argv is ['greet.py', 'Ana'], so sys.argv[1] is 'Ana'."],
   ["TODO", "A placeholder block for work you have not written yet. It raises NotImplementedError until you replace it."],
 ];
 const ASSIGN_OPERATORS = ["=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "@=", "&=", "|=", "^=", "<<=", ">>="];
@@ -1452,6 +1469,11 @@ function structureProblem(l) {
     if (!gm) return `File ${wm.path} is missing.`;
     if (norm(wm.imports.join("|")) !== norm(gm.imports.join("|"))) return `${wm.path}: the imports are not right yet.`;
     if (norm(JSON.stringify(wm.constants || [])) !== norm(JSON.stringify(gm.constants || []))) return `${wm.path}: the constants are not right yet.`;
+    if (Array.isArray(wm.entry)) {
+      if (!Array.isArray(gm.entry)) return `${wm.path} needs a main block: click “+ main block” under ${wm.path} in the Project panel.`;
+      const problem = compareBody(wm.entry, gm.entry, `${wm.path} main block`);
+      if (problem) return problem;
+    }
     for (const wf of wm.functions) {
       const gf = gm.functions.find(f => f.name === wf.name);
       if (!gf) return `${wm.path}: function ${wf.name}() is missing.`;

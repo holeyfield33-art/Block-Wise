@@ -1757,6 +1757,1010 @@ window.BLOCKWISE_PRESETS = [
   "preview": "def require_fields(payload: dict) -> None:\n    for key in ('name', 'email'):\n        if key not in payload:\n            raise KeyError(key)\n    return None\n"
  },
  {
+  "id": "csv_report",
+  "title": "CSV report: group and total",
+  "category": "blueprint",
+  "summary": "A runnable report tool: reads a CSV, groups rows by one column, totals another, prints the groups largest first. Tolerates blank and bad numbers.",
+  "params": {
+   "file": {
+    "kind": "identifier",
+    "default": "report"
+   }
+  },
+  "try": "python {path} sales.csv region amount",
+  "plan": {
+   "modules": [
+    {
+     "path": "{{file}}.py",
+     "imports": [
+      "import csv",
+      "import sys"
+     ],
+     "functions": [
+      {
+       "name": "read_rows",
+       "parameters": [
+        {
+         "name": "path",
+         "type": "str"
+        }
+       ],
+       "returns": "list",
+       "body": [
+        {
+         "kind": "with",
+         "context": "open(path, newline='', encoding='utf-8')",
+         "alias": "handle",
+         "body": [
+          {
+           "kind": "return",
+           "expression": "list(csv.DictReader(handle))"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "parse_amount",
+       "parameters": [
+        {
+         "name": "text",
+         "type": "str"
+        }
+       ],
+       "returns": "float",
+       "requirements": [
+        "Commas are thousands separators; anything that isn't a number counts as 0."
+       ],
+       "body": [
+        {
+         "kind": "try",
+         "exception": "ValueError",
+         "body": [
+          {
+           "kind": "return",
+           "expression": "float(text.replace(',', ''))"
+          }
+         ],
+         "handler": [
+          {
+           "kind": "return",
+           "expression": "0.0"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "totals_by",
+       "parameters": [
+        {
+         "name": "rows",
+         "type": "list"
+        },
+        {
+         "name": "group",
+         "type": "str"
+        },
+        {
+         "name": "amount",
+         "type": "str"
+        }
+       ],
+       "returns": "dict",
+       "body": [
+        {
+         "kind": "assign",
+         "target": "totals",
+         "expression": "{}"
+        },
+        {
+         "kind": "loop",
+         "target": "row",
+         "iterable": "rows",
+         "body": [
+          {
+           "kind": "assign",
+           "target": "key",
+           "expression": "row.get(group) or '(blank)'"
+          },
+          {
+           "kind": "call",
+           "expression": "totals.update({key: totals.get(key, 0.0) + parse_amount(row.get(amount) or '')})"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "totals"
+        }
+       ]
+      },
+      {
+       "name": "format_report",
+       "parameters": [
+        {
+         "name": "totals",
+         "type": "dict"
+        }
+       ],
+       "returns": "str",
+       "body": [
+        {
+         "kind": "assign",
+         "target": "lines",
+         "expression": "[]"
+        },
+        {
+         "kind": "loop",
+         "target": "key",
+         "iterable": "sorted(totals, key=totals.get, reverse=True)",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "lines.append(f'{key}: {totals[key]:.2f}')"
+          }
+         ]
+        },
+        {
+         "kind": "call",
+         "expression": "lines.append(f'total: {sum(totals.values()):.2f}')"
+        },
+        {
+         "kind": "return",
+         "expression": "'\\n'.join(lines)"
+        }
+       ]
+      },
+      {
+       "name": "main",
+       "parameters": [
+        {
+         "name": "args",
+         "type": "list"
+        }
+       ],
+       "returns": "int",
+       "requirements": [
+        "Usage: FILE GROUP_COLUMN AMOUNT_COLUMN. Returns the exit code."
+       ],
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "len(args) != 3",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "print('usage: {{file}}.py FILE GROUP_COLUMN AMOUNT_COLUMN')"
+          },
+          {
+           "kind": "return",
+           "expression": "2"
+          }
+         ]
+        },
+        {
+         "kind": "try",
+         "exception": "OSError",
+         "body": [
+          {
+           "kind": "assign",
+           "target": "rows",
+           "expression": "read_rows(args[0])"
+          }
+         ],
+         "handler": [
+          {
+           "kind": "call",
+           "expression": "print(f'error: cannot read {args[0]}')"
+          },
+          {
+           "kind": "return",
+           "expression": "1"
+          }
+         ]
+        },
+        {
+         "kind": "branch",
+         "condition": "rows and args[1] not in rows[0]",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "print(f'error: no column {args[1]}')"
+          },
+          {
+           "kind": "return",
+           "expression": "1"
+          }
+         ]
+        },
+        {
+         "kind": "call",
+         "expression": "print(format_report(totals_by(rows, args[1], args[2])))"
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      }
+     ],
+     "entry": [
+      {
+       "kind": "call",
+       "expression": "sys.exit(main(sys.argv[1:]))"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "files": {
+     "sales.csv": "region,amount\nnorth,10\nsouth,5.5\nnorth,\"1,200\"\n,3\nsouth,oops\n"
+    },
+    "argv": [
+     "sales.csv",
+     "region",
+     "amount"
+    ],
+    "stdout": "north: 1210.00\nsouth: 5.50\n(blank): 3.00\ntotal: 1218.50\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "sales.csv",
+     "city",
+     "amount"
+    ],
+    "stdout": "error: no column city\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "missing.csv",
+     "region",
+     "amount"
+    ],
+    "stdout": "error: cannot read missing.csv\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "sales.csv"
+    ],
+    "stdout": "usage: report.py FILE GROUP_COLUMN AMOUNT_COLUMN\n",
+    "exit": 2
+   }
+  ],
+  "kind": "blueprint",
+  "preview": {
+   "report.py": "\"\"\"Generated by Blockwise. Verify behavior before use.\"\"\"\nimport csv\nimport sys\n\n\ndef read_rows(path: str) -> list:\n    with open(path, newline='', encoding='utf-8') as handle:\n        return list(csv.DictReader(handle))\n\n\ndef parse_amount(text: str) -> float:\n    \"\"\"Requirements:\nCommas are thousands separators; anything that isn't a number counts as 0.\"\"\"\n    try:\n        return float(text.replace(',', ''))\n    except ValueError:\n        return 0.0\n\n\ndef totals_by(rows: list, group: str, amount: str) -> dict:\n    totals = {}\n    for row in rows:\n        key = row.get(group) or '(blank)'\n        totals.update({key: totals.get(key, 0.0) + parse_amount(row.get(amount) or '')})\n    return totals\n\n\ndef format_report(totals: dict) -> str:\n    lines = []\n    for key in sorted(totals, key=totals.get, reverse=True):\n        lines.append(f'{key}: {totals[key]:.2f}')\n    lines.append(f'total: {sum(totals.values()):.2f}')\n    return '\\n'.join(lines)\n\n\ndef main(args: list) -> int:\n    \"\"\"Requirements:\nUsage: FILE GROUP_COLUMN AMOUNT_COLUMN. Returns the exit code.\"\"\"\n    if len(args) != 3:\n        print('usage: report.py FILE GROUP_COLUMN AMOUNT_COLUMN')\n        return 2\n    try:\n        rows = read_rows(args[0])\n    except OSError:\n        print(f'error: cannot read {args[0]}')\n        return 1\n    if rows and args[1] not in rows[0]:\n        print(f'error: no column {args[1]}')\n        return 1\n    print(format_report(totals_by(rows, args[1], args[2])))\n    return 0\n\n\nif __name__ == '__main__':\n    sys.exit(main(sys.argv[1:]))\n"
+  }
+ },
+ {
+  "id": "kv_store",
+  "title": "Key-value store in a JSON file",
+  "category": "blueprint",
+  "summary": "A runnable settings/notes store: set, get, delete and list keys, saved to a JSON file between runs. One small function per command.",
+  "params": {
+   "file": {
+    "kind": "identifier",
+    "default": "store"
+   },
+   "store": {
+    "kind": "string",
+    "default": "store.json"
+   }
+  },
+  "try": "python {path} set name Ana",
+  "plan": {
+   "modules": [
+    {
+     "path": "{{file}}.py",
+     "imports": [
+      "import json",
+      "import sys"
+     ],
+     "constants": [
+      {
+       "name": "STORE",
+       "value": "{{store}}"
+      }
+     ],
+     "functions": [
+      {
+       "name": "load",
+       "parameters": [
+        {
+         "name": "path",
+         "type": "str"
+        }
+       ],
+       "returns": "dict",
+       "requirements": [
+        "A missing or broken file means an empty store."
+       ],
+       "body": [
+        {
+         "kind": "try",
+         "exception": "(OSError, ValueError)",
+         "body": [
+          {
+           "kind": "with",
+           "context": "open(path, encoding='utf-8')",
+           "alias": "handle",
+           "body": [
+            {
+             "kind": "return",
+             "expression": "json.load(handle)"
+            }
+           ]
+          }
+         ],
+         "handler": [
+          {
+           "kind": "return",
+           "expression": "{}"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "save",
+       "parameters": [
+        {
+         "name": "path",
+         "type": "str"
+        },
+        {
+         "name": "data",
+         "type": "dict"
+        }
+       ],
+       "returns": "None",
+       "body": [
+        {
+         "kind": "with",
+         "context": "open(path, 'w', encoding='utf-8')",
+         "alias": "handle",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "json.dump(data, handle, indent=2, sort_keys=True)"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "format_entries",
+       "parameters": [
+        {
+         "name": "data",
+         "type": "dict"
+        }
+       ],
+       "returns": "str",
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "not data",
+         "body": [
+          {
+           "kind": "return",
+           "expression": "'(empty)'"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "'\\n'.join((f'{key} = {data[key]}' for key in sorted(data)))"
+        }
+       ]
+      },
+      {
+       "name": "require_key",
+       "parameters": [
+        {
+         "name": "data",
+         "type": "dict"
+        },
+        {
+         "name": "key",
+         "type": "str"
+        }
+       ],
+       "returns": "None",
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "key not in data",
+         "body": [
+          {
+           "kind": "raise",
+           "expression": "LookupError(f'no key {key}')"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "set_value",
+       "parameters": [
+        {
+         "name": "data",
+         "type": "dict"
+        },
+        {
+         "name": "key",
+         "type": "str"
+        },
+        {
+         "name": "value",
+         "type": "str"
+        }
+       ],
+       "returns": "int",
+       "body": [
+        {
+         "kind": "call",
+         "expression": "data.update({key: value})"
+        },
+        {
+         "kind": "call",
+         "expression": "save(STORE, data)"
+        },
+        {
+         "kind": "call",
+         "expression": "print(f'{key} saved.')"
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      },
+      {
+       "name": "get_value",
+       "parameters": [
+        {
+         "name": "data",
+         "type": "dict"
+        },
+        {
+         "name": "key",
+         "type": "str"
+        }
+       ],
+       "returns": "int",
+       "body": [
+        {
+         "kind": "validate",
+         "expression": "require_key(data, key)"
+        },
+        {
+         "kind": "call",
+         "expression": "print(data[key])"
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      },
+      {
+       "name": "delete_value",
+       "parameters": [
+        {
+         "name": "data",
+         "type": "dict"
+        },
+        {
+         "name": "key",
+         "type": "str"
+        }
+       ],
+       "returns": "int",
+       "body": [
+        {
+         "kind": "validate",
+         "expression": "require_key(data, key)"
+        },
+        {
+         "kind": "call",
+         "expression": "data.pop(key)"
+        },
+        {
+         "kind": "call",
+         "expression": "save(STORE, data)"
+        },
+        {
+         "kind": "call",
+         "expression": "print(f'{key} deleted.')"
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      },
+      {
+       "name": "main",
+       "parameters": [
+        {
+         "name": "args",
+         "type": "list"
+        }
+       ],
+       "returns": "int",
+       "requirements": [
+        "Commands: set KEY VALUE, get KEY, delete KEY, list. Returns the exit code."
+       ],
+       "body": [
+        {
+         "kind": "assign",
+         "target": "data",
+         "expression": "load(STORE)"
+        },
+        {
+         "kind": "try",
+         "exception": "LookupError",
+         "alias": "error",
+         "body": [
+          {
+           "kind": "branch",
+           "condition": "not args or args[0] == 'list'",
+           "body": [
+            {
+             "kind": "call",
+             "expression": "print(format_entries(data))"
+            }
+           ],
+           "otherwise": [
+            {
+             "kind": "branch",
+             "condition": "args[0] == 'set' and len(args) == 3",
+             "body": [
+              {
+               "kind": "return",
+               "expression": "set_value(data, args[1], args[2])"
+              }
+             ],
+             "otherwise": [
+              {
+               "kind": "branch",
+               "condition": "args[0] == 'get' and len(args) == 2",
+               "body": [
+                {
+                 "kind": "return",
+                 "expression": "get_value(data, args[1])"
+                }
+               ],
+               "otherwise": [
+                {
+                 "kind": "branch",
+                 "condition": "args[0] == 'delete' and len(args) == 2",
+                 "body": [
+                  {
+                   "kind": "return",
+                   "expression": "delete_value(data, args[1])"
+                  }
+                 ],
+                 "otherwise": [
+                  {
+                   "kind": "call",
+                   "expression": "print('usage: {{file}}.py [set KEY VALUE | get KEY | delete KEY | list]')"
+                  },
+                  {
+                   "kind": "return",
+                   "expression": "2"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "handler": [
+          {
+           "kind": "call",
+           "expression": "print(f'error: {error}')"
+          },
+          {
+           "kind": "return",
+           "expression": "1"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      }
+     ],
+     "entry": [
+      {
+       "kind": "call",
+       "expression": "sys.exit(main(sys.argv[1:]))"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "argv": [],
+    "stdout": "(empty)\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "set",
+     "name",
+     "Ana"
+    ],
+    "stdout": "name saved.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "set",
+     "city",
+     "Lisbon"
+    ],
+    "stdout": "city saved.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "get",
+     "name"
+    ],
+    "stdout": "Ana\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "list"
+    ],
+    "stdout": "city = Lisbon\nname = Ana\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "delete",
+     "city"
+    ],
+    "stdout": "city deleted.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "get",
+     "city"
+    ],
+    "stdout": "error: no key city\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "set",
+     "x"
+    ],
+    "stdout": "usage: store.py [set KEY VALUE | get KEY | delete KEY | list]\n",
+    "exit": 2
+   }
+  ],
+  "kind": "blueprint",
+  "preview": {
+   "store.py": "\"\"\"Generated by Blockwise. Verify behavior before use.\"\"\"\nimport json\nimport sys\nSTORE = 'store.json'\n\n\ndef load(path: str) -> dict:\n    \"\"\"Requirements:\nA missing or broken file means an empty store.\"\"\"\n    try:\n        with open(path, encoding='utf-8') as handle:\n            return json.load(handle)\n    except (OSError, ValueError):\n        return {}\n\n\ndef save(path: str, data: dict) -> None:\n    with open(path, 'w', encoding='utf-8') as handle:\n        json.dump(data, handle, indent=2, sort_keys=True)\n\n\ndef format_entries(data: dict) -> str:\n    if not data:\n        return '(empty)'\n    return '\\n'.join((f'{key} = {data[key]}' for key in sorted(data)))\n\n\ndef require_key(data: dict, key: str) -> None:\n    if key not in data:\n        raise LookupError(f'no key {key}')\n\n\ndef set_value(data: dict, key: str, value: str) -> int:\n    data.update({key: value})\n    save(STORE, data)\n    print(f'{key} saved.')\n    return 0\n\n\ndef get_value(data: dict, key: str) -> int:\n    require_key(data, key)\n    print(data[key])\n    return 0\n\n\ndef delete_value(data: dict, key: str) -> int:\n    require_key(data, key)\n    data.pop(key)\n    save(STORE, data)\n    print(f'{key} deleted.')\n    return 0\n\n\ndef main(args: list) -> int:\n    \"\"\"Requirements:\nCommands: set KEY VALUE, get KEY, delete KEY, list. Returns the exit code.\"\"\"\n    data = load(STORE)\n    try:\n        if not args or args[0] == 'list':\n            print(format_entries(data))\n        elif args[0] == 'set' and len(args) == 3:\n            return set_value(data, args[1], args[2])\n        elif args[0] == 'get' and len(args) == 2:\n            return get_value(data, args[1])\n        elif args[0] == 'delete' and len(args) == 2:\n            return delete_value(data, args[1])\n        else:\n            print('usage: store.py [set KEY VALUE | get KEY | delete KEY | list]')\n            return 2\n    except LookupError as error:\n        print(f'error: {error}')\n        return 1\n    return 0\n\n\nif __name__ == '__main__':\n    sys.exit(main(sys.argv[1:]))\n"
+  }
+ },
+ {
+  "id": "log_stats",
+  "title": "Log file summary",
+  "category": "blueprint",
+  "summary": "A runnable log analyser: counts lines per level (INFO, ERROR, ...) and lists the most frequent error messages. Skips lines it can't read.",
+  "params": {
+   "file": {
+    "kind": "identifier",
+    "default": "logstats"
+   },
+   "top": {
+    "kind": "number",
+    "default": 3
+   }
+  },
+  "try": "python {path} app.log",
+  "plan": {
+   "modules": [
+    {
+     "path": "{{file}}.py",
+     "imports": [
+      "import sys"
+     ],
+     "constants": [
+      {
+       "name": "LEVELS",
+       "value": "('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')"
+      },
+      {
+       "name": "TOP",
+       "value": "{{top}}"
+      }
+     ],
+     "functions": [
+      {
+       "name": "parse_line",
+       "parameters": [
+        {
+         "name": "line",
+         "type": "str"
+        }
+       ],
+       "returns": "dict | None",
+       "requirements": [
+        "Expected shape: DATE TIME LEVEL message"
+       ],
+       "body": [
+        {
+         "kind": "assign",
+         "target": "parts",
+         "expression": "line.split(maxsplit=3)"
+        },
+        {
+         "kind": "branch",
+         "condition": "len(parts) < 4 or parts[2] not in LEVELS",
+         "body": [
+          {
+           "kind": "return",
+           "expression": "None"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "{'level': parts[2], 'message': parts[3].strip()}"
+        }
+       ]
+      },
+      {
+       "name": "summarize",
+       "parameters": [
+        {
+         "name": "lines",
+         "type": "list"
+        }
+       ],
+       "returns": "dict",
+       "body": [
+        {
+         "kind": "assign",
+         "target": "counts",
+         "expression": "{level: 0 for level in LEVELS}"
+        },
+        {
+         "kind": "assign",
+         "target": "errors",
+         "expression": "{}"
+        },
+        {
+         "kind": "assign",
+         "target": "skipped",
+         "expression": "0"
+        },
+        {
+         "kind": "loop",
+         "target": "line",
+         "iterable": "lines",
+         "body": [
+          {
+           "kind": "assign",
+           "target": "entry",
+           "expression": "parse_line(line)"
+          },
+          {
+           "kind": "branch",
+           "condition": "entry is None",
+           "body": [
+            {
+             "kind": "assign",
+             "target": "skipped",
+             "operator": "+=",
+             "expression": "1"
+            },
+            {
+             "kind": "continue"
+            }
+           ]
+          },
+          {
+           "kind": "call",
+           "expression": "counts.update({entry['level']: counts[entry['level']] + 1})"
+          },
+          {
+           "kind": "branch",
+           "condition": "entry['level'] in ('ERROR', 'CRITICAL')",
+           "body": [
+            {
+             "kind": "call",
+             "expression": "errors.update({entry['message']: errors.get(entry['message'], 0) + 1})"
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "{'counts': counts, 'errors': errors, 'skipped': skipped}"
+        }
+       ]
+      },
+      {
+       "name": "format_summary",
+       "parameters": [
+        {
+         "name": "summary",
+         "type": "dict"
+        }
+       ],
+       "returns": "str",
+       "body": [
+        {
+         "kind": "assign",
+         "target": "lines",
+         "expression": "[f'{level}: {count}' for level, count in summary['counts'].items() if count]"
+        },
+        {
+         "kind": "assign",
+         "target": "errors",
+         "expression": "summary['errors']"
+        },
+        {
+         "kind": "loop",
+         "target": "message",
+         "iterable": "sorted(errors, key=errors.get, reverse=True)[:TOP]",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "lines.append(f'  {errors[message]} x {message}')"
+          }
+         ]
+        },
+        {
+         "kind": "branch",
+         "condition": "summary['skipped']",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "lines.append(f\"skipped {summary['skipped']} unreadable line(s)\")"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "'\\n'.join(lines) or 'No log lines found.'"
+        }
+       ]
+      },
+      {
+       "name": "main",
+       "parameters": [
+        {
+         "name": "args",
+         "type": "list"
+        }
+       ],
+       "returns": "int",
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "len(args) != 1",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "print('usage: {{file}}.py LOGFILE')"
+          },
+          {
+           "kind": "return",
+           "expression": "2"
+          }
+         ]
+        },
+        {
+         "kind": "try",
+         "exception": "OSError",
+         "body": [
+          {
+           "kind": "with",
+           "context": "open(args[0], encoding='utf-8', errors='replace')",
+           "alias": "handle",
+           "body": [
+            {
+             "kind": "assign",
+             "target": "lines",
+             "expression": "handle.readlines()"
+            }
+           ]
+          }
+         ],
+         "handler": [
+          {
+           "kind": "call",
+           "expression": "print(f'error: cannot read {args[0]}')"
+          },
+          {
+           "kind": "return",
+           "expression": "1"
+          }
+         ]
+        },
+        {
+         "kind": "call",
+         "expression": "print(format_summary(summarize(lines)))"
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      }
+     ],
+     "entry": [
+      {
+       "kind": "call",
+       "expression": "sys.exit(main(sys.argv[1:]))"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "files": {
+     "app.log": "2026-10-12 09:00:00 INFO started\n2026-10-12 09:00:01 ERROR db timeout\n2026-10-12 09:00:02 WARNING slow\ngarbage line\n2026-10-12 09:00:03 ERROR db timeout\n2026-10-12 09:00:04 CRITICAL disk full\n2026-10-12 09:00:05 ERROR bad token\n2026-10-12 09:00:06 ERROR cache miss\n"
+    },
+    "argv": [
+     "app.log"
+    ],
+    "stdout": "INFO: 1\nWARNING: 1\nERROR: 4\nCRITICAL: 1\n  2 x db timeout\n  1 x disk full\n  1 x bad token\nskipped 1 unreadable line(s)\n",
+    "exit": 0
+   },
+   {
+    "files": {
+     "empty.log": ""
+    },
+    "argv": [
+     "empty.log"
+    ],
+    "stdout": "No log lines found.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "nope.log"
+    ],
+    "stdout": "error: cannot read nope.log\n",
+    "exit": 1
+   },
+   {
+    "argv": [],
+    "stdout": "usage: logstats.py LOGFILE\n",
+    "exit": 2
+   }
+  ],
+  "kind": "blueprint",
+  "preview": {
+   "logstats.py": "\"\"\"Generated by Blockwise. Verify behavior before use.\"\"\"\nimport sys\nLEVELS = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')\nTOP = 3\n\n\ndef parse_line(line: str) -> dict | None:\n    \"\"\"Requirements:\nExpected shape: DATE TIME LEVEL message\"\"\"\n    parts = line.split(maxsplit=3)\n    if len(parts) < 4 or parts[2] not in LEVELS:\n        return None\n    return {'level': parts[2], 'message': parts[3].strip()}\n\n\ndef summarize(lines: list) -> dict:\n    counts = {level: 0 for level in LEVELS}\n    errors = {}\n    skipped = 0\n    for line in lines:\n        entry = parse_line(line)\n        if entry is None:\n            skipped += 1\n            continue\n        counts.update({entry['level']: counts[entry['level']] + 1})\n        if entry['level'] in ('ERROR', 'CRITICAL'):\n            errors.update({entry['message']: errors.get(entry['message'], 0) + 1})\n    return {'counts': counts, 'errors': errors, 'skipped': skipped}\n\n\ndef format_summary(summary: dict) -> str:\n    lines = [f'{level}: {count}' for level, count in summary['counts'].items() if count]\n    errors = summary['errors']\n    for message in sorted(errors, key=errors.get, reverse=True)[:TOP]:\n        lines.append(f'  {errors[message]} x {message}')\n    if summary['skipped']:\n        lines.append(f\"skipped {summary['skipped']} unreadable line(s)\")\n    return '\\n'.join(lines) or 'No log lines found.'\n\n\ndef main(args: list) -> int:\n    if len(args) != 1:\n        print('usage: logstats.py LOGFILE')\n        return 2\n    try:\n        with open(args[0], encoding='utf-8', errors='replace') as handle:\n            lines = handle.readlines()\n    except OSError:\n        print(f'error: cannot read {args[0]}')\n        return 1\n    print(format_summary(summarize(lines)))\n    return 0\n\n\nif __name__ == '__main__':\n    sys.exit(main(sys.argv[1:]))\n"
+  }
+ },
+ {
   "id": "todo_cli",
   "title": "Command-line to-do list",
   "category": "blueprint",

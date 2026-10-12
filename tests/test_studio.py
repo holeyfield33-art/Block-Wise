@@ -56,7 +56,7 @@ def test_lesson_plans_are_valid_and_compile(lesson):
 @pytest.mark.parametrize("lesson", LESSONS, ids=[lesson["id"] for lesson in LESSONS])
 def test_lesson_tests_pass_on_solution_and_fail_on_starter(lesson, tmp_path):
     tests = lesson["tests"]
-    assert len(tests) >= 2 and all("call" in t and ("expect" in t) != ("raises" in t) for t in tests)
+    assert len(tests) >= 2 and all(("call" in t and ("expect" in t) != ("raises" in t)) or ("run" in t and "stdout" in t) for t in tests)
     solved = run_harness({p: without_module_docstring(s) for p, s in compile_score(lesson["solution"]).items()}, tests, tmp_path / "s")
     assert solved["load_error"] is None
     assert [t for t in solved["tests"] if not t["ok"]] == []
