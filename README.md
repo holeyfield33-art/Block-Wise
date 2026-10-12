@@ -101,8 +101,8 @@ To add a lesson, append an entry to `studio/lessons.js`. A lesson has a goal, st
 the exception they `raise`), a `starter` plan and a `solution` plan. The tests check that every
 lesson compiles, that its solution passes its tests, and that the guided starter does not.
 
-The site is deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`,
-after the tests pass.
+The site is GitHub Pages serving the `main` branch; the root `index.html` forwards to `studio/`, so
+merging to `main` publishes it. `.github/workflows/tests.yml` runs the test suite on pushes and PRs.
 
 ## Adding presets
 
