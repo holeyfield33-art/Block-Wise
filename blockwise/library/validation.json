@@ -128,5 +128,38 @@
       ]
     },
     "examples": [{"args": [{"name": "a", "email": "b"}], "returns": null}, {"args": [{"name": "a"}], "raises": "KeyError"}]
+  },
+  {
+    "id": "password_problems",
+    "title": "List what's wrong with a password",
+    "category": "validation",
+    "summary": "Return a list of plain-language problems (too short, no digit, no upper- or lowercase letter); an empty list means it passes. Use it to explain a rejection, not to store passwords.",
+    "params": {
+      "function": {"kind": "identifier", "default": "password_problems"},
+      "password": {"kind": "identifier", "default": "password"},
+      "min_length": {"kind": "number", "default": 12}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{password}}", "type": "str"}],
+      "returns": "list",
+      "body": [
+        {"kind": "assign", "target": "problems", "expression": "[]"},
+        {"kind": "branch", "condition": "len({{password}}) < {{min_length}}", "body": [
+          {"kind": "call", "expression": "problems.append('shorter than {{min_length}} characters')"}]},
+        {"kind": "branch", "condition": "not any((c.isdigit() for c in {{password}}))", "body": [
+          {"kind": "call", "expression": "problems.append('no digit')"}]},
+        {"kind": "branch", "condition": "not any((c.isupper() for c in {{password}}))", "body": [
+          {"kind": "call", "expression": "problems.append('no uppercase letter')"}]},
+        {"kind": "branch", "condition": "not any((c.islower() for c in {{password}}))", "body": [
+          {"kind": "call", "expression": "problems.append('no lowercase letter')"}]},
+        {"kind": "return", "expression": "problems"}
+      ]
+    },
+    "examples": [
+      {"args": ["Correct7HorseBattery"], "returns": []},
+      {"args": ["short"], "returns": ["shorter than 12 characters", "no digit", "no uppercase letter"]},
+      {"args": ["ALLUPPERCASE99"], "returns": ["no lowercase letter"]}
+    ]
   }
 ]

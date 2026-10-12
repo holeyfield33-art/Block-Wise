@@ -32,10 +32,13 @@ in a browser. No server or install is needed.
 
 ## For agents: call presets, don't write boilerplate
 
+**Setting up an agent?** Read the [agent guide](docs/agents.md): install, Claude Code and MCP setup, a
+ready-to-paste instruction for `CLAUDE.md`/`AGENTS.md`, and measured savings.
+
 | Command | What comes back |
 |---|---|
 | `blockwise find <words>` | the 3 best-matching presets, e.g. `blockwise find reject negative number` |
-| `blockwise list [--category validation\|auth\|data\|files]` | `[{id, category, does, params}]` |
+| `blockwise list [--category validation\|auth\|data\|files\|blueprint]` | `[{id, category, does, params}]` |
 | `blockwise apply <id> --into <file.py> [--set k=v ...]` | `{"ok":true,"added":"file.py:name"}` plus `todo` if the preset leaves work |
 | `blockwise check [--strict]` | `{"ok":true,...}` or a list of `{file, function, problem}` |
 | `blockwise coverage [--file f.py]` | what Blockwise can represent; with `--file`, which constructs in that file have no block yet |
@@ -63,14 +66,14 @@ How it works:
 
 | | tokens |
 |---|---|
-| Agent writes one preset-sized function itself (output) | ~42 |
+| Agent writes one preset-sized function itself (output) | ~45 |
 | Agent calls the preset instead (output + reply read back) | ~10 + ~20 |
-| Saved per use, counting output at 5× input price | ~137 input-equivalent |
-| Discovery, one time: `list` (all 26) / `find` (top 3) | ~1,340 / ~148 |
-| **Blueprints** (4 whole programs, 5–8 functions + main block): write vs call | ~410–550 vs ~8 + ~27 |
-| Saved per blueprint use | **~2,000–2,700 input-equivalent** |
+| Saved per use, counting output at 5× input price | ~150 input-equivalent |
+| Discovery, one time: `list` (all 30) / `find` (top 3) | ~1,630 / ~148 |
+| **Blueprints** (7 whole programs, 4–8 functions + main block): write vs call | ~410–610 vs ~8 + ~27 |
+| Saved per blueprint use | **~2,000–3,000 input-equivalent** |
 
-So with `find`, a preset pays for itself on its first use. With `list`, it takes about 8 uses.
+So with `find`, a preset pays for itself on its first use. With `list`, it takes about 11 uses.
 Single-function presets save little, because a model writes a 3–14 line function cheaply anyway.
 Blueprints are where it pays: one call replaces a whole runnable program (about 18× the saving of
 a single preset). The larger gains are reliability: the code is tested, `check` notices when it
@@ -97,10 +100,14 @@ blockwise check                                  # the files stay under the same
 | `kv_store` | key-value store saved to JSON: set, get, delete, list | `python store.py set name Ana` |
 | `csv_report` | group a CSV by one column and total another | `python report.py sales.csv region amount` |
 | `log_stats` | count log lines per level and list the top errors | `python logstats.py app.log` |
+| `data_validator` | report missing values, bad emails and impossible ages in a CSV | `python validate.py people.csv` |
+| `file_organizer` | sort a folder's files into subfolders by type (dry run first, `--apply` to move) | `python organize.py Downloads` |
+| `fetch_json` | fetch JSON from an http(s) URL, optionally one value by path | `python fetch_json.py URL address.city` |
 
 Blueprints live in `blockwise/library/blueprints/`. Their `examples` are real command lines: the
 tests generate the program, run it as a subprocess with each example's arguments in order (so saved
-data carries over; `files` creates input files first), and compare stdout and the exit code. They
+data carries over; `files` creates input files, in subfolders too; `{server}` points at a local test web
+server, so `fetch_json` is tested without the internet), and compare stdout and the exit code. They
 must also get no Advisor tips, so they stay examples of good structure.
 
 ## Python coverage registry
