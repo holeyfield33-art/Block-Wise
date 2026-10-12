@@ -1,0 +1,69 @@
+"""Every preset renders, compiles and behaves as its own examples say; bad parameters are refused."""
+
+import pytest
+
+from blockwise.presets import PresetError, get_preset, load_presets, render
+from blockwise.project import function_source
+
+PRESETS = load_presets()
+
+
+def build(preset_id, params=None):
+    function, imports = render(get_preset(preset_id), params)
+    source, import_lines = function_source(function, imports)
+    namespace = {}
+    exec(compile("\n".join(import_lines) + "\n" + source, preset_id, "exec"), namespace)  # trusted, shipped presets only
+    return namespace[function["name"]]
+
+
+def test_library_is_not_empty_and_ids_are_unique():
+    assert len(PRESETS) >= 15
+    assert {p["category"] for p in PRESETS.values()} == {"validation", "auth", "data"}
+
+
+@pytest.mark.parametrize("preset_id", sorted(PRESETS))
+def test_preset_defaults_render_and_examples_hold(preset_id):
+    preset = PRESETS[preset_id]
+    if not preset["examples"]:
+        render(preset)  # presets with TODOs still render to valid plans
+        return
+    function = build(preset_id)
+    for example in preset["examples"]:
+        if "raises" in example:
+            with pytest.raises(Exception) as caught:
+                function(*example["args"])
+            assert type(caught.value).__name__ == example["raises"]
+        else:
+            assert function(*example["args"]) == example["returns"]
+
+
+def test_parameters_change_the_code():
+    require = build("require_role", {"allowed": "admin,owner", "function": "require_staff"})
+    require("owner")
+    with pytest.raises(PermissionError):
+        require("guest")
+    keep = build("filter_items", {"condition": "item > 3", "items": "numbers"})
+    assert keep([1, 5, 9]) == [5, 9]
+
+
+@pytest.mark.parametrize("preset_id,params", [
+    ("require_positive", {"value": "x; import os"}),
+    ("require_positive", {"value": "class"}),
+    ("require_positive", {"type": "__import__('os')"}),
+    ("filter_items", {"condition": "item\nimport os"}),
+    ("filter_items", {"condition": "(lambda: 1"}),
+    ("require_range", {"low": "zero"}),
+    ("require_range", {"high": True}),
+    ("require_choice", {"choices": []}),
+    ("require_choice", {"nope": "x"}),
+    ("checked_operation", {"work": "{{function}}"}),
+    ("lookup_or_error", {"mapping": "catalog", "key": "catalog"}),
+])
+def test_bad_parameters_are_refused(preset_id, params):
+    with pytest.raises(PresetError):
+        render(get_preset(preset_id), params)
+
+
+def test_string_parameters_cannot_break_out_of_their_literal():
+    count = build("count_by", {"field": "x') or __import__('os"})
+    assert count([{"x') or __import__('os": "a"}]) == {"a": 1}

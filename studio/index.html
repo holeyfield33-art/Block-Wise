@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blockwise Studio</title>
+<meta name="description" content="Build Python from blocks: functions, if/else, loops and nesting, with live code, guided lessons and a structure advisor.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d1220; --ink-2: #141b2d; --panel: #182036; --panel-2: #1f2943; --line: #2c3a5c; --line-soft: #233052;
+  --text: #e8ecf6; --muted: #9aa6c2; --focus: #ffd166; --accent: #f5b84c; --accent-2: #7aa2ff; --good: #5ad1a5; --bad: #ff6b6b;
+  --k-function: #f5b84c; --k-validate: #5ad1a5; --k-branch: #7aa2ff; --k-loop: #c792ea; --k-call: #4fd6e8;
+  --k-raise: #ff6b6b; --k-return: #a3e635; --k-hole: #f0a8d0; --k-assign: #ffd166;
+  --grid: rgba(122, 162, 255, .07);
+  --radius: 14px; --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --display: "Bricolage Grotesque", Georgia, serif; --body: "Atkinson Hyperlegible", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ink: #e9eef6; --ink-2: #dde5f1; --panel: #f8fafd; --panel-2: #eef3fa; --line: #b9c6dc; --line-soft: #d3dcea;
+    --text: #1d2233; --muted: #5e6578; --focus: #b5470b; --accent: #b5670b; --accent-2: #2f5bd3; --good: #11845b; --bad: #c43535;
+    --k-function: #b5670b; --k-validate: #11845b; --k-branch: #2f5bd3; --k-loop: #7d3fb3; --k-call: #0f7f93;
+    --k-raise: #c43535; --k-return: #4d7c0f; --k-hole: #b03a80; --k-assign: #9a6b00;
+    --grid: rgba(47, 91, 211, .08); --shadow: 0 10px 24px rgba(30,50,90,.12); color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --ink: #e9eef6; --ink-2: #dde5f1; --panel: #f8fafd; --panel-2: #eef3fa; --line: #b9c6dc; --line-soft: #d3dcea;
+  --text: #1d2233; --muted: #5e6578; --focus: #b5470b; --accent: #b5670b; --accent-2: #2f5bd3; --good: #11845b; --bad: #c43535;
+  --k-function: #b5670b; --k-validate: #11845b; --k-branch: #2f5bd3; --k-loop: #7d3fb3; --k-call: #0f7f93;
+  --k-raise: #c43535; --k-return: #4d7c0f; --k-hole: #b03a80; --k-assign: #9a6b00;
+  --grid: rgba(47, 91, 211, .08); --shadow: 0 10px 24px rgba(30,50,90,.12); color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font: 16px/1.5 var(--body); color: var(--text); min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--ink);
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+header.top {
+  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: color-mix(in srgb, var(--ink) 80%, transparent);
+  backdrop-filter: blur(8px); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { width: 38px; height: 38px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.brand-mark span { border-radius: 4px; }
+.brand-mark span:nth-child(1) { background: var(--k-function); } .brand-mark span:nth-child(2) { background: var(--k-branch); }
+.brand-mark span:nth-child(3) { background: var(--k-loop); } .brand-mark span:nth-child(4) { background: var(--k-return); }
+.brand h1 { font: 800 1.35rem/1 var(--display); margin: 0; letter-spacing: -.02em; }
+.brand small { color: var(--muted); display: block; font-size: .8rem; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  border: 1px solid var(--line); background: var(--panel-2); padding: 8px 12px; border-radius: 10px;
+  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+}
+.btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.btn.primary { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--k-raise))); color: #1b1404; border: 0; font-weight: 700; }
+.btn.ghost { background: transparent; }
+.btn.small { padding: 4px 8px; font-size: .85rem; border-radius: 8px; }
+select.btn { padding-right: 28px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .9rem; }
+
+main.layout { display: grid; grid-template-columns: 290px minmax(0, 1fr) minmax(0, 0.9fr); gap: 16px; padding: 16px 20px 40px; max-width: 1600px; margin: 0 auto; }
+.panel { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line-soft); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+.panel > h2, .panel-head { font: 800 1rem/1.2 var(--display); letter-spacing: .01em; margin: 0; padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.panel-body { padding: 0 16px 16px; }
+.eyebrow { font: 600 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 14px 0 8px; }
+
+/* Project tree */
+.files { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.file { border: 1px solid var(--line-soft); border-radius: 10px; padding: 8px; background: var(--panel-2); }
+.file-row { display: flex; gap: 6px; align-items: center; }
+.file-row input { flex: 1; min-width: 0; background: transparent; border: 1px dashed transparent; border-radius: 6px; padding: 2px 4px; font: 600 .9rem var(--mono); }
+.file-row input:hover, .file-row input:focus { border-color: var(--line); }
+.folder-tag { font: .7rem var(--mono); color: var(--muted); }
+.fn-list { list-style: none; padding: 4px 0 0 10px; margin: 0; display: grid; gap: 4px; }
+.fn-btn { width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 8px; font: .88rem var(--mono); color: var(--muted); }
+.fn-btn[aria-current="true"] { border-color: var(--k-function); color: var(--text); background: color-mix(in srgb, var(--k-function) 12%, transparent); }
+.palette { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pal { border: 1px solid var(--line-soft); background: var(--panel-2); border-left: 5px solid var(--c); border-radius: 10px; padding: 7px 8px; text-align: left; font-size: .86rem; line-height: 1.2; }
+.pal b { display: block; font-family: var(--display); font-size: .92rem; }
+.pal span { color: var(--muted); font-size: .74rem; }
+.pal:hover { transform: translateY(-1px); border-color: var(--c); }
+.target-note { font-size: .8rem; color: var(--muted); margin: 6px 0 0; }
+
+/* Builder */
+.sig { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; background: var(--panel-2); border: 1px solid var(--line-soft); border-left: 6px solid var(--k-function); border-radius: 12px; padding: 12px; }
+.sig label { font: 600 .78rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.field { width: 100%; background: var(--ink-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: .9rem var(--mono); }
+.field.bad { border-color: var(--bad); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 25%, transparent); }
+textarea.field { min-height: 52px; resize: vertical; font-family: var(--body); }
+.tree { margin-top: 12px; }
+.slot { position: relative; display: grid; gap: 8px; padding: 8px 0 4px 18px; border-left: 2px dashed var(--line); margin-left: 8px; }
+.slot.root { border-left: 0; padding-left: 0; margin-left: 0; }
+.slot.is-target { border-left-color: var(--focus); }
+.slot.is-target::before { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: var(--focus); box-shadow: 0 0 12px var(--focus); animation: glow 1.6s ease-in-out infinite; }
+.slot.root.is-target::before { display: none; }
+@keyframes glow { 50% { opacity: .35; } }
+.slot-label { font: 700 .74rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin: 2px 0 -2px; }
+.block { background: var(--panel-2); border: 1px solid var(--line-soft); border-left: 6px solid var(--c); border-radius: 12px; padding: 8px 10px; animation: snap .28s cubic-bezier(.2, 1.4, .4, 1); }
+.block.flash { animation: snap .28s cubic-bezier(.2, 1.4, .4, 1), pulse .9s ease; }
+@keyframes snap { from { transform: translateY(-8px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pulse { 30% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 45%, transparent); } }
+.block-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.chip { font: 800 .8rem var(--display); color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.block-head .field { flex: 1 1 140px; width: auto; }
+.inline-word { font: .85rem var(--mono); color: var(--muted); }
+.tools { display: flex; gap: 2px; margin-left: auto; }
+.tools button { background: transparent; border: 1px solid transparent; border-radius: 6px; width: 28px; height: 28px; color: var(--muted); }
+.tools button:hover { border-color: var(--line); color: var(--text); }
+.add-here { justify-self: start; background: transparent; border: 1px dashed var(--line); border-radius: 999px; padding: 3px 12px; color: var(--muted); font-size: .85rem; transition: all .15s ease; }
+.add-here:hover, .slot.is-target > .add-here { border-color: var(--focus); color: var(--text); }
+.addmenu { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--ink-2); animation: snap .2s ease; }
+.addmenu button { border: 1px solid var(--line-soft); border-left: 4px solid var(--c); background: var(--panel-2); border-radius: 8px; padding: 4px 8px; font-size: .85rem; }
+.empty-hint { color: var(--muted); font-size: .9rem; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; text-align: center; }
+
+/* Right column */
+.tabs { display: flex; gap: 4px; padding: 10px 12px 0; flex-wrap: wrap; }
+.tab { background: transparent; border: 1px solid transparent; border-bottom: 0; border-radius: 10px 10px 0 0; padding: 8px 12px; color: var(--muted); font-weight: 700; }
+.tab[aria-selected="true"] { background: var(--panel-2); border-color: var(--line-soft); color: var(--text); }
+.tabpanel { border-top: 1px solid var(--line-soft); padding: 14px 16px 16px; }
+.tabpanel[hidden] { display: none; }
+pre.code { margin: 0; background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 12px; padding: 14px; overflow: auto; font: .86rem/1.55 var(--mono); max-height: 62vh; white-space: pre; }
+.tok-kw { color: var(--k-branch); font-weight: 600; } .tok-str { color: var(--k-return); } .tok-num { color: var(--k-assign); }
+.tok-com { color: var(--muted); font-style: italic; } .tok-fn { color: var(--k-function); } .tok-todo { color: var(--k-hole); font-weight: 600; }
+.code-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 0; }
+.lesson-card { border: 1px solid var(--line-soft); border-radius: 12px; background: var(--panel-2); padding: 12px 14px; }
+.lesson-card h3 { font: 800 1.1rem var(--display); margin: 0 0 4px; }
+.pill { display: inline-block; font: .72rem var(--mono); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); margin-right: 4px; }
+ol.steps { padding-left: 0; list-style: none; counter-reset: step; display: grid; gap: 8px; margin: 12px 0; }
+ol.steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; gap: 8px; }
+ol.steps li::before { content: counter(step); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--accent-2) 22%, transparent); color: var(--accent-2); font: 800 .85rem var(--display); }
+ol.steps b { display: block; }
+.result { border-radius: 12px; padding: 12px 14px; margin-top: 10px; border: 1px solid var(--line); }
+.result.ok { border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); animation: stamp .45s cubic-bezier(.2, 1.6, .4, 1); }
+.result.no { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, transparent); }
+@keyframes stamp { from { transform: scale(1.06) rotate(-1deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.tips { display: grid; gap: 8px; }
+.tip { border: 1px solid var(--line-soft); border-left: 5px solid var(--c, var(--accent-2)); border-radius: 10px; padding: 10px 12px; background: var(--panel-2); animation: slide .3s ease; }
+@keyframes slide { from { transform: translateX(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+.tip b { display: block; font-family: var(--display); }
+.tip p { margin: 4px 0 0; color: var(--muted); font-size: .92rem; }
+details.guide { border: 1px solid var(--line-soft); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); margin-top: 8px; }
+details.guide summary { cursor: pointer; font-weight: 700; }
+details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
+.preset-list { display: grid; gap: 8px; }
+.preset { border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px; background: var(--panel-2); }
+.preset b { font-family: var(--display); }
+.preset p { margin: 4px 0 8px; color: var(--muted); font-size: .9rem; }
+.preset .params { display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center; font: .8rem var(--mono); margin-bottom: 8px; }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; box-shadow: var(--shadow); z-index: 50; animation: snap .25s ease; max-width: calc(100vw - 32px); }
+.mobile-nav { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@media (max-width: 1180px) {
+  main.layout { grid-template-columns: 260px minmax(0, 1fr); }
+  #side-right { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  header.top { padding: 10px 16px; position: static; }
+  .brand small { display: none; }
+  main.layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px 90px; gap: 12px; }
+  main.layout > .panel { display: none; }
+  main.layout > .panel.show { display: block; }
+  .mobile-nav { display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .mobile-nav button { background: transparent; border: 0; padding: 12px 4px; font-weight: 700; color: var(--muted); }
+  .mobile-nav button[aria-current="true"] { color: var(--text); box-shadow: inset 0 3px 0 var(--accent); }
+  .sig { grid-template-columns: 1fr; }
+  .palette { grid-template-columns: 1fr 1fr; }
+  pre.code { max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div><h1>Blockwise Studio</h1><small>Build Python from blocks. See the real code as you go.</small></div>
+  </div>
+  <div class="top-actions">
+    <label class="sr-only" for="lessonPick">Lesson</label>
+    <select id="lessonPick" class="btn"></select>
+    <label class="sr-only" for="modePick">Start mode</label>
+    <select id="modePick" class="btn" title="How the lesson starts">
+      <option value="guided">Guided (pre-filled)</option>
+      <option value="blank">Blank (signatures only)</option>
+    </select>
+    <button class="btn" id="startLesson">Start</button>
+    <button class="btn primary" id="checkWork">Check my work</button>
+    <label class="toggle" title="Optional extra: hear each block kind as a note"><input type="checkbox" id="soundToggle"> Sound</label>
+    <button class="btn ghost small" id="themeToggle" aria-label="Switch light or dark theme">◐</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel show" id="side-left" aria-label="Project and blocks">
+    <h2>Project <span><button class="btn small" id="addFile">+ File</button></span></h2>
+    <div class="panel-body">
+      <ul class="files" id="files"></ul>
+      <p class="eyebrow">Blocks</p>
+      <div class="palette" id="palette"></div>
+      <p class="target-note" id="targetNote"></p>
+    </div>
+  </section>
+
+  <section class="panel show" id="side-mid" aria-label="Builder">
+    <div class="panel-head"><span id="fnTitle">Function</span>
+      <span><button class="btn small" id="playFn" title="Optional: play this function's block notes" hidden>▶ Play</button></span></div>
+    <div class="panel-body" id="builder"></div>
+  </section>
+
+  <section class="panel show" id="side-right" aria-label="Code and guide">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="code">Python</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="lesson">Lesson</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="advice">Advisor</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="presets">Presets</button>
+    </div>
+    <div class="tabpanel" data-panel="code">
+      <pre class="code" id="code" aria-live="polite"></pre>
+      <div class="code-actions">
+        <button class="btn small" id="copyCode">Copy file</button>
+        <button class="btn small" id="downloadPy">Download .py</button>
+        <button class="btn small" id="downloadPlan">Download plan.json</button>
+        <button class="btn small" id="copyPlan">Copy plan.json</button>
+        <label class="btn small" for="openPlan">Open plan.json</label>
+        <input type="file" id="openPlan" accept=".json,application/json" hidden>
+      </div>
+      <p class="target-note">Build a whole project from the plan: <code>blockwise build plan.json --out my-project</code></p>
+    </div>
+    <div class="tabpanel" data-panel="lesson" hidden><div id="lessonPanel"></div></div>
+    <div class="tabpanel" data-panel="advice" hidden>
+      <div class="tips" id="tips"></div>
+      <details class="guide" open><summary>When do I make a new function?</summary>
+        <ul><li>You copy-pasted the same blocks twice: make one function and call it.</li>
+        <li>A block group has its own clear job ("check the input", "add up the cart").</li>
+        <li>Nesting goes deeper than 3 levels, or a function has more than about 10 blocks.</li></ul></details>
+      <details class="guide"><summary>When do I make a new file?</summary>
+        <ul><li>One file per topic: <code>checks.py</code>, <code>cart.py</code>, <code>users.py</code>.</li>
+        <li>A file has more than 5 functions, or mixes unrelated jobs.</li>
+        <li>Files talk to each other with imports: <code>from checks import require_positive</code>.</li></ul></details>
+      <details class="guide"><summary>When do I make a folder?</summary>
+        <ul><li>One folder per feature once you have 3 or more related files: <code>auth/users.py</code>, <code>auth/login.py</code>.</li>
+        <li>In Python a folder of modules is a package; add an empty <code>__init__.py</code> when you set it up on disk.</li>
+        <li>Name files and folders after what they do, in lowercase with underscores.</li></ul></details>
+    </div>
+    <div class="tabpanel" data-panel="presets" hidden>
+      <p class="target-note" style="margin-top:0">Tested building blocks. Insert one as a new function in the current file, then study or change it.</p>
+      <div class="preset-list" id="presetList"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="mobile-nav" aria-label="Sections">
+  <button data-show="side-left" aria-current="false">Project</button>
+  <button data-show="side-mid" aria-current="true">Build</button>
+  <button data-show="side-right" aria-current="false">Code &amp; Guide</button>
+</nav>
+
+<script src="lessons.js"></script>
+<script src="presets.js"></script>
+<script>
+"use strict";
+const KINDS = {
+  validate: { label: "Check", help: "Call a check function that raises an error on bad input.", fields: ["expression"], defaults: { expression: "require_positive(amount)" }, note: 62 },
+  branch: { label: "If / Else", help: "Run blocks only when a condition is true; optional else side.", fields: ["condition"], defaults: { condition: "x > 0" }, note: 64 },
+  loop: { label: "Repeat for each", help: "Run the inside blocks once for every item.", fields: ["target", "iterable"], defaults: { target: "item", iterable: "items" }, note: 65 },
+  assign: { label: "Set variable", help: "Store a value under a name.", fields: ["target", "expression"], defaults: { target: "total", expression: "0" }, note: 74 },
+  call: { label: "Call", help: "Run another function or method.", fields: ["expression"], defaults: { expression: "print(total)" }, note: 67 },
+  return: { label: "Return", help: "Give a value back and leave the function.", fields: ["expression"], defaults: { expression: "result" }, note: 71 },
+  raise: { label: "Raise error", help: "Stop with an error message.", fields: ["expression"], defaults: { expression: "ValueError('bad input')" }, note: 69 },
+  hole: { label: "TODO", help: "A placeholder: describe work to write later.", fields: ["label"], defaults: { label: "Describe the work" }, note: 72 },
+};
+const KEYWORDS = new Set("False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield".split(" "));
+const $ = (s, el = document) => el.querySelector(s);
+const clone = v => JSON.parse(JSON.stringify(v));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable: keep working in memory */ } },
+};
+
+const state = { plan: null, m: 0, f: 0, target: [], menu: null, lesson: null, sound: false, flash: null };
+
+/* ---------- plan helpers ---------- */
+function fn() { const mod = state.plan.modules[state.m]; return mod && mod.functions[state.f]; }
+function container(body, path) {
+  let list = body;
+  for (let i = 0; i < path.length; i += 2) list = list[path[i]][path[i + 1]];
+  return list;
+}
+function newNode(kind) {
+  const node = { kind, ...clone(KINDS[kind].defaults) };
+  if (kind === "branch") { node.body = []; node.otherwise = []; }
+  if (kind === "loop") node.body = [];
+  if (kind === "hole") node.allowed_calls = [];
+  return node;
+}
+function isIdent(s) { return /^[A-Za-z_][A-Za-z0-9_]*$/.test(s) && !KEYWORDS.has(s); }
+function balanced(s) {
+  const pairs = { ")": "(", "]": "[", "}": "{" }, stack = []; let quote = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (quote) { if (c === "\\") i++; else if (c === quote) quote = null; continue; }
+    if (c === "'" || c === '"') quote = c;
+    else if ("([{".includes(c)) stack.push(c);
+    else if (pairs[c]) { if (stack.pop() !== pairs[c]) return false; }
+  }
+  return !quote && !stack.length;
+}
+function fieldOk(field, value) {
+  if (field === "target" || field === "name") return isIdent(value);
+  if (field === "label") return value.trim().length > 0;
+  return value.trim().length > 0 && balanced(value) && !/[\n;]/.test(value);
+}
+function parseParams(text) {
+  return text.split(",").map(s => s.trim()).filter(Boolean).map(p => {
+    const [name, ...type] = p.split(":");
+    return { name: name.trim(), type: (type.join(":").trim() || "object") };
+  });
+}
+const paramsText = ps => ps.map(p => `${p.name}: ${p.type}`).join(", ");
+
+/* ---------- Python generation (mirrors the Python compiler's output) ---------- */
+const pyStr = s => "'" + String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'";
+function genBody(nodes, ind) {
+  if (!nodes.length) return [ind + "pass"];
+  const out = [];
+  for (const n of nodes) {
+    if (n.kind === "branch") {
+      out.push(`${ind}if ${n.condition}:`, ...genBody(n.body, ind + "    "));
+      let other = n.otherwise;
+      while (other.length === 1 && other[0].kind === "branch") {
+        out.push(`${ind}elif ${other[0].condition}:`, ...genBody(other[0].body, ind + "    "));
+        other = other[0].otherwise;
+      }
+      if (other.length) out.push(`${ind}else:`, ...genBody(other, ind + "    "));
+    } else if (n.kind === "loop") out.push(`${ind}for ${n.target} in ${n.iterable}:`, ...genBody(n.body, ind + "    "));
+    else if (n.kind === "assign") out.push(`${ind}${n.target} = ${n.expression}`);
+    else if (n.kind === "return") out.push(`${ind}return ${n.expression}`);
+    else if (n.kind === "raise") out.push(`${ind}raise ${n.expression}`);
+    else if (n.kind === "hole") out.push(`${ind}raise NotImplementedError(${pyStr("TODO:" + n.label)})`);
+    else out.push(`${ind}${n.expression}`);
+  }
+  return out;
+}
+function genModule(mod) {
+  const lines = [...mod.imports];
+  for (const f of mod.functions) {
+    if (lines.length) lines.push("", "");
+    lines.push(`def ${f.name}(${paramsText(f.parameters)}) -> ${f.returns || "None"}:`);
+    const reqs = (f.requirements || []).filter(r => r.trim());
+    if (reqs.length) lines.push(`    """Requirements:\n${reqs.join("\n")}"""`);
+    lines.push(...genBody(f.body, "    "));
+  }
+  return lines.join("\n") + "\n";
+}
+function highlight(code) {
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  return code.split("\n").map(line => {
+    const re = /(#.*$)|('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|\b(\d+(?:\.\d+)?)\b|\b([A-Za-z_]\w*)\b(?=\s*\()|\b([A-Za-z_]\w*)\b/g;
+    let out = "", last = 0, m;
+    while ((m = re.exec(line))) {
+      out += esc(line.slice(last, m.index));
+      const t = esc(m[0]);
+      if (m[1]) out += `<span class="tok-com">${t}</span>`;
+      else if (m[2]) out += `<span class="${m[2].includes("TODO:") ? "tok-todo" : "tok-str"}">${t}</span>`;
+      else if (m[3]) out += `<span class="tok-num">${t}</span>`;
+      else if (m[4]) out += KEYWORDS.has(m[4]) ? `<span class="tok-kw">${t}</span>` : `<span class="tok-fn">${t}</span>`;
+      else out += KEYWORDS.has(m[5]) ? `<span class="tok-kw">${t}</span>` : t;
+      last = m.index + m[0].length;
+    }
+    return out + esc(line.slice(last));
+  }).join("\n");
+}
+
+/* ---------- optional sound ---------- */
+let audio;
+function note(kind, when = 0) {
+  if (!state.sound) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const midi = kind === "function" ? 60 : KINDS[kind].note, t = audio.currentTime + 0.02 + when;
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = "triangle"; o.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.16, t + 0.01); g.gain.linearRampToValueAtTime(0, t + 0.24);
+    o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t + 0.26);
+  } catch (e) { toast("Sound unavailable: " + e.message); }
+}
+function flatten(nodes, out = []) { for (const n of nodes) { out.push(n.kind); if (n.body) flatten(n.body, out); if (n.otherwise) flatten(n.otherwise, out); } return out; }
+
+/* ---------- rendering ---------- */
+function render() {
+  renderFiles(); renderBuilder(); renderCode(); renderAdvice();
+  store.set("blockwise-plan", JSON.stringify(state.plan));
+}
+function renderFiles() {
+  const ul = $("#files"); ul.innerHTML = "";
+  state.plan.modules.forEach((mod, mi) => {
+    const li = document.createElement("li"); li.className = "file";
+    const folder = mod.path.includes("/") ? mod.path.split("/").slice(0, -1).join("/") + "/" : "";
+    li.innerHTML = `<div class="file-row"><input aria-label="File path" value="${mod.path}">
+      <button class="btn small" title="Add function to this file">+ fn</button>
+      <button class="btn small ghost" title="Delete file">✕</button></div>
+      ${folder ? `<div class="folder-tag">📁 in folder ${folder}</div>` : ""}
+      <ul class="fn-list"></ul>`;
+    const [pathInput, addFn, del] = li.querySelectorAll("input, button");
+    pathInput.addEventListener("change", () => {
+      const v = pathInput.value.trim();
+      if (!/^([A-Za-z_]\w*\/)*[A-Za-z_]\w*\.py$/.test(v)) { toast("Use a path like app/cart.py (letters, digits, underscores, .py)"); pathInput.value = mod.path; return; }
+      mod.path = v; render();
+    });
+    addFn.addEventListener("click", () => {
+      let n = 1; while (mod.functions.some(f => f.name === "new_function" + (n > 1 ? n : ""))) n++;
+      mod.functions.push({ name: "new_function" + (n > 1 ? n : ""), parameters: [], returns: "None", requirements: [], body: [] });
+      state.m = mi; state.f = mod.functions.length - 1; state.target = []; render();
+    });
+    del.addEventListener("click", () => {
+      if (state.plan.modules.length === 1) { toast("A project needs at least one file."); return; }
+      confirmClick(del, () => { state.plan.modules.splice(mi, 1); state.m = 0; state.f = 0; state.target = []; render(); toast(`Deleted ${mod.path}`); });
+    });
+    const fnList = li.querySelector(".fn-list");
+    mod.functions.forEach((f, fi) => {
+      const b = document.createElement("button"); b.className = "fn-btn";
+      b.textContent = `def ${f.name}()`; b.setAttribute("aria-current", String(mi === state.m && fi === state.f));
+      b.addEventListener("click", () => { state.m = mi; state.f = fi; state.target = []; state.menu = null; render(); showPanel("side-mid"); });
+      fnList.appendChild(Object.assign(document.createElement("li"), {})).appendChild(b);
+    });
+    ul.appendChild(li);
+  });
+  const t = fn();
+  $("#targetNote").textContent = t ? `Palette adds to: ${describeTarget()}` : "Add a function to start.";
+}
+function describeTarget() {
+  if (!state.target.length) return `${fn().name}() — main level`;
+  const parent = container(fn().body, state.target.slice(0, -2))[state.target[state.target.length - 2]];
+  const side = state.target[state.target.length - 1];
+  return `inside ${KINDS[parent.kind].label}${parent.kind === "branch" ? (side === "body" ? " (if side)" : " (else side)") : ""}`;
+}
+function renderPalette() {
+  const pal = $("#palette"); pal.innerHTML = "";
+  for (const [kind, k] of Object.entries(KINDS)) {
+    const b = document.createElement("button"); b.className = "pal"; b.style.setProperty("--c", `var(--k-${kind})`);
+    b.innerHTML = `<b>${k.label}</b><span>${k.help}</span>`;
+    b.addEventListener("click", () => addBlock(state.target, kind));
+    pal.appendChild(b);
+  }
+}
+function renderBuilder() {
+  const root = $("#builder"), f = fn(); root.innerHTML = "";
+  if (!f) { root.innerHTML = `<div class="empty-hint">This file has no functions yet. Use “+ fn” in the Project panel.</div>`; $("#fnTitle").textContent = "Function"; return; }
+  $("#fnTitle").textContent = `${state.plan.modules[state.m].path} › ${f.name}()`;
+  $("#playFn").hidden = !state.sound;
+  const sig = document.createElement("div"); sig.className = "sig";
+  sig.innerHTML = `<label for="fnName">def</label><input id="fnName" class="field" value="${attr(f.name)}">
+    <label for="fnParams">inputs</label><input id="fnParams" class="field" placeholder="amount: int, role: str" value="${attr(paramsText(f.parameters))}">
+    <label for="fnReturns">returns</label><input id="fnReturns" class="field" value="${attr(f.returns || "None")}">
+    <label for="fnReqs">notes</label><textarea id="fnReqs" class="field" placeholder="What should this function do? (becomes the docstring)">${esc((f.requirements || []).join("\n"))}</textarea>
+    <label for="fnImports">imports</label><textarea id="fnImports" class="field" placeholder="from checks import require_positive">${esc(state.plan.modules[state.m].imports.join("\n"))}</textarea>`;
+  root.appendChild(sig);
+  bindField($("#fnName", sig), v => isIdent(v), v => { f.name = v; });
+  bindField($("#fnParams", sig), v => !v.trim() || parseParams(v).every(p => isIdent(p.name)), v => { f.parameters = parseParams(v); });
+  bindField($("#fnReturns", sig), v => v.trim() && balanced(v), v => { f.returns = v.trim(); });
+  bindField($("#fnReqs", sig), () => true, v => { f.requirements = v.split("\n").filter(s => s.trim()); });
+  bindField($("#fnImports", sig), v => v.split("\n").every(l => !l.trim() || /^(from\s+[\w.]+\s+)?import\s+[\w.,\s]+$/.test(l.trim())),
+    v => { state.plan.modules[state.m].imports = v.split("\n").map(s => s.trim()).filter(Boolean); });
+  const tree = document.createElement("div"); tree.className = "tree";
+  tree.appendChild(renderSlot(f.body, [], "root"));
+  root.appendChild(tree);
+}
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const attr = s => esc(s).replace(/"/g, "&quot;");
+function bindField(input, ok, apply) {
+  input.addEventListener("input", () => {
+    const good = ok(input.value); input.classList.toggle("bad", !good);
+    input.title = good ? "" : "Check this field: names use letters, digits and _; brackets and quotes must match.";
+    if (good) { apply(input.value); renderCode(); renderAdvice(); renderFiles(); store.set("blockwise-plan", JSON.stringify(state.plan)); }
+  });
+}
+function renderSlot(list, path, variant, label) {
+  const slot = document.createElement("div");
+  slot.className = "slot" + (variant === "root" ? " root" : "") + (same(path, state.target) ? " is-target" : "");
+  if (label) slot.appendChild(Object.assign(document.createElement("div"), { className: "slot-label", textContent: label }));
+  if (variant === "root" && !list.length) slot.appendChild(Object.assign(document.createElement("div"), { className: "empty-hint", textContent: "Empty function. Add your first block below, or pick one from the Blocks palette." }));
+  list.forEach((node, i) => slot.appendChild(renderBlock(node, [...path, i], list, i)));
+  const add = document.createElement("button"); add.className = "add-here";
+  add.textContent = variant === "root" ? "+ add a block" : "+ add inside";
+  add.addEventListener("click", () => { state.target = path; state.menu = same(state.menu, path) ? null : path; renderBuilder(); renderFiles(); });
+  slot.appendChild(add);
+  if (same(state.menu, path)) {
+    const menu = document.createElement("div"); menu.className = "addmenu";
+    for (const [kind, k] of Object.entries(KINDS)) {
+      const b = document.createElement("button"); b.style.setProperty("--c", `var(--k-${kind})`); b.textContent = k.label;
+      b.addEventListener("click", () => addBlock(path, kind)); menu.appendChild(b);
+    }
+    slot.appendChild(menu);
+  }
+  return slot;
+}
+const same = (a, b) => !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]);
+function renderBlock(node, path, list, index) {
+  const k = KINDS[node.kind], el = document.createElement("div");
+  el.className = "block" + (same(state.flash, path) ? " flash" : ""); el.style.setProperty("--c", `var(--k-${node.kind})`);
+  const head = document.createElement("div"); head.className = "block-head";
+  head.innerHTML = `<span class="chip">${k.label}</span>`;
+  const words = { loop: ["for", "in"], assign: ["", "="] };
+  k.fields.forEach((field, i) => {
+    if (words[node.kind] && words[node.kind][i]) head.appendChild(Object.assign(document.createElement("span"), { className: "inline-word", textContent: words[node.kind][i] }));
+    const input = document.createElement("input"); input.className = "field"; input.value = node[field];
+    input.setAttribute("aria-label", `${k.label} ${field}`);
+    if (!fieldOk(field, node[field])) input.classList.add("bad");
+    bindField(input, v => fieldOk(field, v), v => { node[field] = field === "label" ? v : v.trim(); });
+    head.appendChild(input);
+  });
+  const tools = document.createElement("div"); tools.className = "tools";
+  for (const [sym, title, act] of [["↑", "Move up", -1], ["↓", "Move down", 1], ["✕", "Delete block", 0]]) {
+    const b = document.createElement("button"); b.textContent = sym; b.title = title; b.setAttribute("aria-label", title);
+    b.addEventListener("click", () => {
+      if (act === 0) { list.splice(index, 1); state.target = []; state.menu = null; }
+      else { const j = index + act; if (j < 0 || j >= list.length) return; [list[index], list[j]] = [list[j], list[index]]; }
+      render();
+    });
+    tools.appendChild(b);
+  }
+  head.appendChild(tools); el.appendChild(head);
+  if (node.kind === "branch") {
+    el.appendChild(renderSlot(node.body, [...path, "body"], "inner", "if true"));
+    el.appendChild(renderSlot(node.otherwise, [...path, "otherwise"], "inner", "else"));
+  } else if (node.kind === "loop") el.appendChild(renderSlot(node.body, [...path, "body"], "inner", "each time"));
+  return el;
+}
+function addBlock(path, kind) {
+  const f = fn(); if (!f) { toast("Add a function first."); return; }
+  let list; try { list = container(f.body, path); } catch { path = []; list = f.body; }
+  list.push(newNode(kind)); state.flash = [...path, list.length - 1]; state.target = path; state.menu = null;
+  note(kind); render(); state.flash = null;
+}
+function renderCode() { const mod = state.plan.modules[state.m]; $("#code").innerHTML = mod ? highlight(genModule(mod)) : ""; }
+
+/* ---------- structure advisor ---------- */
+function depth(nodes) { return nodes.reduce((d, n) => Math.max(d, 1 + Math.max(n.body ? depth(n.body) : 0, n.otherwise ? depth(n.otherwise) : 0)), 0); }
+function count(nodes) { return flatten(nodes).length; }
+function conditions(nodes, out = []) { for (const n of nodes) { if (n.kind === "branch") out.push(n.condition.replace(/\s+/g, "")); if (n.body) conditions(n.body, out); if (n.otherwise) conditions(n.otherwise, out); } return out; }
+function emptyBodies(nodes) { return nodes.some(n => (n.kind === "loop" && !n.body.length) || (n.kind === "branch" && !n.body.length && !n.otherwise.length) || (n.body && emptyBodies(n.body)) || (n.otherwise && emptyBodies(n.otherwise))); }
+function advise() {
+  const tips = [], mods = state.plan.modules, seen = {};
+  const tip = (kind, title, text) => tips.push({ kind, title, text });
+  for (const mod of mods) {
+    for (const f of mod.functions) {
+      if (depth(f.body) > 3) tip("loop", `${f.name}(): deep nesting (${depth(f.body)} levels)`, "Flatten it: handle the bad case first with an If + Raise/Return (a guard clause), or move the inner part into a helper function.");
+      if (count(f.body) > 10) tip("function", `${f.name}(): ${count(f.body)} blocks is a lot`, "Find a group of blocks with one clear job and turn it into its own function, then call it.");
+      if (f.returns && f.returns !== "None" && !flatten(f.body).includes("return")) tip("return", `${f.name}() promises ${f.returns} but never returns`, "Add a Return block so callers get a value back.");
+      if (emptyBodies(f.body)) tip("branch", `${f.name}() has an empty If or loop`, "An empty block does nothing. Add blocks inside it or delete it.");
+      const holes = flatten(f.body).filter(k => k === "hole").length;
+      if (holes) tip("hole", `${f.name}(): ${holes} TODO left`, "Replace each TODO with real blocks before you finish.");
+      for (const c of new Set(conditions(f.body))) (seen[c] = seen[c] || new Set()).add(f.name);
+    }
+    if (mod.functions.length > 5) tip("call", `${mod.path} has ${mod.functions.length} functions`, "Split it: one file per topic. Move related functions into a new file and import them.");
+    const checks = mod.functions.filter(f => /^(require|check|validate|ensure)_/.test(f.name)).length;
+    if (checks >= 2 && mod.functions.length - checks >= 2) tip("validate", `${mod.path} mixes checks and main logic`, "Move the require_/check_ functions into checks.py and import them where needed.");
+  }
+  for (const [c, names] of Object.entries(seen)) if (names.size > 1) tip("assign", `Same condition in ${[...names].join(", ")}`, `"${c}" appears in more than one function. Make it a small check function and call it.`);
+  const rootFiles = mods.filter(m => !m.path.includes("/")).length;
+  if (rootFiles >= 4) tip("raise", `${rootFiles} files at the top level`, "Group related files into a folder (a package), e.g. shop/cart.py and shop/pricing.py.");
+  return tips;
+}
+function renderAdvice() {
+  const tips = advise(), box = $("#tips");
+  box.innerHTML = tips.length ? "" : `<div class="tip" style="--c: var(--good)"><b>Structure looks tidy</b><p>No advice right now. Tips appear here as your project grows.</p></div>`;
+  for (const t of tips) {
+    const d = document.createElement("div"); d.className = "tip"; d.style.setProperty("--c", `var(--k-${t.kind})`);
+    d.innerHTML = `<b>${esc(t.title)}</b><p>${esc(t.text)}</p>`; box.appendChild(d);
+  }
+  $('[data-tab="advice"]').textContent = tips.length ? `Advisor (${tips.length})` : "Advisor";
+}
+
+/* ---------- lessons ---------- */
+const LESSONS = window.BLOCKWISE_LESSONS || [];
+function lessonPlan(lesson, mode) {
+  if (mode === "guided") return clone(lesson.starter);
+  const plan = clone(lesson.solution);
+  for (const m of plan.modules) for (const f of m.functions) f.body = [];
+  return plan;
+}
+function startLesson(id, mode) {
+  const lesson = LESSONS.find(l => l.id === id); if (!lesson) return;
+  state.lesson = lesson; state.plan = normalize(lessonPlan(lesson, mode)); state.m = 0; state.f = 0; state.target = []; state.menu = null;
+  store.set("blockwise-lesson", id); render(); renderLesson(); selectTab("lesson");
+}
+function renderLesson(result) {
+  const l = state.lesson, p = $("#lessonPanel");
+  if (!l) { p.innerHTML = `<div class="lesson-card"><h3>Free build</h3><p>Pick a lesson at the top, or build anything you like. The Python tab always shows your real code.</p></div>`; return; }
+  p.innerHTML = `<div class="lesson-card"><h3>${esc(l.title)}</h3>
+    <span class="pill">${esc(l.level)}</span><span class="pill">${l.minutes} min</span>${l.concepts.map(c => `<span class="pill">${esc(c)}</span>`).join("")}
+    <p><b>Goal:</b> ${esc(l.goal)}</p></div>
+    <ol class="steps">${l.steps.map(s => `<li><div><b>${esc(s.title)}</b>${esc(s.text)}</div></li>`).join("")}</ol>
+    <div id="resultBox"></div>
+    <div class="code-actions"><button class="btn small" id="showAnswer">Show the answer</button><button class="btn small ghost" id="resetLesson">Restart lesson</button></div>`;
+  if (result) $("#resultBox").appendChild(result);
+  $("#showAnswer").addEventListener("click", e => confirmClick(e.currentTarget, () => { state.plan = normalize(clone(l.solution)); render(); toast("Answer loaded. Compare it with the Python tab."); }));
+  $("#resetLesson").addEventListener("click", () => startLesson(l.id, $("#modePick").value));
+}
+const norm = s => String(s).replace(/\s+/g, "").replace(/"/g, "'");
+function compareBody(want, got, where) {
+  for (let i = 0; i < Math.max(want.length, got.length); i++) {
+    const w = want[i], g = got[i], spot = `${where}, block ${i + 1}`;
+    if (!g) return `${spot}: something is missing here — expected a ${KINDS[w.kind].label} block.`;
+    if (!w) return `${spot}: there is an extra ${KINDS[g.kind].label} block that the lesson does not need.`;
+    if (w.kind !== g.kind) return `${spot}: expected a ${KINDS[w.kind].label} block, found ${KINDS[g.kind].label}.`;
+    for (const field of KINDS[w.kind].fields) if (w.kind !== "hole" && norm(w[field]) !== norm(g[field])) return `${spot}: the ${KINDS[w.kind].label} ${field === "expression" ? "value" : field} is not right yet. Re-read the lesson step that mentions it.`;
+    for (const side of ["body", "otherwise"]) if (w[side]) {
+      const msg = compareBody(w[side], g[side] || [], `${spot} › ${side === "body" ? (w.kind === "loop" ? "inside the loop" : "if side") : "else side"}`);
+      if (msg) return msg;
+    }
+  }
+  return null;
+}
+function checkWork() {
+  const l = state.lesson;
+  const box = document.createElement("div"); box.className = "result";
+  if (!l) { box.className += " no"; box.textContent = "Start a lesson first to check your work."; renderLesson(box); selectTab("lesson"); return; }
+  let problem = null;
+  for (const wm of l.solution.modules) {
+    const gm = state.plan.modules.find(m => m.path === wm.path);
+    if (!gm) { problem = `File ${wm.path} is missing.`; break; }
+    if (norm(wm.imports.join("|")) !== norm(gm.imports.join("|"))) { problem = `${wm.path}: the imports are not right yet.`; break; }
+    for (const wf of wm.functions) {
+      const gf = gm.functions.find(f => f.name === wf.name);
+      if (!gf) { problem = `${wm.path}: function ${wf.name}() is missing.`; break; }
+      if (norm(paramsText(wf.parameters)) !== norm(paramsText(gf.parameters))) { problem = `${wf.name}(): the inputs should be (${paramsText(wf.parameters)}).`; break; }
+      problem = compareBody(wf.body, gf.body, `${wf.name}()`);
+      if (problem) break;
+    }
+    if (problem) break;
+  }
+  if (problem) { box.className += " no"; box.innerHTML = `<b>Not yet.</b> ${esc(problem)}`; }
+  else {
+    box.className += " ok"; box.innerHTML = `<b>✓ Correct!</b> ${esc(l.explain)}`;
+    const done = new Set(JSON.parse(store.get("blockwise-done") || "[]")); done.add(l.id); store.set("blockwise-done", JSON.stringify([...done]));
+    fillLessonPick();
+    if (state.sound) ["function", "return", "branch", "loop"].forEach((k, i) => note(k, i * 0.12));
+  }
+  renderLesson(box); selectTab("lesson"); showPanel("side-right");
+}
+function fillLessonPick() {
+  const done = new Set(JSON.parse(store.get("blockwise-done") || "[]")), pick = $("#lessonPick"), cur = pick.value;
+  pick.innerHTML = `<option value="">Free build</option>` + LESSONS.map(l => `<option value="${l.id}">${done.has(l.id) ? "✓ " : ""}${esc(l.title)}</option>`).join("");
+  pick.value = cur || (state.lesson ? state.lesson.id : "");
+}
+
+/* ---------- presets ---------- */
+function renderValue(spec, value) {
+  if (spec.kind === "string") return pyStr(value);
+  if (spec.kind === "string_list") { const items = (Array.isArray(value) ? value : String(value).split(",")).map(s => s.trim()).filter(Boolean); return "(" + items.map(pyStr).join(", ") + (items.length === 1 ? ",)" : ")"); }
+  return String(value);
+}
+function substitute(node, values) {
+  if (typeof node === "string") return node.replace(/\{\{(\w+)\}\}/g, (_, k) => values[k]);
+  if (Array.isArray(node)) return node.map(n => substitute(n, values));
+  if (node && typeof node === "object") return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, substitute(v, values)]));
+  return node;
+}
+function renderPresets() {
+  const list = $("#presetList"), presets = window.BLOCKWISE_PRESETS || [];
+  if (!presets.length) { list.innerHTML = `<div class="empty-hint">presets.js not found. Run: blockwise export-presets --out studio/presets.js</div>`; return; }
+  list.innerHTML = "";
+  for (const p of presets) {
+    const card = document.createElement("div"); card.className = "preset";
+    card.innerHTML = `<b>${esc(p.title)}</b> <span class="pill">${esc(p.category)}</span><p>${esc(p.summary)}</p><div class="params"></div><button class="btn small">Insert into current file</button>`;
+    const params = card.querySelector(".params"), inputs = {};
+    for (const [name, spec] of Object.entries(p.params)) {
+      const id = `p-${p.id}-${name}`;
+      params.insertAdjacentHTML("beforeend", `<label for="${id}">${name}</label><input class="field" id="${id}" value="${attr(Array.isArray(spec.default) ? spec.default.join(", ") : spec.default)}">`);
+      inputs[name] = () => $("#" + id, card).value;
+    }
+    card.querySelector("button").addEventListener("click", () => {
+      const mod = state.plan.modules[state.m], values = {};
+      for (const [name, spec] of Object.entries(p.params)) {
+        const v = inputs[name]().trim();
+        if (spec.kind === "identifier" && !isIdent(v)) { toast(`${name}: use a simple name like amount`); return; }
+        if (spec.kind === "module" && !v.split(".").every(isIdent)) { toast(`${name}: use a module path like shop.checks`); return; }
+        if (spec.kind === "number" && !/^-?\d+(\.\d+)?$/.test(v)) { toast(`${name}: use a number`); return; }
+        if (spec.kind === "text" && (!v || v.includes("{{"))) { toast(`${name}: write a short description`); return; }
+        if (["expression", "annotation"].includes(spec.kind) && !(v && balanced(v))) { toast(`${name}: check brackets and quotes`); return; }
+        values[name] = renderValue(spec, v);
+      }
+      const f = substitute(p.function, values);
+      if (mod.functions.some(x => x.name === f.name)) { toast(`${mod.path} already has ${f.name}(); change the function name.`); return; }
+      f.requirements = [p.summary]; f.body = normNodes(f.body); mod.functions.push(f);
+      for (const line of substitute(p.imports || [], values)) if (!mod.imports.includes(line)) mod.imports.push(line); state.f = mod.functions.length - 1; state.target = [];
+      toast(`Added ${f.name}() to ${mod.path}`); note("function"); render(); showPanel("side-mid");
+    });
+    list.appendChild(card);
+  }
+}
+
+/* ---------- UI wiring ---------- */
+function selectTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
+  document.querySelectorAll(".tabpanel").forEach(p => { p.hidden = p.dataset.panel !== name; });
+}
+function showPanel(id) {
+  if (!window.matchMedia("(max-width: 760px)").matches) return;
+  document.querySelectorAll("main.layout > .panel").forEach(p => p.classList.toggle("show", p.id === id));
+  document.querySelectorAll(".mobile-nav button").forEach(b => b.setAttribute("aria-current", String(b.dataset.show === id)));
+}
+// Two-step confirm inside the page: the first click arms the button, the second acts.
+function confirmClick(button, action) {
+  if (button.dataset.armed === "1") { action(); return; }
+  const label = button.textContent; button.dataset.armed = "1"; button.textContent = "Click again to confirm";
+  setTimeout(() => { button.dataset.armed = ""; if (button.isConnected) button.textContent = label; }, 3000);
+}
+function toast(msg) {
+  const t = Object.assign(document.createElement("div"), { className: "toast", textContent: msg, role: "status" });
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type })), a = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function validPlan(p) {
+  return p && Array.isArray(p.modules) && p.modules.length && p.modules.every(m => typeof m.path === "string" && Array.isArray(m.functions)
+    && m.functions.every(f => isIdent(f.name) && Array.isArray(f.parameters) && Array.isArray(f.body)));
+}
+// Plans from files, presets or Sonic may omit empty lists; fill them so every block renders.
+function normNodes(nodes) {
+  for (const n of nodes) {
+    if (n.kind === "branch") { n.body = normNodes(n.body || []); n.otherwise = normNodes(n.otherwise || []); }
+    if (n.kind === "loop") n.body = normNodes(n.body || []);
+    if (n.kind === "hole") n.allowed_calls = n.allowed_calls || [];
+  }
+  return nodes;
+}
+function normalize(p) {
+  p.format = "blockwise-plan-v1";
+  for (const m of p.modules) {
+    m.imports = m.imports || [];
+    for (const f of m.functions) { f.returns = f.returns || "None"; f.requirements = f.requirements || []; f.body = normNodes(f.body); }
+  }
+  return p;
+}
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => selectTab(t.dataset.tab)));
+document.querySelectorAll(".mobile-nav button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("main.layout > .panel").forEach(p => p.classList.toggle("show", p.id === b.dataset.show));
+  document.querySelectorAll(".mobile-nav button").forEach(x => x.setAttribute("aria-current", String(x === b)));
+}));
+$("#startLesson").addEventListener("click", () => {
+  const id = $("#lessonPick").value;
+  if (!id) { state.lesson = null; renderLesson(); selectTab("lesson"); return; }
+  startLesson(id, $("#modePick").value);
+});
+$("#checkWork").addEventListener("click", checkWork);
+$("#soundToggle").addEventListener("change", e => { state.sound = e.target.checked; $("#playFn").hidden = !state.sound; if (state.sound) note("function"); });
+$("#playFn").addEventListener("click", () => { const f = fn(); if (f) ["function", ...flatten(f.body)].forEach((k, i) => note(k, i * 0.3)); });
+$("#addFile").addEventListener("click", () => {
+  let n = 1; while (state.plan.modules.some(m => m.path === `module${n}.py`)) n++;
+  state.plan.modules.push({ path: `module${n}.py`, imports: [], functions: [{ name: "new_function", parameters: [], returns: "None", requirements: [], body: [] }] });
+  state.m = state.plan.modules.length - 1; state.f = 0; state.target = []; render();
+});
+$("#copyCode").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(genModule(state.plan.modules[state.m])); toast("Copied!"); }
+  catch { toast("Copy is blocked here — use Download .py instead."); }
+});
+$("#downloadPy").addEventListener("click", () => { const m = state.plan.modules[state.m]; download(m.path.split("/").pop(), genModule(m), "text/x-python"); });
+$("#copyPlan").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(JSON.stringify(state.plan, null, 2)); toast("plan.json copied. Save it as plan.json, then run blockwise build."); }
+  catch { toast("Copy is blocked here. Use Download plan.json instead."); }
+});
+$("#downloadPlan").addEventListener("click", () => download("plan.json", JSON.stringify(state.plan, null, 2) + "\n", "application/json"));
+$("#openPlan").addEventListener("change", async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const p = JSON.parse(await file.text());
+    if (!validPlan(p)) throw new Error("not a Blockwise or Sonic plan");
+    state.plan = normalize(p); state.lesson = null; state.m = 0; state.f = 0; state.target = []; render(); renderLesson(); toast(`Opened ${file.name}`);
+  } catch (err) { toast(`Could not open: ${err.message}`); }
+  e.target.value = "";
+});
+$("#themeToggle").addEventListener("click", () => {
+  const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
+  document.documentElement.dataset.theme = dark ? "light" : "dark"; store.set("blockwise-theme", document.documentElement.dataset.theme);
+});
+
+/* ---------- start ---------- */
+(function init() {
+  const theme = store.get("blockwise-theme"); if (theme) document.documentElement.dataset.theme = theme;
+  if (window.BLOCKWISE_EMBEDDED) document.querySelectorAll("#downloadPy, #downloadPlan").forEach(b => { b.hidden = true; });
+  renderPalette(); renderPresets();
+  let saved = null; try { saved = JSON.parse(store.get("blockwise-plan") || "null"); } catch { saved = null; }
+  const lessonId = store.get("blockwise-lesson");
+  state.lesson = LESSONS.find(l => l.id === lessonId) || null;
+  if (validPlan(saved)) state.plan = normalize(saved);
+  else if (LESSONS.length) { state.lesson = LESSONS[0]; state.plan = normalize(lessonPlan(LESSONS[0], "guided")); }
+  else state.plan = normalize({ modules: [{ path: "main.py", functions: [{ name: "main", parameters: [], body: [] }] }] });
+  fillLessonPick(); render(); renderLesson();
+  if (window.matchMedia("(max-width: 760px)").matches) showPanel("side-mid");
+})();
+</script>
+</body>
+</html>
