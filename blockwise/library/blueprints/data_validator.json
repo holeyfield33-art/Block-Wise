@@ -1,0 +1,69 @@
+{
+  "id": "data_validator",
+  "title": "Check a CSV of people for bad data",
+  "category": "blueprint",
+  "summary": "A runnable data checker: reads a CSV with name, email and age columns and reports every missing value, invalid email and impossible age, by line number. Exit code 1 when anything is wrong.",
+  "params": {
+    "file": {"kind": "identifier", "default": "validate"}
+  },
+  "try": "python {path} people.csv",
+  "plan": {
+    "modules": [{
+      "path": "{{file}}.py",
+      "imports": ["import csv", "import sys"],
+      "constants": [{"name": "REQUIRED", "value": "('name', 'email', 'age')"}],
+      "functions": [
+        {"name": "read_rows", "parameters": [{"name": "path", "type": "str"}], "returns": "list", "body": [
+          {"kind": "with", "context": "open(path, newline='', encoding='utf-8')", "alias": "handle", "body": [
+            {"kind": "return", "expression": "list(csv.DictReader(handle))"}]}]},
+        {"name": "looks_like_email", "parameters": [{"name": "text", "type": "str"}], "returns": "bool",
+         "requirements": ["A quick shape check, not a full standard: one @, something before it, a dot after it."], "body": [
+          {"kind": "return", "expression": "text.count('@') == 1 and (not text.startswith('@')) and ('.' in text.split('@')[1])"}]},
+        {"name": "row_problems", "parameters": [{"name": "row", "type": "dict"}], "returns": "list", "body": [
+          {"kind": "assign", "target": "problems", "expression": "[f'{column} is missing' for column in REQUIRED if not (row.get(column) or '').strip()]"},
+          {"kind": "assign", "target": "email", "expression": "(row.get('email') or '').strip()"},
+          {"kind": "branch", "condition": "email and (not looks_like_email(email))", "body": [
+            {"kind": "call", "expression": "problems.append(f'email {email!r} is not valid')"}]},
+          {"kind": "assign", "target": "age", "expression": "(row.get('age') or '').strip()"},
+          {"kind": "branch", "condition": "age and (not (age.isdigit() and 0 < int(age) < 130))", "body": [
+            {"kind": "call", "expression": "problems.append(f'age {age!r} must be a whole number from 1 to 129')"}]},
+          {"kind": "return", "expression": "problems"}]},
+        {"name": "check_rows", "parameters": [{"name": "rows", "type": "list"}], "returns": "list",
+         "requirements": ["Line numbers match the file: the header is line 1."], "body": [
+          {"kind": "assign", "target": "report", "expression": "[]"},
+          {"kind": "assign", "target": "line", "expression": "1"},
+          {"kind": "loop", "target": "row", "iterable": "rows", "body": [
+            {"kind": "assign", "target": "line", "operator": "+=", "expression": "1"},
+            {"kind": "call", "expression": "report.extend([f'line {line}: {problem}' for problem in row_problems(row)])"}]},
+          {"kind": "return", "expression": "report"}]},
+        {"name": "main", "parameters": [{"name": "args", "type": "list"}], "returns": "int", "body": [
+          {"kind": "branch", "condition": "len(args) != 1", "body": [
+            {"kind": "call", "expression": "print('usage: {{file}}.py FILE.csv')"},
+            {"kind": "return", "expression": "2"}]},
+          {"kind": "try", "exception": "OSError", "body": [
+            {"kind": "assign", "target": "rows", "expression": "read_rows(args[0])"}],
+           "handler": [
+            {"kind": "call", "expression": "print(f'error: cannot read {args[0]}')"},
+            {"kind": "return", "expression": "1"}]},
+          {"kind": "assign", "target": "missing", "expression": "[column for column in REQUIRED if rows and column not in rows[0]]"},
+          {"kind": "branch", "condition": "missing", "body": [
+            {"kind": "call", "expression": "print('error: missing columns: ' + ', '.join(missing))"},
+            {"kind": "return", "expression": "1"}]},
+          {"kind": "assign", "target": "report", "expression": "check_rows(rows)"},
+          {"kind": "call", "expression": "print('\\n'.join(report + [f'{len(rows)} row(s) checked, {len(report)} problem(s)']))"},
+          {"kind": "return", "expression": "1 if report else 0"}]}
+      ],
+      "entry": [{"kind": "call", "expression": "sys.exit(main(sys.argv[1:]))"}]
+    }]
+  },
+  "examples": [
+    {"files": {"people.csv": "name,email,age\nAna,ana@example.com,34\nBo,bo-at-example.com,41\n,cy@example.com,abc\nDee,dee@example,200\n"},
+     "argv": ["people.csv"],
+     "stdout": "line 3: email 'bo-at-example.com' is not valid\nline 4: name is missing\nline 4: age 'abc' must be a whole number from 1 to 129\nline 5: email 'dee@example' is not valid\nline 5: age '200' must be a whole number from 1 to 129\n4 row(s) checked, 5 problem(s)\n",
+     "exit": 1},
+    {"files": {"clean.csv": "name,email,age\nAna,ana@example.com,34\n"}, "argv": ["clean.csv"], "stdout": "1 row(s) checked, 0 problem(s)\n", "exit": 0},
+    {"files": {"partial.csv": "name,email\nAna,ana@example.com\n"}, "argv": ["partial.csv"], "stdout": "error: missing columns: age\n", "exit": 1},
+    {"argv": ["nope.csv"], "stdout": "error: cannot read nope.csv\n", "exit": 1},
+    {"argv": [], "stdout": "usage: validate.py FILE.csv\n", "exit": 2}
+  ]
+}

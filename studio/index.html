@@ -1189,7 +1189,10 @@ const BUILTINS = new Set(("print len range int str float bool list dict set tupl
   + "chr ord bin hex oct callable vars dir super object frozenset bytes bytearray slice staticmethod classmethod property "
   + "Exception ValueError TypeError KeyError IndexError PermissionError NotImplementedError RuntimeError ZeroDivisionError "
   + "FileNotFoundError OSError AttributeError StopIteration LookupError ArithmeticError AssertionError LookupError NameError").split(" "));
-const stripStrings = s => String(s).replace(/(['"])(?:\\.|(?!\1).)*\1/g, "''");
+// Blank out string literals so names inside text don't count, but keep the {code} parts of f-strings:
+// f'Moved {apply_moves(moves)} files' really calls apply_moves.
+const stripStrings = s => String(s).replace(/(\b[rRbBuU]?[fF][rR]?|\b[rRbBuU]{1,2})?(['"])((?:\\.|(?!\2).)*)\2/g, (all, prefix, quote, body) =>
+  prefix && /f/i.test(prefix) ? ` ${(body.replace(/\{\{|\}\}/g, "").match(/\{[^{}]*\}/g) || []).map(code => code.slice(1, -1)).join(" ")} ` : "''");
 // Plain (undotted) names called in an expression: "require_positive(x)" -> ["require_positive"]; "items.append(x)" -> [].
 function callsIn(expr) {
   const out = [], re = /(^|[^\w.])([A-Za-z_]\w*)\s*\(/g, s = stripStrings(expr); let m;
@@ -1664,7 +1667,7 @@ function renderPresets() {
 function blueprintCard(p) {
   const card = document.createElement("div"); card.className = "preset";
   const preview = Object.entries(p.preview || {}).map(([path, src]) => `# --- ${path} ---\n${src}`).join("\n");
-  card.innerHTML = `<h3>${esc(p.title)}</h3><span class="pill">whole program</span><p>${esc(p.summary)}</p>
+  card.innerHTML = `<h3>${esc(p.title)}</h3><span class="pill">whole program</span><p>${esc(p.summary)}</p>${p.note ? `<p class="target-note">⚠ ${esc(p.note)}</p>` : ""}
     <details><summary>Preview the code</summary><pre>${highlight(preview)}</pre></details>
     <div class="params"></div><button class="btn small">Add as new files</button>`;
   const params = card.querySelector(".params"), inputs = {};

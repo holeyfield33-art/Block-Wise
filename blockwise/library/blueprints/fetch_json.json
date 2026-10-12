@@ -1,0 +1,311 @@
+{
+ "id": "fetch_json",
+ "title": "Fetch JSON from a web address",
+ "category": "blueprint",
+ "summary": "A runnable fetcher: downloads JSON from an http(s) URL and prints all of it, or one value picked by a dotted path like address.city or tags.0. Clear errors for bad URLs, failed requests and missing keys.",
+ "note": "Needs network access: run it on your computer. The Studio's in-browser Python can't open web connections.",
+ "params": {
+  "file": {
+   "kind": "identifier",
+   "default": "fetch_json"
+  },
+  "timeout": {
+   "kind": "number",
+   "default": 10
+  }
+ },
+ "try": "python {path} https://api.github.com/repos/python/cpython stargazers_count",
+ "plan": {
+  "modules": [
+   {
+    "path": "{{file}}.py",
+    "imports": [
+     "import json",
+     "import sys",
+     "import urllib.error",
+     "import urllib.request"
+    ],
+    "constants": [
+     {
+      "name": "TIMEOUT",
+      "value": "{{timeout}}"
+     }
+    ],
+    "functions": [
+     {
+      "name": "fetch",
+      "parameters": [
+       {
+        "name": "url",
+        "type": "str"
+       }
+      ],
+      "returns": "object",
+      "body": [
+       {
+        "kind": "branch",
+        "condition": "not url.startswith(('http://', 'https://'))",
+        "body": [
+         {
+          "kind": "raise",
+          "expression": "ValueError('only http:// and https:// URLs are allowed')"
+         }
+        ]
+       },
+       {
+        "kind": "with",
+        "context": "urllib.request.urlopen(url, timeout=TIMEOUT)",
+        "alias": "response",
+        "body": [
+         {
+          "kind": "return",
+          "expression": "json.load(response)"
+         }
+        ]
+       }
+      ],
+      "requirements": [
+       "Only http:// and https:// addresses: never local files."
+      ]
+     },
+     {
+      "name": "pick",
+      "parameters": [
+       {
+        "name": "data",
+        "type": "object"
+       },
+       {
+        "name": "path",
+        "type": "str"
+       }
+      ],
+      "returns": "object",
+      "requirements": [
+       "Dotted path: names pick dictionary keys, numbers pick list positions. An empty path returns everything."
+      ],
+      "body": [
+       {
+        "kind": "assign",
+        "target": "value",
+        "expression": "data"
+       },
+       {
+        "kind": "loop",
+        "target": "part",
+        "iterable": "[step for step in path.split('.') if step]",
+        "body": [
+         {
+          "kind": "branch",
+          "condition": "isinstance(value, list)",
+          "body": [
+           {
+            "kind": "assign",
+            "target": "value",
+            "expression": "value[int(part)]"
+           }
+          ],
+          "otherwise": [
+           {
+            "kind": "assign",
+            "target": "value",
+            "expression": "value[part]"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "kind": "return",
+        "expression": "value"
+       }
+      ]
+     },
+     {
+      "name": "show",
+      "parameters": [
+       {
+        "name": "value",
+        "type": "object"
+       }
+      ],
+      "returns": "str",
+      "body": [
+       {
+        "kind": "branch",
+        "condition": "isinstance(value, (dict, list))",
+        "body": [
+         {
+          "kind": "return",
+          "expression": "json.dumps(value, indent=2, sort_keys=True)"
+         }
+        ]
+       },
+       {
+        "kind": "return",
+        "expression": "str(value)"
+       }
+      ]
+     },
+     {
+      "name": "main",
+      "parameters": [
+       {
+        "name": "args",
+        "type": "list"
+       }
+      ],
+      "returns": "int",
+      "requirements": [
+       "Usage: URL [PATH]."
+      ],
+      "body": [
+       {
+        "kind": "branch",
+        "condition": "not 1 <= len(args) <= 2",
+        "body": [
+         {
+          "kind": "call",
+          "expression": "print('usage: {{file}}.py URL [PATH]')"
+         },
+         {
+          "kind": "return",
+          "expression": "2"
+         }
+        ]
+       },
+       {
+        "kind": "try",
+        "exception": "(urllib.error.URLError, TimeoutError, ValueError)",
+        "alias": "error",
+        "body": [
+         {
+          "kind": "assign",
+          "target": "data",
+          "expression": "fetch(args[0])"
+         }
+        ],
+        "handler": [
+         {
+          "kind": "call",
+          "expression": "print(f'error: could not fetch JSON ({error})')"
+         },
+         {
+          "kind": "return",
+          "expression": "1"
+         }
+        ]
+       },
+       {
+        "kind": "try",
+        "exception": "(KeyError, IndexError, ValueError, TypeError)",
+        "body": [
+         {
+          "kind": "assign",
+          "target": "value",
+          "expression": "pick(data, args[1] if len(args) == 2 else '')"
+         }
+        ],
+        "handler": [
+         {
+          "kind": "call",
+          "expression": "print('error: no value at ' + args[1])"
+         },
+         {
+          "kind": "return",
+          "expression": "1"
+         }
+        ]
+       },
+       {
+        "kind": "call",
+        "expression": "print(show(value))"
+       },
+       {
+        "kind": "return",
+        "expression": "0"
+       }
+      ]
+     }
+    ],
+    "entry": [
+     {
+      "kind": "call",
+      "expression": "sys.exit(main(sys.argv[1:]))"
+     }
+    ]
+   }
+  ]
+ },
+ "examples": [
+  {
+   "files": {
+    "user.json": "{\"name\": \"Ana\", \"tags\": [\"a\", \"b\"], \"address\": {\"city\": \"Lisbon\"}}",
+    "broken.json": "{not json"
+   },
+   "argv": [
+    "{server}/user.json",
+    "address.city"
+   ],
+   "stdout": "Lisbon\n",
+   "exit": 0
+  },
+  {
+   "argv": [
+    "{server}/user.json",
+    "tags.1"
+   ],
+   "stdout": "b\n",
+   "exit": 0
+  },
+  {
+   "argv": [
+    "{server}/user.json"
+   ],
+   "stdout": "{\n  \"address\": {\n    \"city\": \"Lisbon\"\n  },\n  \"name\": \"Ana\",\n  \"tags\": [\n    \"a\",\n    \"b\"\n  ]\n}\n",
+   "exit": 0
+  },
+  {
+   "argv": [
+    "{server}/user.json",
+    "phone"
+   ],
+   "stdout": "error: no value at phone\n",
+   "exit": 1
+  },
+  {
+   "argv": [
+    "{server}/user.json",
+    "tags.9"
+   ],
+   "stdout": "error: no value at tags.9\n",
+   "exit": 1
+  },
+  {
+   "argv": [
+    "{server}/missing.json"
+   ],
+   "stdout": "error: could not fetch JSON (HTTP Error 404: File not found)\n",
+   "exit": 1
+  },
+  {
+   "argv": [
+    "{server}/broken.json"
+   ],
+   "stdout": "error: could not fetch JSON (Expecting property name enclosed in double quotes: line 1 column 2 (char 1))\n",
+   "exit": 1
+  },
+  {
+   "argv": [
+    "file:///etc/passwd"
+   ],
+   "stdout": "error: could not fetch JSON (only http:// and https:// URLs are allowed)\n",
+   "exit": 1
+  },
+  {
+   "argv": [],
+   "stdout": "usage: fetch_json.py URL [PATH]\n",
+   "exit": 2
+  }
+ ]
+}

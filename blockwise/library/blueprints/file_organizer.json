@@ -1,0 +1,330 @@
+{
+ "id": "file_organizer",
+ "title": "Sort a folder's files into subfolders",
+ "category": "blueprint",
+ "summary": "A runnable tidy-up tool: sorts a folder's files (say, Downloads) into images/, documents/, data/ and so on by file type. Shows the plan first (a dry run) and only moves files with --apply; never overwrites.",
+ "params": {
+  "file": {
+   "kind": "identifier",
+   "default": "organize"
+  }
+ },
+ "try": "python {path} inbox",
+ "plan": {
+  "modules": [
+   {
+    "path": "{{file}}.py",
+    "imports": [
+     "import shutil",
+     "import sys",
+     "from pathlib import Path"
+    ],
+    "constants": [
+     {
+      "name": "CATEGORIES",
+      "value": "{'.jpg': 'images', '.jpeg': 'images', '.png': 'images', '.gif': 'images', '.pdf': 'documents', '.docx': 'documents', '.txt': 'documents', '.md': 'documents', '.csv': 'data', '.json': 'data', '.xlsx': 'data', '.zip': 'archives', '.mp3': 'audio', '.mp4': 'video'}"
+     }
+    ],
+    "functions": [
+     {
+      "name": "category_for",
+      "parameters": [
+       {
+        "name": "path",
+        "type": "Path"
+       }
+      ],
+      "returns": "str",
+      "body": [
+       {
+        "kind": "return",
+        "expression": "CATEGORIES.get(path.suffix.lower(), 'other')"
+       }
+      ]
+     },
+     {
+      "name": "plan_moves",
+      "parameters": [
+       {
+        "name": "folder",
+        "type": "Path"
+       }
+      ],
+      "returns": "list",
+      "requirements": [
+       "Only plain files directly in the folder; hidden files and subfolders stay put."
+      ],
+      "body": [
+       {
+        "kind": "assign",
+        "target": "moves",
+        "expression": "[]"
+       },
+       {
+        "kind": "loop",
+        "target": "entry",
+        "iterable": "sorted(folder.iterdir(), key=lambda entry: entry.name.lower())",
+        "body": [
+         {
+          "kind": "branch",
+          "condition": "entry.is_file() and (not entry.name.startswith('.'))",
+          "body": [
+           {
+            "kind": "call",
+            "expression": "moves.append({'source': entry, 'target': folder / category_for(entry) / entry.name})"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "kind": "return",
+        "expression": "moves"
+       }
+      ]
+     },
+     {
+      "name": "describe",
+      "parameters": [
+       {
+        "name": "moves",
+        "type": "list"
+       }
+      ],
+      "returns": "str",
+      "body": [
+       {
+        "kind": "return",
+        "expression": "'\\n'.join([move['source'].name + ' -> ' + move['target'].parent.name + '/' for move in moves])"
+       }
+      ]
+     },
+     {
+      "name": "apply_moves",
+      "parameters": [
+       {
+        "name": "moves",
+        "type": "list"
+       }
+      ],
+      "returns": "int",
+      "requirements": [
+       "Never overwrite: a file whose target already exists is skipped."
+      ],
+      "body": [
+       {
+        "kind": "assign",
+        "target": "moved",
+        "expression": "0"
+       },
+       {
+        "kind": "loop",
+        "target": "move",
+        "iterable": "moves",
+        "body": [
+         {
+          "kind": "branch",
+          "condition": "move['target'].exists()",
+          "body": [
+           {
+            "kind": "call",
+            "expression": "print('skip ' + move['source'].name + ': already in ' + move['target'].parent.name + '/')"
+           },
+           {
+            "kind": "continue"
+           }
+          ]
+         },
+         {
+          "kind": "call",
+          "expression": "move['target'].parent.mkdir(exist_ok=True)"
+         },
+         {
+          "kind": "call",
+          "expression": "shutil.move(move['source'], move['target'])"
+         },
+         {
+          "kind": "assign",
+          "target": "moved",
+          "operator": "+=",
+          "expression": "1"
+         }
+        ]
+       },
+       {
+        "kind": "return",
+        "expression": "moved"
+       }
+      ]
+     },
+     {
+      "name": "dry_run",
+      "parameters": [
+       {
+        "name": "moves",
+        "type": "list"
+       }
+      ],
+      "returns": "int",
+      "body": [
+       {
+        "kind": "call",
+        "expression": "print(f'Dry run: {len(moves)} file(s) would move. Add --apply to move them.')"
+       },
+       {
+        "kind": "return",
+        "expression": "0"
+       }
+      ]
+     },
+     {
+      "name": "main",
+      "parameters": [
+       {
+        "name": "args",
+        "type": "list"
+       }
+      ],
+      "returns": "int",
+      "requirements": [
+       "Usage: FOLDER [--apply]. Without --apply nothing is moved."
+      ],
+      "body": [
+       {
+        "kind": "branch",
+        "condition": "not args or len(args) > 2 or (len(args) == 2 and args[1] != '--apply')",
+        "body": [
+         {
+          "kind": "call",
+          "expression": "print('usage: {{file}}.py FOLDER [--apply]')"
+         },
+         {
+          "kind": "return",
+          "expression": "2"
+         }
+        ]
+       },
+       {
+        "kind": "branch",
+        "condition": "not Path(args[0]).is_dir()",
+        "body": [
+         {
+          "kind": "call",
+          "expression": "print(f'error: {args[0]} is not a folder')"
+         },
+         {
+          "kind": "return",
+          "expression": "1"
+         }
+        ]
+       },
+       {
+        "kind": "assign",
+        "target": "moves",
+        "expression": "plan_moves(Path(args[0]))"
+       },
+       {
+        "kind": "branch",
+        "condition": "not moves",
+        "body": [
+         {
+          "kind": "call",
+          "expression": "print('Nothing to organize.')"
+         },
+         {
+          "kind": "return",
+          "expression": "0"
+         }
+        ]
+       },
+       {
+        "kind": "call",
+        "expression": "print(describe(moves))"
+       },
+       {
+        "kind": "branch",
+        "condition": "len(args) == 1",
+        "body": [
+         {
+          "kind": "return",
+          "expression": "dry_run(moves)"
+         }
+        ]
+       },
+       {
+        "kind": "call",
+        "expression": "print(f'Moved {apply_moves(moves)} file(s).')"
+       },
+       {
+        "kind": "return",
+        "expression": "0"
+       }
+      ]
+     }
+    ],
+    "entry": [
+     {
+      "kind": "call",
+      "expression": "sys.exit(main(sys.argv[1:]))"
+     }
+    ]
+   }
+  ]
+ },
+ "examples": [
+  {
+   "files": {
+    "inbox/b.pdf": "x",
+    "inbox/a.JPG": "new",
+    "inbox/notes.txt": "x",
+    "inbox/song.xyz": "x",
+    "inbox/images/a.JPG": "old"
+   },
+   "argv": [
+    "inbox"
+   ],
+   "stdout": "a.JPG -> images/\nb.pdf -> documents/\nnotes.txt -> documents/\nsong.xyz -> other/\nDry run: 4 file(s) would move. Add --apply to move them.\n",
+   "exit": 0
+  },
+  {
+   "argv": [
+    "inbox",
+    "--apply"
+   ],
+   "stdout": "a.JPG -> images/\nb.pdf -> documents/\nnotes.txt -> documents/\nsong.xyz -> other/\nskip a.JPG: already in images/\nMoved 3 file(s).\n",
+   "exit": 0
+  },
+  {
+   "argv": [
+    "inbox"
+   ],
+   "stdout": "a.JPG -> images/\nDry run: 1 file(s) would move. Add --apply to move them.\n",
+   "exit": 0
+  },
+  {
+   "files": {
+    "empty/.keep": ""
+   },
+   "argv": [
+    "empty"
+   ],
+   "stdout": "Nothing to organize.\n",
+   "exit": 0
+  },
+  {
+   "argv": [
+    "nope"
+   ],
+   "stdout": "error: nope is not a folder\n",
+   "exit": 1
+  },
+  {
+   "argv": [
+    "inbox",
+    "--force"
+   ],
+   "stdout": "usage: organize.py FOLDER [--apply]\n",
+   "exit": 2
+  }
+ ]
+}

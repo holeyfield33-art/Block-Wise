@@ -1,8 +1,13 @@
 """Blueprints: whole-file templates. The to-do app is generated, run as a real program, and checked."""
 
+import contextlib
+import functools
+import http.server
 import json
+import os
 import subprocess
 import sys
+import threading
 
 import pytest
 
@@ -16,7 +21,27 @@ BLUEPRINTS = load_blueprints()
 
 
 def run(folder, script, argv):
-    return subprocess.run([sys.executable, script, *argv], cwd=folder, capture_output=True, text=True, timeout=30, check=False)
+    # Local test servers only: never route 127.0.0.1 through a proxy from the environment.
+    env = {**os.environ, "NO_PROXY": "127.0.0.1,localhost", "no_proxy": "127.0.0.1,localhost", "PYTHONIOENCODING": "utf-8"}
+    return subprocess.run([sys.executable, script, *argv], cwd=folder, capture_output=True, text=True, timeout=30,
+                          check=False, env=env)
+
+
+@contextlib.contextmanager
+def local_server(folder):
+    """Serve `folder` over HTTP on 127.0.0.1 for examples that use {server}; no internet needed."""
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=str(folder)))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}"
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
 @pytest.mark.parametrize("blueprint_id", sorted(BLUEPRINTS))
@@ -30,11 +55,14 @@ def test_blueprint_examples_run_as_real_programs(blueprint_id, tmp_path):
         target.write_text(source, encoding="utf-8")
     script = next(iter(sources))
     assert blueprint["examples"], "blueprints need runnable examples"
-    for example in blueprint["examples"]:  # examples run in order, sharing the folder (and any saved data)
-        for name, content in example.get("files", {}).items():  # input files the example needs
-            (tmp_path / name).write_text(content, encoding="utf-8", newline="")
-        result = run(tmp_path, script, example["argv"])
-        assert (result.stdout, result.returncode) == (example["stdout"], example["exit"]), (example["argv"], result.stderr)
+    with local_server(tmp_path) as server:
+        for example in blueprint["examples"]:  # examples run in order, sharing the folder (and any saved data)
+            for name, content in example.get("files", {}).items():  # input files the example needs
+                (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (tmp_path / name).write_text(content, encoding="utf-8", newline="")
+            argv = [arg.replace("{server}", server) for arg in example["argv"]]
+            result = run(tmp_path, script, argv)
+            assert (result.stdout, result.returncode) == (example["stdout"], example["exit"]), (argv, result.stderr)
 
 
 def test_parameters_rename_file_and_store(tmp_path):
@@ -66,7 +94,9 @@ def test_agents_find_and_list_blueprints(capsys):
     rows = {row["id"]: row for row in json.loads(capsys.readouterr().out)}
     assert rows["todo_cli"]["files"] == ["todo.py"] and set(rows) == set(BLUEPRINTS)
     for query, expected in [("csv report group total", "csv_report"), ("key value store settings", "kv_store"),
-                            ("log file errors summary", "log_stats")]:
+                            ("log file errors summary", "log_stats"), ("organize files into folders", "file_organizer"),
+                            ("sort downloads by type", "file_organizer"), ("validate csv emails", "data_validator"),
+                            ("fetch json from url", "fetch_json"), ("password strength", "password_problems")]:
         assert find(query)[0]["id"] == expected, query
     assert main(["show", "todo_cli", "--set", "file=tasks"]) == 0
     assert "# --- tasks.py ---" in capsys.readouterr().out
