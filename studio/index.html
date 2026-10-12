@@ -111,6 +111,11 @@ main.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr) minmax(
 .fn-list { list-style: none; padding: 4px 0 0 8px; margin: 0; display: grid; gap: 3px; }
 .fn-btn { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; background: transparent; border: 2px solid transparent; border-radius: 8px; padding: 3px 8px; font: .86rem var(--mono); color: var(--muted); }
 .fn-btn:hover { color: var(--text); }
+.fn-btn.entry { font-style: italic; }
+.fn-add-entry { margin: 4px 0 0 8px; }
+.entry-card { background: var(--panel-2); border: 2px solid var(--line); border-left: 8px solid var(--k-function); border-radius: 12px; padding: 12px; }
+.entry-card p { margin: 0 0 8px; }
+#runRow .prompt code { background: none; padding: 0; }
 .fn-btn[aria-current="true"] { border-color: var(--k-function); color: var(--text); background: color-mix(in srgb, var(--k-function) 12%, var(--panel)); font-weight: 600; }
 .palette { display: grid; grid-template-columns: 1fr; gap: 7px; }
 .pal {
@@ -388,6 +393,11 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
         <div class="console-row"><span class="prompt" aria-hidden="true">&gt;&gt;&gt;</span>
           <input id="tryExpr" class="field" spellcheck="false" autocomplete="off">
           <button class="btn primary small" id="tryRun">Run ▶</button></div>
+        <div class="console-row" id="runRow" hidden style="margin-top:8px"><span class="prompt">$ python <code id="runName">main.py</code></span>
+          <label class="sr-only" for="runArgs">Arguments</label>
+          <input id="runArgs" class="field" spellcheck="false" autocomplete="off" placeholder="arguments, e.g. add buy milk">
+          <button class="btn primary small" id="runFile">Run file ▶</button>
+          <button class="btn ghost small" id="resetData" title="Delete the files your program saved (like todo.json)">Clear saved data</button></div>
         <pre class="console-out" id="tryOut" aria-live="polite"></pre>
         <p class="target-note">Runs real Python in your browser. The first run downloads Python (about 10 MB), so it takes a few seconds.</p>
       </div>
@@ -399,10 +409,10 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
       <details class="guide" open><summary>When do I make a new function?</summary>
         <ul><li>You copy-pasted the same blocks twice: make one function and call it.</li>
         <li>A block group has its own clear job ("check the input", "add up the cart").</li>
-        <li>Nesting goes deeper than 3 levels, or a function has more than about 10 blocks.</li></ul></details>
+        <li>Nesting goes deeper than 3 levels, or a function has more than about 15 blocks.</li></ul></details>
       <details class="guide"><summary>When do I make a new file?</summary>
         <ul><li>One file per topic: <code>checks.py</code>, <code>cart.py</code>, <code>users.py</code>.</li>
-        <li>A file has more than 5 functions, or mixes unrelated jobs.</li>
+        <li>A file has more than about 8 functions, or mixes unrelated jobs.</li>
         <li>Files talk to each other with imports: <code>from checks import require_positive</code>.</li></ul></details>
       <details class="guide"><summary>When do I make a folder?</summary>
         <ul><li>One folder per feature once you have 3 or more related files: <code>auth/users.py</code>, <code>auth/login.py</code>.</li>
@@ -467,13 +477,21 @@ import importlib
 import io
 import json
 import os
+import runpy
 import shutil
 import sys
 
 req = json.loads(REQ)
-root = req.get("root", "/home/pyodide/blockwise_run")
+# Code is rewritten on every run; the work folder (where programs save files) is kept between runs.
+base = req.get("root", "/home/pyodide/blockwise_run")
+root, work = os.path.join(base, "code"), os.path.join(base, "work")
 shutil.rmtree(root, ignore_errors=True)
+if req.get("reset"):
+    shutil.rmtree(work, ignore_errors=True)
 os.makedirs(root)
+os.makedirs(work, exist_ok=True)
+previous_dir = os.getcwd()
+os.chdir(work)
 tops = set()
 for path, source in req["files"].items():
     full = os.path.join(root, *path.split("/"))
@@ -533,8 +551,22 @@ with contextlib.redirect_stdout(printed):
                     result["value"] = repr(eval(code, names))
             except Exception as error:
                 result["value"], result["error"] = short(error), True
+        if req.get("run"):
+            saved_argv, result["exit"] = sys.argv, 0
+            sys.argv = [req["run"], *req.get("argv", [])]
+            try:
+                runpy.run_module(req["run"][:-3].replace("/", "."), run_name="__main__")
+            except SystemExit as stop:
+                result["exit"] = 0 if stop.code is None else stop.code if isinstance(stop.code, int) else 1
+                if not isinstance(stop.code, (int, type(None))):
+                    print(stop.code)
+            except Exception as error:
+                result["value"], result["error"], result["exit"] = short(error), True, 1
+            finally:
+                sys.argv = saved_argv
 result["output"] = printed.getvalue()[-4000:]
 sys.path.remove(root)
+os.chdir(previous_dir)
 RESULT = json.dumps(result)
 </script>
 <script src="lessons.js"></script>
@@ -603,7 +635,14 @@ const readJSON = (k, fallback) => { try { return JSON.parse(store.get(k)) ?? fal
 const state = { plan: null, m: 0, f: 0, target: [], menu: null, lesson: null, sound: false, flash: null, checkResult: null, tests: null, presetCat: "all", presetQuery: "" };
 
 /* ---------- plan helpers ---------- */
-function fn() { const mod = state.plan.modules[state.m]; return mod && mod.functions[state.f]; }
+// state.f === -1 selects the file's main block (if __name__ == '__main__':), edited like a function.
+const entryUnit = mod => ({ name: "main block", entry: true, parameters: [], returns: "None", requirements: [], body: mod.entry });
+const units = mod => [...mod.functions, ...(Array.isArray(mod.entry) ? [entryUnit(mod)] : [])];
+const fnLabel = f => f.entry ? "the main block" : `${f.name}()`;
+function fn() {
+  const mod = state.plan.modules[state.m]; if (!mod) return undefined;
+  return state.f === -1 ? (Array.isArray(mod.entry) ? entryUnit(mod) : undefined) : mod.functions[state.f];
+}
 function container(body, path) {
   let list = body;
   for (let i = 0; i < path.length; i += 2) list = list[path[i]][path[i + 1]];
@@ -753,6 +792,10 @@ function genModule(mod) {
     if (reqs.length) lines.push(`    """Requirements:\n${reqs.join("\n")}"""`);
     lines.push(...genBody(f.body, "    "));
   }
+  if (Array.isArray(mod.entry)) {
+    if (lines.length) lines.push("", "");
+    lines.push("if __name__ == '__main__':", ...genBody(mod.entry, "    "));
+  }
   return lines.join("\n") + "\n";
 }
 function highlight(code) {
@@ -790,7 +833,7 @@ function travel(from, to, word) {
   if (!from.length) return;
   to.push(hist.last); hist.last = from.pop(); state.plan = JSON.parse(hist.last);
   state.m = Math.min(state.m, state.plan.modules.length - 1);
-  state.f = Math.max(0, Math.min(state.f, state.plan.modules[state.m].functions.length - 1));
+  state.f = state.f === -1 && Array.isArray(state.plan.modules[state.m].entry) ? -1 : Math.max(0, Math.min(state.f, state.plan.modules[state.m].functions.length - 1));
   state.target = []; state.menu = null; render(); updateUndo(); toast(word);
 }
 const undo = () => travel(hist.past, hist.future, "Undone");
@@ -848,6 +891,21 @@ function renderFiles() {
       b.addEventListener("click", () => { state.m = mi; state.f = fi; state.target = []; state.menu = null; render(); showPanel("side-mid"); });
       fnList.appendChild(document.createElement("li")).appendChild(b);
     });
+    if (Array.isArray(mod.entry)) {
+      const b = document.createElement("button"); b.className = "fn-btn entry"; b.textContent = "▶ main block (when run)";
+      b.title = "Runs when you start this file directly"; b.setAttribute("aria-current", String(mi === state.m && state.f === -1));
+      b.addEventListener("click", () => { state.m = mi; state.f = -1; state.target = []; state.menu = null; render(); showPanel("side-mid"); });
+      fnList.appendChild(document.createElement("li")).appendChild(b);
+    } else {
+      const b = Object.assign(document.createElement("button"), { className: "btn small ghost fn-add-entry", textContent: "+ main block", title: "Make this file runnable: python " + mod.path });
+      b.addEventListener("click", () => {
+        const first = mod.functions.find(g => g.name === "main") || mod.functions[0];
+        mod.entry = first ? [{ kind: "call", expression: callTemplate(first) }] : [];
+        state.m = mi; state.f = -1; state.target = []; render(); showPanel("side-mid");
+        toast(`${mod.path} can now run on its own. Add blocks to its main block.`);
+      });
+      li.appendChild(b);
+    }
     ul.appendChild(li);
   });
   const t = fn();
@@ -864,7 +922,7 @@ function targetParent(path) {
 }
 function describeTarget() {
   if (state.target.length && targetParent(state.target) === undefined) { state.target = []; state.menu = null; }
-  if (!state.target.length) return `${fn().name}() — main level`;
+  if (!state.target.length) return `${fnLabel(fn())} — top level`;
   const parent = targetParent(state.target);
   const side = state.target[state.target.length - 1];
   return `inside ${KINDS[parent.kind].label}${(CHILD[parent.kind] || []).length > 1 ? ` (${sideLabel(parent.kind, side)})` : ""}`;
@@ -881,8 +939,21 @@ function renderPalette() {
 function renderBuilder() {
   const root = $("#builder"), f = fn(); root.innerHTML = "";
   if (!f) { root.innerHTML = `<div class="empty-hint">This file has no functions yet. Use “+ fn” in the Project panel.</div>`; $("#fnTitle").textContent = "Function"; return; }
-  $("#fnTitle").textContent = `${state.plan.modules[state.m].path} › ${f.name}()`;
+  $("#fnTitle").textContent = `${state.plan.modules[state.m].path} › ${f.entry ? "main block" : f.name + "()"}`;
   $("#playFn").hidden = !state.sound;
+  if (f.entry) {
+    const mod = state.plan.modules[state.m], card = document.createElement("div"); card.className = "entry-card";
+    card.innerHTML = `<p><b>Main block</b>: <code>if __name__ == '__main__':</code></p>
+      <p>These blocks run when you start this file directly (<code>python ${esc(mod.path)}</code>), but not when another file imports it. Keep them short: usually a call to your main function.</p>
+      <button class="btn small ghost" id="removeEntry">Remove main block</button>`;
+    root.appendChild(card);
+    $("#removeEntry", card).addEventListener("click", e => confirmClick(e.currentTarget, () => { delete mod.entry; state.f = 0; state.target = []; render(); toast("Main block removed. Undo brings it back."); }));
+    $("#nameList").innerHTML = [...new Set([...localNames(f), ...Object.keys(importedNames(mod)), ...mod.functions.map(g => g.name + "()")])].map(n => `<option value="${attr(n)}">`).join("");
+    const tree = document.createElement("div"); tree.className = "tree";
+    tree.appendChild(renderSlot(f.body, [], "root"));
+    root.appendChild(tree);
+    return;
+  }
   const sig = document.createElement("div"); sig.className = "sig";
   const mod = state.plan.modules[state.m], extras = mod.imports.length || (mod.constants || []).length;
   sig.innerHTML = `<label for="fnName">def</label><input id="fnName" class="field" value="${attr(f.name)}" spellcheck="false">
@@ -1006,10 +1077,39 @@ function addBlock(path, kind) {
   const inputs = document.querySelectorAll("#builder .block.flash .block-head > .field");
   if (inputs.length) { inputs[0].focus(); inputs[0].select(); }
 }
-function renderCode() { const mod = state.plan.modules[state.m]; $("#code").innerHTML = mod ? highlight(genModule(mod)) : ""; }
+function renderCode() {
+  const mod = state.plan.modules[state.m]; $("#code").innerHTML = mod ? highlight(genModule(mod)) : "";
+  $("#runRow").hidden = !(mod && Array.isArray(mod.entry)); if (mod) $("#runName").textContent = mod.path;
+}
+// Split "add 'buy milk' now" like a shell: quotes keep spaces together.
+function shellSplit(text) { return (text.match(/"[^"]*"|'[^']*'|\S+/g) || []).map(w => /^(["']).*\1$/.test(w) ? w.slice(1, -1) : w); }
+async function runFile(reset) {
+  const mod = state.plan.modules[state.m], out = $("#tryOut");
+  if (!reset && !(mod && Array.isArray(mod.entry))) return;
+  out.innerHTML = `<span class="spinner"></span>${loadingNote()}`;
+  try {
+    const argv = shellSplit($("#runArgs").value);
+    const r = await runPython(reset ? { files: projectFiles(), reset: true } : { files: projectFiles(), run: mod.path, argv });
+    if (reset) { out.innerHTML = `<span class="muted">Saved data cleared. The next run starts fresh.</span>`; return; }
+    let html = `<span class="muted">$ python ${esc(mod.path)}${argv.length ? " " + esc(argv.join(" ")) : ""}</span>\n`;
+    if (r.output) html += esc(r.output);
+    if (r.load_error) html += `<span class="err">${esc(explainError(r.load_error))}</span>`;
+    else if (r.error) html += `<span class="err">${esc(explainError(r.value))}</span>\n`;
+    if (!r.load_error) html += `<span class="${r.exit ? "err" : "muted"}">(exit code ${r.exit}${r.exit ? ": the program reported a problem" : ""})</span>`;
+    out.innerHTML = html;
+    if (!r.load_error && !r.error) { state.ranPlan = JSON.stringify(state.plan); renderAdvice(); }
+  } catch (e) { out.innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
 
 /* ---------- structure advisor ---------- */
-function depth(nodes) { return nodes.reduce((d, n) => Math.max(d, 1 + Math.max(0, ...kids(n).map(depth))), 0); }
+// Nesting depth as Python shows it: an If alone on an else side is an elif, so it doesn't add a level.
+function depth(nodes) {
+  return nodes.reduce((d, n) => {
+    const elif = n.kind === "branch" && n.otherwise.length === 1 && n.otherwise[0].kind === "branch";
+    const inner = Math.max(0, ...(elif ? [n.body] : kids(n)).map(depth));
+    return Math.max(d, 1 + inner, elif ? depth(n.otherwise) : 0);
+  }, 0);
+}
 function count(nodes) { return flatten(nodes).length; }
 function conditions(nodes, out = []) { for (const n of nodes) { if (n.kind === "branch") out.push(n.condition.replace(/\s+/g, "")); kids(n).forEach(k => conditions(k, out)); } return out; }
 function emptyBodies(nodes) { return nodes.some(n => (["loop", "while", "try", "with"].includes(n.kind) && !n.body.length) || (n.kind === "branch" && !n.body.length && !n.otherwise.length) || kids(n).some(emptyBodies)); }
@@ -1086,28 +1186,28 @@ function connections() {
         guess ? `Did you mean ${guess}? Python stops with an ImportError when it loads this file.` : `Add a function called ${info.name} to ${source.path}, or fix the import.`,
         guess && { label: `Import ${guess} instead`, run: () => { mod.imports = mod.imports.map(l => l.startsWith(`from ${info.from} import`) ? l.replace(new RegExp(`\\b${info.name}\\b`), guess) : l); } });
     }
-    for (const f of mod.functions) {
+    for (const f of units(mod)) {
       const known = new Set([...BUILTINS, ...here, ...Object.keys(imported), ...localNames(f)]);
       for (const name of new Set(exprsOf(f).flatMap(callsIn))) {
         if (known.has(name)) continue;
         const elsewhere = (owner[name] || []).find(m => m !== mod);
         if (elsewhere) {
           const line = `from ${dotted(elsewhere.path)} import ${name}`;
-          tip("call", `${f.name}() uses ${name}() from ${elsewhere.path}`, `Each file only sees what it imports. ${mod.path} needs: ${line}`,
+          tip("call", `${fnLabel(f)} uses ${name}() from ${elsewhere.path}`, `Each file only sees what it imports. ${mod.path} needs: ${line}`,
             { label: "Add the import", run: () => { if (!mod.imports.includes(line)) mod.imports.push(line); } });
           continue;
         }
         const guess = closest(name, [...known, ...Object.keys(owner)].filter(n => !BUILTINS.has(n) || n.length > 3));
-        tip("raise", `${f.name}(): there's no function called ${name}()`,
+        tip("raise", `${fnLabel(f)}: there's no function called ${name}()`,
           guess ? `Did you mean ${guess}()? As written, Python stops with a NameError when it reaches this line.` : `Make it with + fn, insert a template that provides it, or import it from another file.`,
           guess && { label: `Change to ${guess}()`, run: () => renameCalls(f, name, guess) });
       }
     }
   });
   // A function that neither calls nor is called by anything else in the project is disconnected.
-  const all = mods.flatMap(mod => mod.functions.map(f => ({ mod, f })));
+  const all = mods.flatMap(mod => units(mod).map(f => ({ mod, f })));
   if (all.length > 1) for (const { mod, f } of all) {
-    if (f.name === "main") continue;
+    if (f.entry || f.name === "main") continue;
     const others = all.filter(o => o.f !== f);
     const calledBy = others.some(o => exprsOf(o.f).some(e => wordsIn(e).includes(f.name)));
     const calls = exprsOf(f).flatMap(callsIn).some(n => others.some(o => o.f.name === n));
@@ -1124,13 +1224,18 @@ function applyFix(t) { t.fix.run(); if (!t.fix.keep) { render(); toast("Fixed. U
 /* ---------- free-build coach: what to do next ---------- */
 function coachSteps() {
   const f = fn(); if (!f) return [];
-  const kinds = flatten(f.body), links = connections(), call = callTemplate(f);
+  const kinds = flatten(f.body), links = connections(), call = callTemplate(f), mod = state.plan.modules[state.m];
+  const runnable = Array.isArray(mod.entry);
+  const ran = state.ranPlan === JSON.stringify(state.plan);
+  const runStep = runnable
+    ? { done: ran, text: `Run the file: python ${mod.path}`, hint: "Run file starts the program like a terminal would. Type arguments next to it if it takes any.", action: ["Run file", () => { selectTab("code"); showPanel("side-right"); runFile(); }] }
+    : { done: ran, text: `Run it: ${call}`, hint: "Try it runs your real code. Change the values to test other cases. To make the file runnable on its own, add a main block (+ main block in the Project panel).", action: ["Try it", () => openTry(call)] };
   return [
-    { done: kinds.length > 0, text: `Add blocks to ${f.name}()`, hint: "Click a block on the left. Not sure where to start? A Set variable for the result, or a Check for the inputs." },
+    { done: kinds.length > 0, text: `Add blocks to ${fnLabel(f)}`, hint: "Click a block on the left. Not sure where to start? A Set variable for the result, or a Check for the inputs." },
     { done: !kinds.includes("hole"), text: "Replace every TODO with real blocks", hint: "TODO blocks stop the code with an error until you replace them." },
     ...(f.returns === "None" ? [] : [{ done: kinds.includes("return"), text: `Give back the ${f.returns} that ${f.name}() promises`, hint: "Add a Return block, usually at the end." }]),
     { done: !links.length, text: "Connect your functions and files", hint: `${links.length} connection tip${links.length === 1 ? "" : "s"} waiting in the Advisor.`, action: ["Show the tips", () => selectTab("advice")] },
-    { done: state.ranPlan === JSON.stringify(state.plan), text: `Run it: ${call}`, hint: "Try it runs your real code. Change the values to test other cases.", action: ["Try it", () => openTry(call)] },
+    runStep,
   ];
 }
 function renderCoach() {
@@ -1152,19 +1257,21 @@ function advise() {
   for (const mod of mods) {
     for (const f of mod.functions) {
       if (depth(f.body) > 3) tip("loop", `${f.name}(): deep nesting (${depth(f.body)} levels)`, "Flatten it: handle the bad case first with an If + Raise/Return (a guard clause), or move the inner part into a helper function.");
-      if (count(f.body) > 10) tip("function", `${f.name}(): ${count(f.body)} blocks is a lot`, "Find a group of blocks with one clear job and turn it into its own function, then call it.");
+      if (count(f.body) > 15) tip("function", `${f.name}(): ${count(f.body)} blocks is a lot`, "Find a group of blocks with one clear job and turn it into its own function, then call it.");
       if (f.returns && f.returns !== "None" && !flatten(f.body).includes("return")) tip("return", `${f.name}() promises ${f.returns} but never returns`, "Add a Return block so callers get a value back.");
       if (emptyBodies(f.body)) tip("branch", `${f.name}() has an empty If, loop, Try or With`, "An empty block does nothing. Add blocks inside it or delete it.");
       if (strayStops(f.body, false)) tip("break", `${f.name}(): Stop loop or Skip to next outside a loop`, "These blocks only work inside Repeat for each or Repeat while. Move them inside a loop.");
       if (anyNode(f.body, n => n.kind === "while" && /^(True|1)$/.test(n.condition.trim()) && !anyNode(n.body, m => ["break", "return", "raise"].includes(m.kind))))
         tip("while", `${f.name}(): this Repeat while never stops`, "Its condition is always true and nothing inside leaves the loop. Add a Stop loop, Return or Raise error inside it.");
+      if (Array.isArray(mod.entry) && f === mod.functions[0] && anyNode(mod.entry, n => n.kind === "return"))
+        tip("return", `${mod.path}: the main block can't use Return`, "Return only works inside a function. To end the program with an exit code, use a Call block: sys.exit(code), and add import sys.");
       if (anyNode(f.body, n => n.kind === "try" && !n.handler.length)) tip("try", `${f.name}(): an except side is empty`, "An empty except hides the error silently. Return a fallback, or raise a clearer error.");
       for (const p of f.parameters) if ("default" in p && /^(\[\s*\]|\{\s*\}|list\(\)|dict\(\)|set\(\))$/.test(p.default)) tip("assign", `${f.name}(): ${p.name} defaults to ${p.default}`, "That empty list or dict is shared by every call, so changes leak between calls. Use None as the default and create the list inside the function.");
       const holes = flatten(f.body).filter(k => k === "hole").length;
       if (holes) tip("hole", `${f.name}(): ${holes} TODO left`, "Replace each TODO with real blocks before you finish.");
       for (const c of new Set(conditions(f.body))) (seen[c] = seen[c] || new Set()).add(f.name);
     }
-    if (mod.functions.length > 5) tip("call", `${mod.path} has ${mod.functions.length} functions`, "Split it: one file per topic. Move related functions into a new file and import them.");
+    if (mod.functions.length > 8) tip("call", `${mod.path} has ${mod.functions.length} functions`, "Split it: one file per topic. Move related functions into a new file and import them.");
     const checks = mod.functions.filter(f => /^(require|check|validate|ensure)_/.test(f.name)).length;
     if (checks >= 2 && mod.functions.length - checks >= 2) tip("validate", `${mod.path} mixes checks and main logic`, "Move the require_/check_ functions into checks.py and import them where needed.");
   }
@@ -1430,6 +1537,7 @@ function renderPresets() {
   if (!window.BLOCKWISE_PRESETS) { list.innerHTML = `<div class="empty-hint">presets.js not found. Run: blockwise export-presets --out studio/presets.js</div>`; return; }
   list.innerHTML = presets.length ? "" : `<div class="empty-hint">No templates match. Try another word.</div>`;
   for (const p of presets) {
+    if (p.kind === "blueprint") { list.appendChild(blueprintCard(p)); continue; }
     const card = document.createElement("div"); card.className = "preset";
     card.innerHTML = `<h3>${esc(p.title)}</h3><span class="pill">${esc(p.category)}</span><p>${esc(p.summary)}</p>
       <details><summary>Preview the code</summary><pre>${highlight(p.preview || "")}</pre></details>
@@ -1465,6 +1573,40 @@ function renderPresets() {
   }
 }
 
+// A blueprint adds whole files (several functions and usually a main block) to the project.
+function blueprintCard(p) {
+  const card = document.createElement("div"); card.className = "preset";
+  const preview = Object.entries(p.preview || {}).map(([path, src]) => `# --- ${path} ---\n${src}`).join("\n");
+  card.innerHTML = `<h3>${esc(p.title)}</h3><span class="pill">whole program</span><p>${esc(p.summary)}</p>
+    <details><summary>Preview the code</summary><pre>${highlight(preview)}</pre></details>
+    <div class="params"></div><button class="btn small">Add as new files</button>`;
+  const params = card.querySelector(".params"), inputs = {};
+  for (const [name, spec] of Object.entries(p.params)) {
+    const id = `b-${p.id}-${name}`;
+    params.insertAdjacentHTML("beforeend", `<label for="${id}">${name}</label><input class="field" id="${id}" spellcheck="false" value="${attr(spec.default)}">`);
+    inputs[name] = () => $("#" + id, card).value.trim();
+  }
+  card.querySelector("button").addEventListener("click", () => {
+    const values = {};
+    for (const [name, spec] of Object.entries(p.params)) {
+      const v = inputs[name]();
+      if (spec.kind === "identifier" && !isIdent(v)) { toast(`${name}: use a simple name like todo`); return; }
+      if (spec.kind === "string" && !v) { toast(`${name}: can't be empty`); return; }
+      values[name] = renderValue(spec, v);
+    }
+    const added = substitute(p.plan, values).modules;
+    const clash = added.find(m => state.plan.modules.some(x => x.path === m.path));
+    if (clash) { toast(`${clash.path} already exists; change the file name above.`); return; }
+    for (const m of added) state.plan.modules.push(m);
+    normalize(state.plan);
+    state.m = state.plan.modules.indexOf(added[0]); state.f = Array.isArray(added[0].entry) ? -1 : 0; state.target = []; state.inserted = null;
+    render();
+    const args = (p.try || "").split(" ").slice(2).join(" ");
+    $("#runArgs").value = args; selectTab("code"); showPanel("side-right");
+    toast(`Added ${added.map(m => m.path).join(", ")}. Press Run file to try it${args ? ` with: ${args}` : ""}.`);
+  });
+  return card;
+}
 // JSON example arguments as Python source: true -> True, null -> None.
 function pyLit(v) {
   if (v === null) return "None";
@@ -1565,6 +1707,7 @@ function normalize(p) {
   p.format = "blockwise-plan-v1";
   for (const m of p.modules) {
     m.imports = m.imports || []; m.constants = m.constants || [];
+    if (Array.isArray(m.entry)) m.entry = normNodes(m.entry);
     for (const f of m.functions) { f.returns = f.returns || "None"; f.requirements = f.requirements || []; f.body = normNodes(f.body); }
   }
   return p;
@@ -1595,6 +1738,9 @@ $("#welcome").addEventListener("close", () => store.set("blockwise-welcomed", "1
 $("#welcomeLearn").addEventListener("click", () => { closeWelcome(); startLesson(LESSONS[0].id, "guided"); });
 $("#welcomeLibrary").addEventListener("click", () => { closeWelcome(); setTrack("library"); });
 $("#tryRun").addEventListener("click", tryRun);
+$("#runFile").addEventListener("click", () => runFile());
+$("#runArgs").addEventListener("keydown", e => { if (e.key === "Enter") runFile(); });
+$("#resetData").addEventListener("click", () => runFile(true));
 $("#tryExpr").addEventListener("keydown", e => { if (e.key === "Enter") tryRun(); });
 $("#presetSearch").addEventListener("input", e => { state.presetQuery = e.target.value.trim(); renderPresets(); });
 document.addEventListener("keydown", e => {

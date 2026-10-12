@@ -66,20 +66,40 @@ How it works:
 | Agent writes one preset-sized function itself (output) | ~42 |
 | Agent calls the preset instead (output + reply read back) | ~10 + ~20 |
 | Saved per use, counting output at 5× input price | ~137 input-equivalent |
-| Discovery, one time: `list` (all 22) / `find` (top 3) | ~1,105 / ~148 |
+| Discovery, one time: `list` (all 23) / `find` (top 3) | ~1,160 / ~148 |
+| **Blueprint** (`todo_cli`, 6 functions + main block): write it vs call it | ~506 vs ~8 + ~26 |
+| Saved per blueprint use | **~2,460 input-equivalent** |
 
-So with `find`, a preset pays for itself on its first use. With `list`, it takes about 8 uses. The
-savings are real but small, because today's presets are 3–14 line functions that a model writes
-cheaply anyway. The larger gains are reliability: the code is tested, `check` notices when it
+So with `find`, a preset pays for itself on its first use. With `list`, it takes about 8 uses.
+Single-function presets save little, because a model writes a 3–14 line function cheaply anyway.
+Blueprints are where it pays: one call replaces a whole runnable program (about 18× the saving of
+a single preset). The larger gains are reliability: the code is tested, `check` notices when it
 drifts from the plan, and every agent writes the same thing the same way. Token savings will grow
 with bigger templates (patterns and app blueprints), and `blockwise coverage` shows which Python
 constructs those templates still need.
 
+## Blueprints: whole programs from one call
+
+A blueprint is a template for whole files: several functions, constants and a main block. Apply it
+like a preset, with a folder instead of a file:
+
+```bash
+blockwise find to-do list command line          # -> todo_cli (category "blueprint")
+blockwise apply todo_cli --into tools --set file=tasks
+# {"ok":true,"added":["tools/tasks.py"],"blueprint":"todo_cli","try":"python tools/tasks.py add buy milk"}
+python tools/tasks.py add buy milk && python tools/tasks.py list
+blockwise check                                  # the files stay under the same structure check
+```
+
+Blueprints live in `blockwise/library/blueprints/`. Their `examples` are real command lines: the
+tests generate the program, run it as a subprocess with each example's arguments in order (so saved
+data carries over), and compare stdout and the exit code.
+
 ## Python coverage registry
 
-`blockwise/coverage.json` maps 57 Python concepts across 16 domains to what Blockwise can do with them:
+`blockwise/coverage.json` maps 58 Python concepts across 16 domains to what Blockwise can do with them:
 
-- **block (21):** has its own block (functions with default values, if/elif/else, for, while,
+- **block (22):** has its own block (functions with default values, a main block, if/elif/else, for, while,
   break/continue, try/except/finally, with, assignment including `+=`, calls, return, raise, module
   constants, imports, packages);
 - **expression (15):** works inside any block's fields (comprehensions, f-strings, lambda, `:=`, ...);
@@ -124,6 +144,11 @@ whether a file could become a plan.
   Ctrl+Shift+Z), plain-language messages for invalid names and expressions, tickable lesson
   steps, a progress rail with a *Next lesson* button, and a **Words** glossary linked from each
   lesson's concept tags.
+- **Runnable files:** *+ main block* adds `if __name__ == '__main__':` to a file. The Python tab then
+  shows **Run file**, which runs it like a terminal would, with arguments (`add "buy milk"`). Files
+  the program saves are kept between runs until you press *Clear saved data*.
+- **Whole-program templates:** the Templates tab's *whole program* cards (blueprints) add complete
+  files, such as a command-line to-do list, ready to run and to take apart.
 - **Build your own script:** **New** starts a blank `main.py` (or starts from a template). In free
   build, a *Next step* checklist follows your progress: add blocks, replace TODOs, return what
   you promise, connect your functions, run it. Blocks can be moved into the block above (→), out
@@ -187,7 +212,7 @@ The Studio browser test needs Node and the `playwright` npm package (installed g
 - The plan grammar covers functions (with default values), module constants, if/else, for and
   while loops with break/continue, try/except/finally with one except clause, `with`, assignments
   to names (including `+=`), calls, returns, raises and TODOs. It has no classes or `async` yet; `blockwise coverage --status planned` lists
-  every gap.
+  every gap. A file's main block may not use `return` (use `sys.exit(code)`).
 - The sound is decoration. It encodes only the kind of each block, never names or conditions.
 
 ## License

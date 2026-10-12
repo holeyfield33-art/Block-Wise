@@ -56,14 +56,14 @@ const { chromium } = require("playwright");
       await page.evaluate(id => connections().map(t => `${id}: ${t.title}`), id));
   }
   // Known-good templates must not trigger connection tips either.
-  result.false_connections = result.false_connections.concat(await page.evaluate(() => BLOCKWISE_PRESETS.flatMap(p => {
+  result.false_connections = result.false_connections.concat(await page.evaluate(() => BLOCKWISE_PRESETS.filter(p => p.kind !== "blueprint").flatMap(p => {
     const values = Object.fromEntries(Object.entries(p.params).map(([k, spec]) => [k, renderValue(spec, spec.default)]));
     state.plan = normalize({ modules: [{ path: "m.py", imports: substitute(p.imports || [], values), functions: [substitute(p.function, values)] }] });
     return connections().map(t => `${p.id}: ${t.title}`);
   })));
 
   // 1b. Every template, with its default parameters, as the Studio would generate it.
-  result.presets = await page.evaluate(() => Object.fromEntries(BLOCKWISE_PRESETS.map(p => {
+  result.presets = await page.evaluate(() => Object.fromEntries(BLOCKWISE_PRESETS.filter(p => p.kind !== "blueprint").map(p => {
     const values = Object.fromEntries(Object.entries(p.params).map(([k, spec]) => [k, renderValue(spec, spec.default)]));
     const f = substitute(p.function, values); f.requirements = []; f.body = normNodes(f.body);
     return [p.id, { plan: { format: "blockwise-plan-v1", modules: [{ path: "m.py", imports: substitute(p.imports || [], values), constants: [], functions: [f] }] },
@@ -203,6 +203,29 @@ const { chromium } = require("playwright");
   await page.locator("#tips .tip button", { hasText: "Change to sum_prices()" }).click();
   result.ui.connections_fixed = await page.evaluate(() => connections().map(t => t.title));
   result.ui.connected_code = await page.evaluate(() => genModule(state.plan.modules[1]));
+
+  // 5i. Blueprints: Studio code matches the compiler for every file, and no connection tips fire on them.
+  result.blueprints = await page.evaluate(() => Object.fromEntries(BLOCKWISE_PRESETS.filter(p => p.kind === "blueprint").map(p => {
+    const values = Object.fromEntries(Object.entries(p.params).map(([k, spec]) => [k, renderValue(spec, spec.default)]));
+    const plan = { format: "blockwise-plan-v1", ...substitute(p.plan, values) };
+    state.plan = normalize(JSON.parse(JSON.stringify(plan)));
+    return [p.id, { plan, sources: Object.fromEntries(state.plan.modules.map(m => [m.path, genModule(m)])), tips: advise().map(t => t.title) }];
+  })));
+
+  // 5j. Main block by clicking: New project, + main block, and the Run file row appears.
+  await page.click("#newProject");
+  await page.click("#newBlank");
+  await page.click("#files .fn-add-entry");
+  result.ui.entry_code = await page.evaluate(() => genModule(state.plan.modules[0]));
+  result.ui.run_row_visible = await page.isVisible("#runRow") || await page.evaluate(() => !document.querySelector("#runRow").hidden);
+
+  // 5k. Insert the to-do blueprint from the Templates tab.
+  await page.click("#trackLibrary");
+  await page.click('#presetCats button[data-cat="blueprint"]');
+  await page.locator(".preset", { hasText: "Command-line to-do list" }).locator("button").click();
+  result.ui.blueprint_inserted = await page.evaluate(() => state.plan.modules.map(m => m.path).join(",") === "main.py,todo.py" && state.f === -1
+    && document.querySelector("#runArgs").value === "add buy milk");
+  await page.screenshot({ path: path.join(out, "studio-blueprint.png") });
 
   // 6. Advisor reacts to deep nesting.
   await page.evaluate(() => {

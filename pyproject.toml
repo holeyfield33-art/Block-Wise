@@ -23,7 +23,7 @@ include = ["blockwise*"]
 
 [tool.setuptools.package-data]
 "blockwise" = ["coverage.json"]
-"blockwise.library" = ["*.json"]
+"blockwise.library" = ["*.json", "blueprints/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

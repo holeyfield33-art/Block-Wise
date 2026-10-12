@@ -101,6 +101,8 @@ def validate_score(score):
     if not isinstance(modules, list) or not 1 <= len(modules) <= 32:
         raise ScoreError("Score requires 1 to 32 modules")
     paths, count = set(), [0]
+    # "return" is only valid inside a function; the module's entry block is not one.
+    inside_function = [True]
 
     def nodes(body, depth=0, in_loop=False):
         if not isinstance(body, list) or len(body) > MAX_NODES or depth > MAX_DEPTH:
@@ -113,6 +115,8 @@ def validate_score(score):
                     or node["kind"] not in NOTES or node["kind"] == "function"):
                 raise ScoreError("Unknown template element")
             kind = node["kind"]
+            if kind == "return" and not inside_function[0]:
+                raise ScoreError("return only works inside a function; in the main block, call sys.exit(code) instead")
             fields = {"kind"}
             if kind in ("validate", "call", "return", "raise"):
                 fields.add("expression")
@@ -181,7 +185,7 @@ def validate_score(score):
                         raise ScoreError("Allowed calls must be dotted symbol names")
 
     for module in modules:
-        keys(module, {"path", "imports", "constants", "functions"}, {"path", "functions"}, "Module")
+        keys(module, {"path", "imports", "constants", "functions", "entry"}, {"path", "functions"}, "Module")
         module_path(module["path"])
         if module["path"].casefold() in paths:
             raise ScoreError("Duplicate module path (including case aliases)")
@@ -207,8 +211,15 @@ def validate_score(score):
             if constant["name"] in top_names:
                 raise ScoreError("Duplicate constant name")
             top_names.add(constant["name"])
-        if not isinstance(module["functions"], list) or not 1 <= len(module["functions"]) <= 32:
-            raise ScoreError("Each module requires 1 to 32 functions")
+        if "entry" in module:
+            if not isinstance(module["entry"], list):
+                raise ScoreError("The main block (entry) must be a list of elements; leave it out for none")
+            inside_function[0] = False
+            nodes(module["entry"])
+            inside_function[0] = True
+        if (not isinstance(module["functions"], list) or len(module["functions"]) > 32
+                or not module["functions"] and "entry" not in module):
+            raise ScoreError("Each module requires 1 to 32 functions (or a main block)")
         names = set()
         for function in module["functions"]:
             keys(function, {"name", "parameters", "returns", "requirements", "body"},

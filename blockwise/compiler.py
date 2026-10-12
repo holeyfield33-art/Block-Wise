@@ -67,7 +67,7 @@ def pep8_join(statements):
         # Unparsing the first statement inside a Module keeps a docstring as """...""".
         text = ast.unparse(ast.Module(body=[statement], type_ignores=[]) if index == 0 else statement)
         if source:
-            source += "\n\n\n" if isinstance(statement, ast.FunctionDef) else "\n"
+            source += "\n\n\n" if isinstance(statement, (ast.FunctionDef, ast.If)) else "\n"
         source += text
     return source + "\n"
 
@@ -93,6 +93,10 @@ def compile_score(score):
                 statements.insert(0, ast.Expr(value=ast.Constant("Requirements:\n" + "\n".join(function["requirements"]))))
             body.append(ast.FunctionDef(name=function["name"], args=arguments, body=statements or [ast.Pass()],
                                         decorator_list=[], returns=expression(function["returns"], "returns")))
+        if "entry" in module:
+            body.append(ast.If(test=ast.Compare(left=ast.Name(id="__name__", ctx=ast.Load()), ops=[ast.Eq()],
+                                                comparators=[ast.Constant("__main__")]),
+                               body=compile_nodes(module["entry"]) or [ast.Pass()], orelse=[]))
         tree = ast.fix_missing_locations(ast.Module(body=body, type_ignores=[]))
         source = pep8_join(tree.body)
         compile(source, module["path"], "exec")
