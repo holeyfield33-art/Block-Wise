@@ -1,0 +1,20 @@
+{
+ "repo_commit_audited": "589ca99c6ff00fa967085c0f6b88fe59e3beb006",
+ "tasks": {
+  "tasks/T1_csv_report/spec.md": "e671421e5509263dc7782e50e0be6b16d367afdd826f70ced08e260b2b3f4894",
+  "tasks/T2_todo_cli/spec.md": "cead8b949056d00ca46152a638378da14a828317b15ccf6fb62bff051c589d1b",
+  "tasks/T3_kv_store/spec.md": "f397b82a72fc585c75d09a0aa6a1e9c1c5214d7ace7f6c72d66d6bb4d31a7c67",
+  "tasks/T4_log_stats/spec.md": "71de2aababff2e043e611db6dc33a43026a65c134cbfd0356d361a0d6bcacfb6",
+  "tasks/T5_inventory/plan.json": "4f9ba45313e6536aabd58bbdc36f2c167f890af4d379977fdbaaf6145547c38b",
+  "tasks/T5_inventory/spec.md": "210fa6f58b42c865307eab027b7441fbcd2a86f70e50167d55f24e1497b8b192"
+ },
+ "acceptance_tests": {
+  "T1_csv_report.json": "16aa4cead15594fa61e009eeb9107f8f6d57b785348a5aebf81d1e6052d65a9c",
+  "T2_todo_cli.json": "f3ca91c6e46ea7fa5b4d129f1ce499f55a86592a15d4ca1f38db7175001b1cb0",
+  "T3_kv_store.json": "e19d12d82fc84a3a1ab1a38510f5dba7d0192aaaeb2473266c637be932c34b72",
+  "T4_log_stats.json": "40f5293bc25e4feb77cd6b5c98461ebec2db6488134b517d3b4ac4f7b983d528",
+  "T5_inventory.json": "c3b47a9ba86fbc2b122a21fd8ac5eaf98e1c7cc3b3d2a59672a1719d9ae16c63"
+ },
+ "reproduce.py": "3cd8b58d1d3d73a5fbffb335683547b83be1977c4a7c6af681d6dfbc2bf2995e",
+ "PROTOCOL.md": "dc82f7f7abc23515dc03399ca04366e872a3a625a2d82a9d01a2b45c06cbbf41"
+}
