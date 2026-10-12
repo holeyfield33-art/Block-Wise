@@ -4,7 +4,9 @@ Run with `blockwise mcp` (stdio). Requires the optional dependency: pip install 
 Tool results are deliberately short; the agent never has to read the plan file.
 """
 
-from .presets import PresetError, get_preset, load_presets, render, summary
+from .coverage import check_source
+from .coverage import summary as coverage_summary
+from .presets import PresetError, find, get_preset, load_presets, render, summary
 from .project import apply_preset as _apply
 from .project import check_project as _check
 from .project import function_source
@@ -14,6 +16,22 @@ from .schema import ScoreError
 def list_presets(category: str = "") -> list:
     """List available presets as {id, category, does, params}. Optional category: validation, auth, data."""
     return [summary(p) for p in load_presets().values() if not category or p["category"] == category]
+
+
+def find_presets(query: str) -> list:
+    """Return the 3 presets that best match a few words, e.g. "reject negative number". Cheaper than list_presets."""
+    return find(query)
+
+
+def coverage(source: str = "") -> dict:
+    """With no source: counts of Python constructs Blockwise can represent. With Python source: whether it
+    can become a plan, and which constructs (e.g. while, try, class) have no block yet."""
+    if not source:
+        return coverage_summary()
+    try:
+        return check_source(source)
+    except SyntaxError as exc:
+        return {"ok": False, "error": f"SyntaxError: {exc.msg} (line {exc.lineno})"}
 
 
 def show_preset(preset: str, params: dict | None = None) -> str:
@@ -49,6 +67,6 @@ def run():
     except ImportError:
         raise SystemExit("The MCP server needs the optional dependency: pip install 'blockwise[mcp]'") from None
     server = FastMCP("blockwise")
-    for tool in (list_presets, show_preset, apply_preset, check_project):
+    for tool in (find_presets, list_presets, show_preset, apply_preset, check_project, coverage):
         server.tool()(tool)
     server.run()

@@ -22,6 +22,7 @@ blockwise = "blockwise.cli:entry"
 include = ["blockwise*"]
 
 [tool.setuptools.package-data]
+"blockwise" = ["coverage.json"]
 "blockwise.library" = ["*.json"]
 
 [tool.pytest.ini_options]

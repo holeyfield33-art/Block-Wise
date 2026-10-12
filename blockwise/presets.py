@@ -117,6 +117,21 @@ def render(preset, params=None):
     return function, imports
 
 
+def find(query, limit=3):
+    """Best-matching presets for a few words, so an agent need not read the whole list."""
+    words = set(re.findall(r"[a-z0-9]+", query.lower()))
+    scored = []
+    for preset in load_presets().values():
+        defaults = json.dumps([spec.get("default") for spec in preset["params"].values()])
+        haystack = set(re.findall(r"[a-z0-9]+", " ".join((preset["id"], preset["title"], preset["summary"],
+                                                           preset["category"], defaults)).lower().replace("_", " ")))
+        # Prefix match lets "neg" find "negative" and "role" find "roles".
+        score = sum(any(h.startswith(w) or w.startswith(h) and len(h) > 3 for h in haystack) for w in words)
+        if score:
+            scored.append((-score, preset["id"], preset))
+    return [summary(p) for _, _, p in sorted(scored)[:limit]]
+
+
 def summary(preset):
     """One compact line per preset, sized for an agent's context window."""
     params = ", ".join(f"{name}={json.dumps(spec.get('default'))}" for name, spec in preset["params"].items())
