@@ -109,6 +109,9 @@ def unsupported(source):
             _function_gaps(node, gaps)
         elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
             _body_gaps([node], gaps)  # a module constant
+        elif (isinstance(node, ast.If) and not node.orelse and isinstance(node.test, ast.Compare)
+              and ast.unparse(node.test) == "__name__ == '__main__'"):
+            _body_gaps(node.body, gaps)  # the main block
         elif type(node).__name__ in STATEMENT_GAPS:
             gaps.add(STATEMENT_GAPS[type(node).__name__])
             _body_gaps([node], gaps)

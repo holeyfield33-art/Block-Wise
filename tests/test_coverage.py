@@ -46,7 +46,7 @@ def test_registry_shape():
 
 @pytest.mark.parametrize("concept", by_status("block"))
 def test_block_concepts_have_a_block_and_pass_the_checker(concept):
-    assert concept["blockwise"] in set(NOTES) | {"import", "module", "constant"}
+    assert concept["blockwise"] in set(NOTES) | {"import", "module", "constant", "entry"}
     assert unsupported(concept["example"]) == []
 
 

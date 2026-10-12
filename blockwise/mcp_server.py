@@ -4,9 +4,10 @@ Run with `blockwise mcp` (stdio). Requires the optional dependency: pip install 
 Tool results are deliberately short; the agent never has to read the plan file.
 """
 
+from .compiler import compile_score
 from .coverage import check_source
 from .coverage import summary as coverage_summary
-from .presets import PresetError, find, get_preset, load_presets, render, summary
+from .presets import PresetError, find, get_preset, load_all, load_blueprints, render, render_blueprint, summary
 from .project import apply_preset as _apply
 from .project import check_project as _check
 from .project import function_source
@@ -14,8 +15,9 @@ from .schema import ScoreError
 
 
 def list_presets(category: str = "") -> list:
-    """List available presets as {id, category, does, params}. Optional category: validation, auth, data."""
-    return [summary(p) for p in load_presets().values() if not category or p["category"] == category]
+    """List presets and blueprints as {id, category, does, params[, files]}.
+    Categories: validation, auth, data, files, blueprint (whole runnable files)."""
+    return [summary(p) for p in load_all().values() if not category or p["category"] == category]
 
 
 def find_presets(query: str) -> list:
@@ -37,6 +39,9 @@ def coverage(source: str = "") -> dict:
 def show_preset(preset: str, params: dict | None = None) -> str:
     """Return the Python a preset would generate with the given params (defaults if omitted)."""
     try:
+        if preset in load_blueprints():
+            plan = render_blueprint(load_blueprints()[preset], params or {})
+            return "\n".join(f"# --- {path} ---\n{source}" for path, source in compile_score(plan).items())
         function, imports = render(get_preset(preset), params or {})
         source, import_lines = function_source(function, imports)
         return "\n".join(import_lines + [source])

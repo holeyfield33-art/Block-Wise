@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .compiler import compile_score
 from .conformance import compare_score
-from .presets import PresetError, get_preset, render
+from .presets import PresetError, get_preset, load_blueprints, render, render_blueprint
 from .schema import FORMAT, module_path, validate_score
 
 PLAN_DIR = ".blockwise"
@@ -63,8 +63,42 @@ def insert_imports(source, imports):
     return "".join(lines[:after]) + "".join(i + "\n" for i in missing) + "".join(lines[after:])
 
 
+def apply_blueprint(project, blueprint_id, into=".", params=None):
+    """Write a blueprint's files into folder `into` (relative to project) and record them in the plan."""
+    project = Path(project)
+    blueprint = load_blueprints()[blueprint_id]
+    rendered = render_blueprint(blueprint, params)
+    prefix = "" if into in ("", ".") else into.strip("/") + "/"
+    if prefix and len(rendered["modules"]) > 1:
+        raise PresetError("Multi-file blueprints import each other by path; apply them with --into .")
+    plan = load_plan(project)
+    taken = {m["path"] for m in plan["modules"]}
+    added = []
+    for module in rendered["modules"]:
+        module["path"] = prefix + module["path"]
+        module_path(module["path"])
+        if module["path"] in taken or (project / module["path"]).exists():
+            raise PresetError(f"{module['path']} already exists; choose another --set file=... or folder")
+        added.append(module)
+    plan["modules"] += added
+    plan = validate_score(plan)
+    sources = compile_score({"format": FORMAT, "modules": added})
+    for module in added:
+        target = project / module["path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(sources[module["path"]], encoding="utf-8")
+    save_plan(project, plan)
+    result = {"ok": True, "added": [m["path"] for m in added], "blueprint": blueprint_id}
+    if blueprint.get("try"):
+        result["try"] = blueprint["try"].replace("{path}", added[0]["path"])
+    return result
+
+
 def apply_preset(project, preset_id, into, params=None):
-    """Add a preset function to file `into` (relative to project) and record it in the plan."""
+    """Add a preset function to file `into` (relative to project) and record it in the plan.
+    A blueprint id writes whole files instead; `into` is then the folder."""
+    if preset_id in load_blueprints():
+        return apply_blueprint(project, preset_id, into, params)
     project = Path(project)
     module_path(into)
     preset = get_preset(preset_id)

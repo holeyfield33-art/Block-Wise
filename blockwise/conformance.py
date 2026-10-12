@@ -42,6 +42,11 @@ def allowed_fill(statements, allowed_calls):
     return True
 
 
+def is_main_guard(node):
+    return (isinstance(node, ast.If) and not node.orelse and isinstance(node.test, ast.Compare)
+            and fingerprint(node.test) == fingerprint(ast.parse("__name__ == '__main__'", mode="eval").body))
+
+
 def matches_node(expected, actual):
     kind = expected["kind"]
     if kind == "branch":
@@ -145,8 +150,15 @@ def compare_score(score, repository):
             elif fingerprint(assigned[name].value) != fingerprint(ast.parse(value, mode="eval").body):
                 issue(path, None, "constant_changed", f"Constant {name} has a different value than planned",
                       f"{name} = {value}", ast.unparse(assigned[name]))
+        guards = [node for node in top if is_main_guard(node)]
+        if "entry" in module:
+            if not guards:
+                issue(path, None, "missing_entry", "The planned main block (if __name__ == '__main__':) is missing")
+            elif not matches_body(module["entry"], guards[-1].body):
+                issue(path, None, "entry_changed", "The main block differs from the plan", actual=ast.unparse(guards[-1]))
         extra_top = [node for node in top if not isinstance(node, (ast.Import, ast.ImportFrom, ast.FunctionDef))
-                     and not any(node is planned for planned in assigned.values())]
+                     and not any(node is planned for planned in assigned.values())
+                     and not ("entry" in module and guards and node is guards[-1])]
         for node in extra_top:
             issue(path, getattr(node, "name", None), "unexpected_top_level", "Unplanned top-level statement", actual=ast.unparse(node))
         functions = [node for node in top if isinstance(node, ast.FunctionDef)]

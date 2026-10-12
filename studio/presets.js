@@ -1755,5 +1755,399 @@ window.BLOCKWISE_PRESETS = [
    }
   ],
   "preview": "def require_fields(payload: dict) -> None:\n    for key in ('name', 'email'):\n        if key not in payload:\n            raise KeyError(key)\n    return None\n"
+ },
+ {
+  "id": "todo_cli",
+  "title": "Command-line to-do list",
+  "category": "blueprint",
+  "summary": "A runnable to-do app: list, add and done commands, saved to a JSON file. Six functions plus a main block.",
+  "params": {
+   "file": {
+    "kind": "identifier",
+    "default": "todo"
+   },
+   "store": {
+    "kind": "string",
+    "default": "todo.json"
+   }
+  },
+  "try": "python {path} add buy milk",
+  "plan": {
+   "modules": [
+    {
+     "path": "{{file}}.py",
+     "imports": [
+      "import json",
+      "import sys"
+     ],
+     "constants": [
+      {
+       "name": "STORE",
+       "value": "{{store}}"
+      }
+     ],
+     "functions": [
+      {
+       "name": "load_items",
+       "parameters": [
+        {
+         "name": "path",
+         "type": "str"
+        }
+       ],
+       "returns": "list",
+       "requirements": [
+        "A missing or broken file means an empty list."
+       ],
+       "body": [
+        {
+         "kind": "try",
+         "exception": "(OSError, ValueError)",
+         "body": [
+          {
+           "kind": "with",
+           "context": "open(path, encoding='utf-8')",
+           "alias": "handle",
+           "body": [
+            {
+             "kind": "return",
+             "expression": "json.load(handle)"
+            }
+           ]
+          }
+         ],
+         "handler": [
+          {
+           "kind": "return",
+           "expression": "[]"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "save_items",
+       "parameters": [
+        {
+         "name": "path",
+         "type": "str"
+        },
+        {
+         "name": "items",
+         "type": "list"
+        }
+       ],
+       "returns": "None",
+       "body": [
+        {
+         "kind": "with",
+         "context": "open(path, 'w', encoding='utf-8')",
+         "alias": "handle",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "json.dump(items, handle, indent=2)"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "add_item",
+       "parameters": [
+        {
+         "name": "items",
+         "type": "list"
+        },
+        {
+         "name": "text",
+         "type": "str"
+        }
+       ],
+       "returns": "list",
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "not text.strip()",
+         "body": [
+          {
+           "kind": "raise",
+           "expression": "ValueError('text must not be empty')"
+          }
+         ]
+        },
+        {
+         "kind": "call",
+         "expression": "items.append({'text': text.strip(), 'done': False})"
+        },
+        {
+         "kind": "return",
+         "expression": "items"
+        }
+       ]
+      },
+      {
+       "name": "complete_item",
+       "parameters": [
+        {
+         "name": "items",
+         "type": "list"
+        },
+        {
+         "name": "number",
+         "type": "int"
+        }
+       ],
+       "returns": "list",
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "number < 1 or number > len(items)",
+         "body": [
+          {
+           "kind": "raise",
+           "expression": "IndexError(f'no item {number}')"
+          }
+         ]
+        },
+        {
+         "kind": "call",
+         "expression": "items[number - 1].update(done=True)"
+        },
+        {
+         "kind": "return",
+         "expression": "items"
+        }
+       ]
+      },
+      {
+       "name": "format_items",
+       "parameters": [
+        {
+         "name": "items",
+         "type": "list"
+        }
+       ],
+       "returns": "str",
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "not items",
+         "body": [
+          {
+           "kind": "return",
+           "expression": "'Nothing to do.'"
+          }
+         ]
+        },
+        {
+         "kind": "assign",
+         "target": "lines",
+         "expression": "[]"
+        },
+        {
+         "kind": "assign",
+         "target": "number",
+         "expression": "0"
+        },
+        {
+         "kind": "loop",
+         "target": "item",
+         "iterable": "items",
+         "body": [
+          {
+           "kind": "assign",
+           "target": "number",
+           "operator": "+=",
+           "expression": "1"
+          },
+          {
+           "kind": "assign",
+           "target": "mark",
+           "expression": "'x' if item['done'] else ' '"
+          },
+          {
+           "kind": "call",
+           "expression": "lines.append(str(number) + '. [' + mark + '] ' + item['text'])"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "'\\n'.join(lines)"
+        }
+       ]
+      },
+      {
+       "name": "main",
+       "parameters": [
+        {
+         "name": "args",
+         "type": "list"
+        }
+       ],
+       "returns": "int",
+       "requirements": [
+        "Commands: list, add TEXT, done NUMBER. Returns the exit code."
+       ],
+       "body": [
+        {
+         "kind": "assign",
+         "target": "items",
+         "expression": "load_items(STORE)"
+        },
+        {
+         "kind": "try",
+         "exception": "(IndexError, ValueError)",
+         "alias": "error",
+         "body": [
+          {
+           "kind": "branch",
+           "condition": "not args or args[0] == 'list'",
+           "body": [
+            {
+             "kind": "call",
+             "expression": "print(format_items(items))"
+            }
+           ],
+           "otherwise": [
+            {
+             "kind": "branch",
+             "condition": "args[0] == 'add'",
+             "body": [
+              {
+               "kind": "call",
+               "expression": "save_items(STORE, add_item(items, ' '.join(args[1:])))"
+              },
+              {
+               "kind": "call",
+               "expression": "print('Added.')"
+              }
+             ],
+             "otherwise": [
+              {
+               "kind": "branch",
+               "condition": "args[0] == 'done'",
+               "body": [
+                {
+                 "kind": "call",
+                 "expression": "save_items(STORE, complete_item(items, int(args[1])))"
+                },
+                {
+                 "kind": "call",
+                 "expression": "print('Marked done.')"
+                }
+               ],
+               "otherwise": [
+                {
+                 "kind": "call",
+                 "expression": "print('usage: {{file}}.py [list | add TEXT | done NUMBER]')"
+                },
+                {
+                 "kind": "return",
+                 "expression": "2"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "handler": [
+          {
+           "kind": "call",
+           "expression": "print(f'error: {error}')"
+          },
+          {
+           "kind": "return",
+           "expression": "1"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      }
+     ],
+     "entry": [
+      {
+       "kind": "call",
+       "expression": "sys.exit(main(sys.argv[1:]))"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "argv": [
+     "list"
+    ],
+    "stdout": "Nothing to do.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "add",
+     "buy",
+     "milk"
+    ],
+    "stdout": "Added.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "add",
+     "call mom"
+    ],
+    "stdout": "Added.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "done",
+     "1"
+    ],
+    "stdout": "Marked done.\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "list"
+    ],
+    "stdout": "1. [x] buy milk\n2. [ ] call mom\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "done",
+     "9"
+    ],
+    "stdout": "error: no item 9\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "add",
+     "   "
+    ],
+    "stdout": "error: text must not be empty\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "fly"
+    ],
+    "stdout": "usage: todo.py [list | add TEXT | done NUMBER]\n",
+    "exit": 2
+   }
+  ],
+  "kind": "blueprint",
+  "preview": {
+   "todo.py": "\"\"\"Generated by Blockwise. Verify behavior before use.\"\"\"\nimport json\nimport sys\nSTORE = 'todo.json'\n\n\ndef load_items(path: str) -> list:\n    \"\"\"Requirements:\nA missing or broken file means an empty list.\"\"\"\n    try:\n        with open(path, encoding='utf-8') as handle:\n            return json.load(handle)\n    except (OSError, ValueError):\n        return []\n\n\ndef save_items(path: str, items: list) -> None:\n    with open(path, 'w', encoding='utf-8') as handle:\n        json.dump(items, handle, indent=2)\n\n\ndef add_item(items: list, text: str) -> list:\n    if not text.strip():\n        raise ValueError('text must not be empty')\n    items.append({'text': text.strip(), 'done': False})\n    return items\n\n\ndef complete_item(items: list, number: int) -> list:\n    if number < 1 or number > len(items):\n        raise IndexError(f'no item {number}')\n    items[number - 1].update(done=True)\n    return items\n\n\ndef format_items(items: list) -> str:\n    if not items:\n        return 'Nothing to do.'\n    lines = []\n    number = 0\n    for item in items:\n        number += 1\n        mark = 'x' if item['done'] else ' '\n        lines.append(str(number) + '. [' + mark + '] ' + item['text'])\n    return '\\n'.join(lines)\n\n\ndef main(args: list) -> int:\n    \"\"\"Requirements:\nCommands: list, add TEXT, done NUMBER. Returns the exit code.\"\"\"\n    items = load_items(STORE)\n    try:\n        if not args or args[0] == 'list':\n            print(format_items(items))\n        elif args[0] == 'add':\n            save_items(STORE, add_item(items, ' '.join(args[1:])))\n            print('Added.')\n        elif args[0] == 'done':\n            save_items(STORE, complete_item(items, int(args[1])))\n            print('Marked done.')\n        else:\n            print('usage: todo.py [list | add TEXT | done NUMBER]')\n            return 2\n    except (IndexError, ValueError) as error:\n        print(f'error: {error}')\n        return 1\n    return 0\n\n\nif __name__ == '__main__':\n    sys.exit(main(sys.argv[1:]))\n"
+  }
  }
 ];

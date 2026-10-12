@@ -11,7 +11,7 @@ import keyword
 import re
 from importlib import resources
 
-from .schema import ScoreError, annotation, expression, identifier
+from .schema import FORMAT, ScoreError, annotation, expression, identifier, validate_score
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 PARAM_KINDS = ("identifier", "module", "annotation", "expression", "string", "string_list", "number", "text")
@@ -32,6 +32,30 @@ def load_presets():
                 raise PresetError(f"Duplicate preset id: {preset['id']}")
             presets[preset["id"]] = preset
     return presets
+
+
+def load_blueprints():
+    """Return {blueprint_id: blueprint}: whole-file templates (several functions, often a main block)."""
+    blueprints = {}
+    folder = resources.files("blockwise.library").joinpath("blueprints")
+    for entry in sorted(folder.iterdir(), key=lambda e: e.name):
+        if entry.name.endswith(".json"):
+            blueprint = json.loads(entry.read_text(encoding="utf-8"))
+            blueprints[blueprint["id"]] = blueprint
+    return blueprints
+
+
+def load_all():
+    """Presets and blueprints together, for search and listing."""
+    presets, blueprints = load_presets(), load_blueprints()
+    clash = set(presets) & set(blueprints)
+    if clash:
+        raise PresetError(f"Preset and blueprint ids collide: {sorted(clash)}")
+    return {**presets, **blueprints}
+
+
+def is_blueprint(template):
+    return "plan" in template
 
 
 def get_preset(preset_id):
@@ -94,8 +118,7 @@ def substitute(node, values):
     return node
 
 
-def render(preset, params=None):
-    """Return (function_plan, imports) for a preset with the given parameter values."""
+def _values(preset, params):
     params = dict(params or {})
     unknown = set(params) - set(preset["params"])
     if unknown:
@@ -109,6 +132,12 @@ def render(preset, params=None):
             values[name] = render_value(name, spec, raw)
         except ScoreError as exc:
             raise PresetError(str(exc)) from None
+    return values
+
+
+def render(preset, params=None):
+    """Return (function_plan, imports) for a preset with the given parameter values."""
+    values = _values(preset, params)
     function = substitute(preset["function"], values)
     names = [p["name"] for p in function["parameters"]] + [function["name"]]
     if len(set(names)) != len(names) or any(keyword.iskeyword(n) for n in names):
@@ -117,11 +146,20 @@ def render(preset, params=None):
     return function, imports
 
 
+def render_blueprint(blueprint, params=None):
+    """Return the validated plan (all modules) for a blueprint with the given parameter values."""
+    plan = substitute(blueprint["plan"], _values(blueprint, params))
+    try:
+        return validate_score({"format": FORMAT, "title": blueprint["title"], **plan})
+    except ScoreError as exc:
+        raise PresetError(str(exc)) from None
+
+
 def find(query, limit=3):
     """Best-matching presets for a few words, so an agent need not read the whole list."""
     words = set(re.findall(r"[a-z0-9]+", query.lower()))
     scored = []
-    for preset in load_presets().values():
+    for preset in load_all().values():
         defaults = json.dumps([spec.get("default") for spec in preset["params"].values()])
         haystack = set(re.findall(r"[a-z0-9]+", " ".join((preset["id"], preset["title"], preset["summary"],
                                                            preset["category"], defaults)).lower().replace("_", " ")))
@@ -135,4 +173,7 @@ def find(query, limit=3):
 def summary(preset):
     """One compact line per preset, sized for an agent's context window."""
     params = ", ".join(f"{name}={json.dumps(spec.get('default'))}" for name, spec in preset["params"].items())
-    return {"id": preset["id"], "category": preset["category"], "does": preset["summary"], "params": params}
+    row = {"id": preset["id"], "category": preset["category"], "does": preset["summary"], "params": params}
+    if is_blueprint(preset):
+        row["files"] = [m["path"] for m in render_blueprint(preset)["modules"]]
+    return row

@@ -127,9 +127,20 @@ def test_studio_free_build_and_connections(e2e):
                               "    except (ValueError, TypeError):\n        return fallback\n")
 
 
+def test_studio_blueprints_match_compiler_and_entry_flow(e2e):
+    for blueprint_id, item in e2e["blueprints"].items():
+        expected = compile_score(validate_score(item["plan"]))
+        assert item["sources"] == {path: without_module_docstring(source) for path, source in expected.items()}, blueprint_id
+        assert item["tips"] == [], blueprint_id
+    ui = e2e["ui"]
+    assert ui["entry_code"] == "def main() -> None:\n    pass\n\n\nif __name__ == '__main__':\n    main()\n"
+    assert ui["run_row_visible"] and ui["blueprint_inserted"]
+
+
 def test_studio_templates_match_compiler(e2e):
-    assert set(e2e["presets"]) == {p["id"] for p in json.loads(
-        (STUDIO / "presets.js").read_text(encoding="utf-8").split("= ", 1)[1].rstrip().rstrip(";"))}
+    templates = json.loads((STUDIO / "presets.js").read_text(encoding="utf-8").split("= ", 1)[1].rstrip().rstrip(";"))
+    assert set(e2e["presets"]) == {p["id"] for p in templates if p.get("kind") != "blueprint"}
+    assert set(e2e["blueprints"]) == {p["id"] for p in templates if p.get("kind") == "blueprint"}
     for preset_id, item in e2e["presets"].items():
         expected = compile_score(validate_score(item["plan"]))["m.py"]
         assert item["source"] == without_module_docstring(expected), f"{preset_id}: write template expressions as Python prints them"
