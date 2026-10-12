@@ -130,6 +130,25 @@ const { chromium } = require("playwright");
   result.ui.default_order_message = await page.textContent("#fieldMsg");
   await page.screenshot({ path: path.join(out, "studio-try.png"), fullPage: true });
 
+  // 5d. Lesson 10 by clicking: replace the TODO inside Repeat while with two Set variable blocks using += and //=.
+  await page.selectOption("#lessonPick", "while-digits");
+  await page.selectOption("#modePick", "guided");
+  await page.click("#startLesson");
+  await page.click('#builder button[aria-label="Delete block: TODO"]');
+  for (const [target, op, value] of [["total", "+=", "n % 10"], ["n", "//=", "10"]]) {
+    await page.locator("#builder .slot:not(.root) > .add-here").nth(0).click();
+    await page.locator("#builder .addmenu button", { hasText: "Set variable" }).click();
+    const count = await page.locator('#builder input[aria-label="Set variable target"]').count();
+    await page.locator('#builder input[aria-label="Set variable target"]').nth(count - 1).fill(target);
+    await page.locator('#builder select[aria-label="Set variable operator"]').nth(count - 1).selectOption(op);
+    await page.locator('#builder input[aria-label="Set variable expression"]').nth(count - 1).fill(value);
+  }
+  await page.click("#checkWork");
+  result.ui.while_lesson_by_clicks = (await page.textContent("#resultBox")).includes("Correct");
+  await page.screenshot({ path: path.join(out, "studio-while.png"), fullPage: true });
+  await page.evaluate(() => { state.plan.modules[0].functions[0].body.unshift({ kind: "break" }); render(); });
+  result.ui.stray_break_tip = (await page.textContent("#tips")).includes("outside a loop");
+
   // 6. Advisor reacts to deep nesting.
   await page.evaluate(() => {
     const deep = { kind: "branch", condition: "a", body: [{ kind: "loop", target: "i", iterable: "x", body: [{ kind: "branch", condition: "b", body: [{ kind: "branch", condition: "c", body: [{ kind: "return", expression: "1" }], otherwise: [] }], otherwise: [] }] }], otherwise: [] };

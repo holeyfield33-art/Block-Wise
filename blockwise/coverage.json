@@ -279,22 +279,26 @@
    "id": "while-loop",
    "domain": "control flow",
    "concept": "while loop",
-   "status": "planned",
-   "example": "while n > 0:\n    n -= 1",
-   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-while-statement"
+   "status": "block",
+   "example": "def digit_sum(n: int) -> int:\n    total = 0\n    while n > 0:\n        total += n % 10\n        n //= 10\n    return total",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-while-statement",
+   "blockwise": "while",
+   "lesson": "while-digits"
   },
   {
    "id": "break-continue",
    "domain": "control flow",
    "concept": "break / continue",
-   "status": "planned",
-   "example": "for x in items:\n    if x:\n        break\n    continue",
-   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-break-statement"
+   "status": "block",
+   "example": "def f(items: list) -> None:\n    for x in items:\n        if x is None:\n            continue\n        if x < 0:\n            break",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-break-statement",
+   "blockwise": "break",
+   "lesson": "break-early"
   },
   {
    "id": "for-else",
    "domain": "control flow",
-   "concept": "for ... else",
+   "concept": "for ... else / while ... else",
    "status": "planned",
    "example": "for x in items:\n    pass\nelse:\n    found = False",
    "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement"
@@ -320,10 +324,11 @@
    "id": "augmented-assign",
    "domain": "names and binding",
    "concept": "Augmented assignment (+=, -=, ...)",
-   "status": "planned",
-   "example": "total += price",
+   "status": "block",
+   "example": "def f(price: int) -> int:\n    total = 0\n    total += price\n    return total",
    "ref": "https://docs.python.org/3/reference/simple_stmts.html#augmented-assignment-statements",
-   "note": "Write total = total + price with a Set variable block for now."
+   "blockwise": "assign",
+   "lesson": "while-digits"
   },
   {
    "id": "target-assign",

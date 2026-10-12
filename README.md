@@ -63,13 +63,13 @@ How it works:
 
 | | tokens |
 |---|---|
-| Agent writes one preset-sized function itself (output) | ~38 |
-| Agent calls the preset instead (output + reply read back) | ~10 + ~21 |
-| Saved per use, counting output at 5× input price | ~118 input-equivalent |
-| Discovery, one time: `list` (all 20) / `find` (top 3) | ~995 / ~148 |
+| Agent writes one preset-sized function itself (output) | ~42 |
+| Agent calls the preset instead (output + reply read back) | ~10 + ~20 |
+| Saved per use, counting output at 5× input price | ~137 input-equivalent |
+| Discovery, one time: `list` (all 22) / `find` (top 3) | ~1,105 / ~148 |
 
 So with `find`, a preset pays for itself on its first use. With `list`, it takes about 8 uses. The
-savings are real but small, because today's presets are 3–8 line functions that a model writes
+savings are real but small, because today's presets are 3–14 line functions that a model writes
 cheaply anyway. The larger gains are reliability: the code is tested, `check` notices when it
 drifts from the plan, and every agent writes the same thing the same way. Token savings will grow
 with bigger templates (patterns and app blueprints), and `blockwise coverage` shows which Python
@@ -79,11 +79,12 @@ constructs those templates still need.
 
 `blockwise/coverage.json` maps 57 Python concepts across 16 domains to what Blockwise can do with them:
 
-- **block (18):** has its own block (functions with default values, if/elif/else, for, try/except/
-  finally, with, assignment, calls, return, raise, module constants, imports, packages);
+- **block (21):** has its own block (functions with default values, if/elif/else, for, while,
+  break/continue, try/except/finally, with, assignment including `+=`, calls, return, raise, module
+  constants, imports, packages);
 - **expression (15):** works inside any block's fields (comprehensions, f-strings, lambda, `:=`, ...);
-- **planned (24):** cannot be represented yet (while, break, augmented assignment, several except
-  clauses, classes, async, decorators, `if __name__ == '__main__'`, ...).
+- **planned (21):** cannot be represented yet (several except clauses, loop `else`, unpacking in
+  `for`, classes, async, decorators, `if __name__ == '__main__'`, ...).
 
 Each entry has an example and a link to the official Python reference. The tests hold the registry
 to the code: every *block* and *expression* example compiles through the plan grammar, every
@@ -93,8 +94,9 @@ whether a file could become a plan.
 
 ## For learners: Blockwise Studio
 
-- **Blocks:** Function, Check, If/Else, Repeat for each, Set variable, Call, Return, Raise error,
-  Try / Except (with an optional finally), Use resource (`with`) and TODO. Function inputs take
+- **Blocks:** Function, Check, If/Else, Repeat for each, Repeat while, Stop loop (`break`), Skip to
+  next (`continue`), Set variable (with `=`, `+=`, `-=`, `//=` and the rest), Call, Return, Raise
+  error, Try / Except (with an optional finally), Use resource (`with`) and TODO. Function inputs take
   default values (`fallback: int=0`), and each file can hold constants (`MAX_ITEMS = 10`). Click "+ add inside" anywhere to nest blocks. Each block in the list shows the Python
   it becomes.
 - **Live Python:** the code pane shows exactly what `blockwise build` would generate. A test keeps
@@ -102,7 +104,7 @@ whether a file could become a plan.
 - **Run it for real:** *Try it* calls your functions, and *Run tests* runs each lesson's test
   cases. Python runs in the browser (Pyodide, downloaded from a CDN on first use, in a web worker
   with a 10-second limit so a runaway loop can't freeze the page).
-- **Lessons (9):**
+- **Lessons (11):**
   1. Your first function
   2. If / Else
   3. More than two choices: elif
@@ -112,6 +114,8 @@ whether a file could become a plan.
   7. Find the biggest number
   8. Split code into files and folders
   9. Handle mistakes with try / except
+  10. Repeat while: add up the digits
+  11. Stop early with break
 
   Each lesson starts *Guided* (part-built, with TODOs) or *Blank* (signatures only). *Check my
   work* gives hints rather than answers. If your version passes every test but is built
@@ -169,9 +173,9 @@ The Studio browser test needs Node and the `playwright` npm package (installed g
 - The check is **structural**. It confirms that the planned code is still there and in order. It
   does not prove behavior or security: code written inside a TODO can still be wrong. Always run
   real tests.
-- The plan grammar covers functions (with default values), module constants, if/else, for-loops,
-  try/except/finally with one except clause, `with`, assignments to names, calls, returns, raises
-  and TODOs. It has no classes, `while` or `async` yet; `blockwise coverage --status planned` lists
+- The plan grammar covers functions (with default values), module constants, if/else, for and
+  while loops with break/continue, try/except/finally with one except clause, `with`, assignments
+  to names (including `+=`), calls, returns, raises and TODOs. It has no classes or `async` yet; `blockwise coverage --status planned` lists
   every gap.
 - The sound is decoration. It encodes only the kind of each block, never names or conditions.
 

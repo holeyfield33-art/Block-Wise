@@ -14,8 +14,7 @@ STATUSES = ("block", "expression", "planned")
 
 # Statement node -> registry id, for statements a plan has no way to express.
 STATEMENT_GAPS = {
-    "While": "while-loop", "Break": "break-continue", "Continue": "break-continue", "Match": "match",
-    "AugAssign": "augmented-assign", "AnnAssign": "target-assign", "TryStar": "try-advanced",
+    "Match": "match", "AnnAssign": "target-assign", "TryStar": "try-advanced",
     "Assert": "assert", "AsyncWith": "async", "AsyncFor": "async", "AsyncFunctionDef": "async",
     "Global": "global-nonlocal", "Nonlocal": "global-nonlocal", "Delete": "del", "ClassDef": "classes",
     "TypeAlias": "type-aliases",
@@ -67,6 +66,12 @@ def _body_gaps(statements, gaps):
         elif isinstance(node, ast.For):
             if not isinstance(node.target, ast.Name):
                 gaps.add("loop-unpacking")
+            if node.orelse:
+                gaps.add("for-else")
+            _body_gaps(node.body, gaps)
+        elif isinstance(node, ast.AugAssign) and not isinstance(node.target, ast.Name):
+            gaps.add("target-assign")
+        elif isinstance(node, ast.While):
             if node.orelse:
                 gaps.add("for-else")
             _body_gaps(node.body, gaps)

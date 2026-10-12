@@ -17,7 +17,7 @@
   --text: #1d1913; --muted: #6b6152; --line: #1d1913; --line-soft: #d8cbb5; --shadow-c: #1d1913;
   --accent: #e8590c; --on-accent: #fff; --focus: #e8590c; --good: #2b8a3e; --bad: #d42a2a; --chip-ink: #fff;
   --k-function: #e8590c; --k-validate: #2b8a3e; --k-branch: #3b5bdb; --k-loop: #7048e8; --k-call: #0b7285;
-  --k-raise: #d42a2a; --k-return: #5c940d; --k-hole: #c2255c; --k-assign: #a86b00; --k-try: #a0522d; --k-with: #495057;
+  --k-raise: #d42a2a; --k-return: #5c940d; --k-hole: #c2255c; --k-assign: #a86b00; --k-try: #a0522d; --k-with: #495057; --k-while: #862e9c; --k-break: #9c2a5f; --k-continue: #2b6a7c;
   --code-bg: #1e1b16; --code-text: #f2ece1; --code-muted: #9d927f; --code-kw: #91a7ff; --code-str: #a9e34b;
   --code-num: #ffd43b; --code-fn: #ffa94d; --code-todo: #f783ac;
   --radius: 16px; --display: "Fraunces", Georgia, serif; --body: "Atkinson Hyperlegible", system-ui, sans-serif;
@@ -29,7 +29,7 @@
     --text: #f2ece1; --muted: #a89d8a; --line: #5d5345; --line-soft: #3b342a; --shadow-c: #000;
     --accent: #ff7a45; --on-accent: #1a120a; --focus: #ffa94d; --good: #51cf66; --bad: #ff6b6b; --chip-ink: #15130f;
     --k-function: #ff922b; --k-validate: #51cf66; --k-branch: #748ffc; --k-loop: #9775fa; --k-call: #3bc9db;
-    --k-raise: #ff6b6b; --k-return: #a9e34b; --k-hole: #f783ac; --k-assign: #fcc419; --k-try: #e8a87c; --k-with: #adb5bd;
+    --k-raise: #ff6b6b; --k-return: #a9e34b; --k-hole: #f783ac; --k-assign: #fcc419; --k-try: #e8a87c; --k-with: #adb5bd; --k-while: #da77f2; --k-break: #ff8fab; --k-continue: #66d9e8;
     --code-bg: #0f0d0a; color-scheme: dark;
   }
 }
@@ -38,7 +38,7 @@
   --text: #f2ece1; --muted: #a89d8a; --line: #5d5345; --line-soft: #3b342a; --shadow-c: #000;
   --accent: #ff7a45; --on-accent: #1a120a; --focus: #ffa94d; --good: #51cf66; --bad: #ff6b6b; --chip-ink: #15130f;
   --k-function: #ff922b; --k-validate: #51cf66; --k-branch: #748ffc; --k-loop: #9775fa; --k-call: #3bc9db;
-  --k-raise: #ff6b6b; --k-return: #a9e34b; --k-hole: #f783ac; --k-assign: #fcc419; --k-try: #e8a87c; --k-with: #adb5bd;
+  --k-raise: #ff6b6b; --k-return: #a9e34b; --k-hole: #f783ac; --k-assign: #fcc419; --k-try: #e8a87c; --k-with: #adb5bd; --k-while: #da77f2; --k-break: #ff8fab; --k-continue: #66d9e8;
   --code-bg: #0f0d0a; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -156,6 +156,8 @@ textarea#fnReqs { font-family: var(--body); }
 .chip { font: 800 .8rem var(--display); color: var(--chip-ink); background: var(--c); border-radius: 7px; padding: 3px 9px; white-space: nowrap; cursor: help; }
 .block-head .field { flex: 1 1 140px; width: auto; }
 .inline-word { font: 600 .85rem var(--mono); color: var(--muted); }
+.block-head select.field.op { flex: 0 0 auto; width: auto; font-weight: 600; padding: 4px 6px; }
+.block-head .field[aria-label$=" target"] { flex: 0 1 110px; min-width: 70px; }
 .tools { display: flex; gap: 2px; margin-left: auto; }
 .tools button { background: transparent; border: 2px solid transparent; border-radius: 7px; width: 30px; height: 30px; color: var(--muted); font-weight: 700; }
 .tools button:hover { border-color: var(--line-soft); color: var(--text); background: var(--panel-2); }
@@ -515,7 +517,10 @@ const KINDS = {
   validate: { label: "Check", py: "check(x)", help: "Call a check function that raises an error on bad input.", fields: ["expression"], defaults: { expression: "require_positive(amount)" }, note: 62 },
   branch: { label: "If / Else", py: "if …: else:", help: "Run blocks only when a condition is true; optional else side.", fields: ["condition"], defaults: { condition: "x > 0" }, note: 64 },
   loop: { label: "Repeat for each", py: "for … in …:", help: "Run the inside blocks once for every item.", fields: ["target", "iterable"], defaults: { target: "item", iterable: "items" }, note: 65 },
-  assign: { label: "Set variable", py: "name = …", help: "Store a value under a name.", fields: ["target", "expression"], defaults: { target: "total", expression: "0" }, note: 74 },
+  while: { label: "Repeat while", py: "while …:", help: "Run the inside blocks again and again while a condition stays true.", fields: ["condition"], defaults: { condition: "count > 0" }, note: 78 },
+  break: { label: "Stop loop", py: "break", help: "Leave the loop right away.", fields: [], defaults: {}, note: 79 },
+  continue: { label: "Skip to next", py: "continue", help: "Skip the rest of this turn and go to the next one.", fields: [], defaults: {}, note: 80 },
+  assign: { label: "Set variable", py: "name = …", help: "Store a value under a name, or change it with += and friends.", fields: ["target", "operator", "expression"], defaults: { target: "total", operator: "=", expression: "0" }, note: 74 },
   call: { label: "Call", py: "do_this()", help: "Run another function or method.", fields: ["expression"], defaults: { expression: "print(total)" }, note: 67 },
   return: { label: "Return", py: "return …", help: "Give a value back and leave the function.", fields: ["expression"], defaults: { expression: "result" }, note: 71 },
   raise: { label: "Raise error", py: "raise …", help: "Stop with an error message.", fields: ["expression"], defaults: { expression: "ValueError('bad input')" }, note: 69 },
@@ -552,8 +557,12 @@ const GLOSSARY = [
   ["default value", "A value a parameter uses when the caller leaves it out. In def to_quantity(text, fallback=0), calling to_quantity('x') uses 0."],
   ["constant", "A name set once at the top of a file and never changed, written in CAPITALS by convention: MAX_ITEMS = 10."],
   ["with", "Opens something that must be closed again, such as a file, and closes it for you when the block ends, even after an error."],
+  ["while loop", "Repeats its inside for as long as a condition is true. Something inside must change, or it repeats forever."],
+  ["augmented assignment", "A short way to change a variable: total += 5 means total = total + 5. There are also -=, *=, //= and more."],
+  ["break / continue", "break (Stop loop) leaves a loop right away. continue (Skip to next) skips the rest of this turn and goes to the next item."],
   ["TODO", "A placeholder block for work you have not written yet. It raises NotImplementedError until you replace it."],
 ];
+const ASSIGN_OPERATORS = ["=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "@=", "&=", "|=", "^=", "<<=", ">>="];
 const KEYWORDS = new Set("False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield".split(" "));
 const $ = (s, el = document) => el.querySelector(s);
 const clone = v => JSON.parse(JSON.stringify(v));
@@ -573,9 +582,9 @@ function container(body, path) {
   return list;
 }
 // Nested block lists for each kind (mirrors CHILDREN in blockwise/schema.py).
-const CHILD = { branch: ["body", "otherwise"], loop: ["body"], try: ["body", "handler", "finally"], with: ["body"] };
+const CHILD = { branch: ["body", "otherwise"], loop: ["body"], while: ["body"], try: ["body", "handler", "finally"], with: ["body"] };
 const kids = n => (CHILD[n.kind] || []).map(k => n[k] || []);
-const SIDE_LABEL = { body: { branch: "if side", loop: "inside the loop", try: "try side", with: "inside with" }, otherwise: "else side", handler: "except side", finally: "finally side" };
+const SIDE_LABEL = { body: { branch: "if side", loop: "inside the loop", while: "inside the loop", try: "try side", with: "inside with" }, otherwise: "else side", handler: "except side", finally: "finally side" };
 const sideLabel = (kind, side) => side === "body" ? SIDE_LABEL.body[kind] : SIDE_LABEL[side];
 function newNode(kind) {
   const node = { kind, ...clone(KINDS[kind].defaults) };
@@ -697,7 +706,9 @@ function genBody(nodes, ind) {
       out.push(`${ind}except ${n.exception}${n.alias ? " as " + n.alias : ""}:`, ...genBody(n.handler, ind + "    "));
       if (n.finally.length) out.push(`${ind}finally:`, ...genBody(n.finally, ind + "    "));
     } else if (n.kind === "with") out.push(`${ind}with ${n.context}${n.alias ? " as " + n.alias : ""}:`, ...genBody(n.body, ind + "    "));
-    else if (n.kind === "assign") out.push(`${ind}${n.target} = ${n.expression}`);
+    else if (n.kind === "while") out.push(`${ind}while ${n.condition}:`, ...genBody(n.body, ind + "    "));
+    else if (n.kind === "break" || n.kind === "continue") out.push(`${ind}${n.kind}`);
+    else if (n.kind === "assign") out.push(`${ind}${n.target} ${n.operator || "="} ${n.expression}`);
     else if (n.kind === "return") out.push(`${ind}return ${n.expression}`);
     else if (n.kind === "raise") out.push(`${ind}raise ${n.expression}`);
     else if (n.kind === "hole") out.push(`${ind}raise NotImplementedError(${pyStr("TODO:" + n.label)})`);
@@ -814,9 +825,19 @@ function renderFiles() {
   const t = fn();
   $("#targetNote").textContent = t ? `Clicking a block adds it to: ${describeTarget()}` : "Add a function to start.";
 }
+// The add-target is a path into the function body; after moves, deletes or undo it can point at a
+// block that no longer has that side. Fall back to the main level instead of failing.
+function targetParent(path) {
+  if (!path.length) return null;
+  try {
+    const parent = container(fn().body, path.slice(0, -2))[path[path.length - 2]];
+    return parent && (CHILD[parent.kind] || []).includes(path[path.length - 1]) ? parent : undefined;
+  } catch { return undefined; }
+}
 function describeTarget() {
+  if (state.target.length && targetParent(state.target) === undefined) { state.target = []; state.menu = null; }
   if (!state.target.length) return `${fn().name}() — main level`;
-  const parent = container(fn().body, state.target.slice(0, -2))[state.target[state.target.length - 2]];
+  const parent = targetParent(state.target);
   const side = state.target[state.target.length - 1];
   return `inside ${KINDS[parent.kind].label}${(CHILD[parent.kind] || []).length > 1 ? ` (${sideLabel(parent.kind, side)})` : ""}`;
 }
@@ -899,9 +920,16 @@ function renderBlock(node, path, list, index) {
   el.className = "block" + (same(state.flash, path) ? " flash" : ""); el.style.setProperty("--c", `var(--k-${node.kind})`);
   const head = document.createElement("div"); head.className = "block-head";
   head.innerHTML = `<span class="chip" title="${attr(k.help + " Python: " + k.py)}">${k.label}</span>`;
-  const words = { loop: ["for", "in"], assign: ["", "="], try: ["except", "as"], with: ["with", "as"] };
+  const words = { loop: ["for", "in"], try: ["except", "as"], with: ["with", "as"] };
   k.fields.forEach((field, i) => {
     if (words[node.kind] && words[node.kind][i]) head.appendChild(Object.assign(document.createElement("span"), { className: "inline-word", textContent: words[node.kind][i] }));
+    if (field === "operator") {
+      const pick = document.createElement("select"); pick.className = "field op"; pick.setAttribute("aria-label", `${k.label} operator`);
+      pick.title = "= stores a new value; += adds to the old one, -= subtracts, and so on";
+      pick.innerHTML = ASSIGN_OPERATORS.map(o => `<option${o === (node.operator || "=") ? " selected" : ""}>${o}</option>`).join("");
+      pick.addEventListener("change", () => { node.operator = pick.value; render(); });
+      head.appendChild(pick); return;
+    }
     const input = document.createElement("input"); input.className = "field"; input.value = node[field]; input.spellcheck = false;
     input.setAttribute("aria-label", `${k.label} ${field}`);
     if (field === "alias") { input.placeholder = "name (optional)"; input.style.flex = "0 1 130px"; }
@@ -929,11 +957,13 @@ function renderBlock(node, path, list, index) {
     el.appendChild(renderSlot(node.handler, [...path, "handler"], "inner", "except (runs if it fails)"));
     el.appendChild(renderSlot(node.finally, [...path, "finally"], "inner", "finally (always runs, optional)"));
   } else if (node.kind === "with") el.appendChild(renderSlot(node.body, [...path, "body"], "inner", "while it's open"));
+  else if (node.kind === "while") el.appendChild(renderSlot(node.body, [...path, "body"], "inner", "repeat while true"));
   return el;
 }
 function addBlock(path, kind) {
   const f = fn(); if (!f) { toast("Add a function first."); return; }
-  let list; try { list = container(f.body, path); } catch { path = []; list = f.body; }
+  if (targetParent(path) === undefined) path = [];
+  const list = container(f.body, path);
   list.push(newNode(kind)); state.flash = [...path, list.length - 1]; state.target = path; state.menu = null;
   note(kind); render(); state.flash = null;
   const inputs = document.querySelectorAll("#builder .block.flash .block-head > .field");
@@ -945,7 +975,12 @@ function renderCode() { const mod = state.plan.modules[state.m]; $("#code").inne
 function depth(nodes) { return nodes.reduce((d, n) => Math.max(d, 1 + Math.max(0, ...kids(n).map(depth))), 0); }
 function count(nodes) { return flatten(nodes).length; }
 function conditions(nodes, out = []) { for (const n of nodes) { if (n.kind === "branch") out.push(n.condition.replace(/\s+/g, "")); kids(n).forEach(k => conditions(k, out)); } return out; }
-function emptyBodies(nodes) { return nodes.some(n => (["loop", "try", "with"].includes(n.kind) && !n.body.length) || (n.kind === "branch" && !n.body.length && !n.otherwise.length) || kids(n).some(emptyBodies)); }
+function emptyBodies(nodes) { return nodes.some(n => (["loop", "while", "try", "with"].includes(n.kind) && !n.body.length) || (n.kind === "branch" && !n.body.length && !n.otherwise.length) || kids(n).some(emptyBodies)); }
+// A break/continue that is not inside a loop (Python refuses to run the file).
+function strayStops(nodes, inLoop) {
+  return nodes.some(n => (["break", "continue"].includes(n.kind) && !inLoop)
+    || (CHILD[n.kind] || []).some(key => strayStops(n[key], ["loop", "while"].includes(n.kind) || (inLoop && key !== "finally"))));
+}
 function anyNode(nodes, test) { return nodes.some(n => test(n) || kids(n).some(k => anyNode(k, test))); }
 function advise() {
   const tips = [], mods = state.plan.modules, seen = {};
@@ -956,6 +991,9 @@ function advise() {
       if (count(f.body) > 10) tip("function", `${f.name}(): ${count(f.body)} blocks is a lot`, "Find a group of blocks with one clear job and turn it into its own function, then call it.");
       if (f.returns && f.returns !== "None" && !flatten(f.body).includes("return")) tip("return", `${f.name}() promises ${f.returns} but never returns`, "Add a Return block so callers get a value back.");
       if (emptyBodies(f.body)) tip("branch", `${f.name}() has an empty If, loop, Try or With`, "An empty block does nothing. Add blocks inside it or delete it.");
+      if (strayStops(f.body, false)) tip("break", `${f.name}(): Stop loop or Skip to next outside a loop`, "These blocks only work inside Repeat for each or Repeat while. Move them inside a loop.");
+      if (anyNode(f.body, n => n.kind === "while" && /^(True|1)$/.test(n.condition.trim()) && !anyNode(n.body, m => ["break", "return", "raise"].includes(m.kind))))
+        tip("while", `${f.name}(): this Repeat while never stops`, "Its condition is always true and nothing inside leaves the loop. Add a Stop loop, Return or Raise error inside it.");
       if (anyNode(f.body, n => n.kind === "try" && !n.handler.length)) tip("try", `${f.name}(): an except side is empty`, "An empty except hides the error silently. Return a fallback, or raise a clearer error.");
       for (const p of f.parameters) if ("default" in p && /^(\[\s*\]|\{\s*\}|list\(\)|dict\(\)|set\(\))$/.test(p.default)) tip("assign", `${f.name}(): ${p.name} defaults to ${p.default}`, "That empty list or dict is shared by every call, so changes leak between calls. Use None as the default and create the list inside the function.");
       const holes = flatten(f.body).filter(k => k === "hole").length;
@@ -1121,7 +1159,8 @@ function compareBody(want, got, where) {
     if (!g) return `${spot}: something is missing here — expected a ${KINDS[w.kind].label} block.`;
     if (!w) return `${spot}: there is an extra ${KINDS[g.kind].label} block that the lesson does not need.`;
     if (w.kind !== g.kind) return `${spot}: expected a ${KINDS[w.kind].label} block, found ${KINDS[g.kind].label}.`;
-    for (const field of KINDS[w.kind].fields) if (w.kind !== "hole" && norm(w[field]) !== norm(g[field])) return `${spot}: the ${KINDS[w.kind].label} ${field === "expression" ? "value" : field} is not right yet. Re-read the lesson step that mentions it.`;
+    const val = (node, field) => node[field] ?? KINDS[node.kind].defaults[field];
+    for (const field of KINDS[w.kind].fields) if (w.kind !== "hole" && norm(val(w, field)) !== norm(val(g, field))) return `${spot}: the ${KINDS[w.kind].label} ${field === "expression" ? "value" : field} is not right yet. Re-read the lesson step that mentions it.`;
     for (const side of CHILD[w.kind] || []) {
       const msg = compareBody(w[side], g[side] || [], `${spot} › ${sideLabel(w.kind, side)}`);
       if (msg) return msg;
@@ -1292,6 +1331,7 @@ function normNodes(nodes) {
   for (const n of nodes) {
     for (const key of CHILD[n.kind] || []) n[key] = normNodes(n[key] || []);
     if (n.kind === "try" || n.kind === "with") n.alias = n.alias || "";
+    if (n.kind === "assign") n.operator = n.operator || "=";
     if (n.kind === "hole") n.allowed_calls = n.allowed_calls || [];
   }
   return nodes;
