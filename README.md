@@ -34,9 +34,11 @@ in a browser. No server or install is needed.
 
 | Command | What comes back |
 |---|---|
+| `blockwise find <words>` | the 3 best-matching presets, e.g. `blockwise find reject negative number` |
 | `blockwise list [--category validation\|auth\|data]` | `[{id, category, does, params}]` |
 | `blockwise apply <id> --into <file.py> [--set k=v ...]` | `{"ok":true,"added":"file.py:name"}` plus `todo` if the preset leaves work |
 | `blockwise check [--strict]` | `{"ok":true,...}` or a list of `{file, function, problem}` |
+| `blockwise coverage [--file f.py]` | what Blockwise can represent; with `--file`, which constructs in that file have no block yet |
 
 Exit codes: `0` ok, `1` the check found issues, `2` bad input.
 
@@ -46,7 +48,8 @@ Exit codes: `0` ok, `1` the check found issues, `2` bad input.
 { "mcpServers": { "blockwise": { "command": "blockwise", "args": ["mcp"] } } }
 ```
 
-The server provides four tools: `list_presets`, `show_preset`, `apply_preset` and `check_project`.
+The server provides six tools: `find_presets`, `list_presets`, `show_preset`, `apply_preset`, `check_project`
+and `coverage`.
 
 How it works:
 - Each applied preset is recorded in `.blockwise/plan.json`.
@@ -56,10 +59,37 @@ How it works:
 - A preset with a TODO (for example `checked_operation`) returns the TODO and the calls it may
   use. The check fails until the TODO is filled.
 
-**Why this should save money (measure it before you claim it).** In the evaluation, agents handed
-a full spec and scaffold used about 45% *more* context, because they read all of it. Presets flip
-that: the agent sends roughly 30 tokens and gets about 30 back, and the generated code never
-enters its context. The next step is to measure this with the evaluation harness.
+**Does it save tokens? Measured, not assumed** (`python benchmarks/token_cost.py`):
+
+| | tokens |
+|---|---|
+| Agent writes one preset-sized function itself (output) | ~38 |
+| Agent calls the preset instead (output + reply read back) | ~10 + ~21 |
+| Saved per use, counting output at 5× input price | ~118 input-equivalent |
+| Discovery, one time: `list` (all 16) / `find` (top 3) | ~783 / ~135 |
+
+So with `find`, a preset pays for itself on its first use. With `list`, it takes about 7 uses. The
+savings are real but small, because today's presets are 3–8 line functions that a model writes
+cheaply anyway. The larger gains are reliability: the code is tested, `check` notices when it
+drifts from the plan, and every agent writes the same thing the same way. Token savings will grow
+with bigger templates (patterns and app blueprints), and `blockwise coverage` shows which Python
+constructs those templates still need.
+
+## Python coverage registry
+
+`blockwise/coverage.json` maps 54 Python concepts across 16 domains to what Blockwise can do with them:
+
+- **block:** has its own block (functions, if/elif/else, for, assignment, calls, return, raise,
+  imports, packages);
+- **expression:** works inside any block's fields (comprehensions, f-strings, lambda, `:=`, ...);
+- **planned:** cannot be represented yet (while, try, with, classes, async, decorators, default
+  parameters, module-level constants, ...).
+
+Each entry has an example and a link to the official Python reference. The tests hold the registry
+to the code: every *block* and *expression* example compiles through the plan grammar, every
+*planned* example is caught by the checker, and everything Blockwise generates passes the checker.
+`blockwise coverage` prints the counts, `--status planned` lists the gaps, and `--file app.py` says
+whether a file could become a plan.
 
 ## For learners: Blockwise Studio
 
@@ -134,7 +164,8 @@ The Studio browser test needs Node and the `playwright` npm package (installed g
   does not prove behavior or security: code written inside a TODO can still be wrong. Always run
   real tests.
 - The plan grammar covers plain functions, if/else, for-loops, assignments to names, calls,
-  returns, raises and TODOs. It has no classes, `while`, `try` or `async` yet.
+  returns, raises and TODOs. It has no classes, `while`, `try` or `async` yet; `blockwise coverage
+  --status planned` lists every gap.
 - The sound is decoration. It encodes only the kind of each block, never names or conditions.
 
 ## License

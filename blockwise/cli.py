@@ -6,7 +6,9 @@ import sys
 from pathlib import Path
 
 from .compiler import compile_score, write_project
-from .presets import PresetError, get_preset, load_presets, render, summary
+from .coverage import check_source, load_coverage
+from .coverage import summary as coverage_summary
+from .presets import PresetError, find, get_preset, load_presets, render, summary
 from .project import apply_preset, check_project, function_source
 from .schema import ScoreError, load_score
 
@@ -31,6 +33,12 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     listing = commands.add_parser("list", help="list presets (one compact line each)")
     listing.add_argument("--category")
+    finder = commands.add_parser("find", help="best 3 presets for a few words (cheaper than list)")
+    finder.add_argument("words", nargs="+")
+    coverage = commands.add_parser("coverage", help="which Python constructs plans can represent")
+    coverage.add_argument("--status", choices=("block", "expression", "planned"))
+    coverage.add_argument("--domain")
+    coverage.add_argument("--file", type=Path, help="report which constructs in this .py file have no block yet")
     show = commands.add_parser("show", help="preview a preset's generated code")
     show.add_argument("preset")
     show.add_argument("--set", action="append", metavar="NAME=VALUE")
@@ -54,6 +62,19 @@ def main(argv=None):
         if args.command == "list":
             rows = [summary(p) for p in load_presets().values() if not args.category or p["category"] == args.category]
             emit(rows, args.pretty)
+        elif args.command == "find":
+            emit(find(" ".join(args.words)), args.pretty)
+        elif args.command == "coverage":
+            if args.file:
+                result = check_source(args.file.read_text(encoding="utf-8"))
+                emit(result, args.pretty)
+                return 0 if result["representable"] else 1
+            if not args.status and not args.domain:
+                emit(coverage_summary(), args.pretty)
+            else:
+                emit([{k: c[k] for k in ("id", "domain", "concept", "status")} for c in load_coverage()["concepts"]
+                      if (not args.status or c["status"] == args.status) and (not args.domain or c["domain"] == args.domain)],
+                     args.pretty)
         elif args.command == "show":
             preset = get_preset(args.preset)
             function, imports = render(preset, parse_sets(args.set))
