@@ -15,8 +15,8 @@ STATUSES = ("block", "expression", "planned")
 # Statement node -> registry id, for statements a plan has no way to express.
 STATEMENT_GAPS = {
     "While": "while-loop", "Break": "break-continue", "Continue": "break-continue", "Match": "match",
-    "AugAssign": "augmented-assign", "AnnAssign": "target-assign", "Try": "try-except", "TryStar": "try-except",
-    "Assert": "assert", "With": "with", "AsyncWith": "async", "AsyncFor": "async", "AsyncFunctionDef": "async",
+    "AugAssign": "augmented-assign", "AnnAssign": "target-assign", "TryStar": "try-advanced",
+    "Assert": "assert", "AsyncWith": "async", "AsyncFor": "async", "AsyncFunctionDef": "async",
     "Global": "global-nonlocal", "Nonlocal": "global-nonlocal", "Delete": "del", "ClassDef": "classes",
     "TypeAlias": "type-aliases",
 }
@@ -38,8 +38,6 @@ def _function_gaps(node, gaps):
     args = node.args
     if node.decorator_list:
         gaps.add("decorators")
-    if args.defaults or args.kw_defaults and any(d is not None for d in args.kw_defaults):
-        gaps.add("default-params")
     if args.vararg or args.kwarg or args.kwonlyargs or args.posonlyargs:
         gaps.add("star-params")
     if getattr(node, "type_params", None):
@@ -75,6 +73,15 @@ def _body_gaps(statements, gaps):
         elif isinstance(node, ast.If):
             _body_gaps(node.body, gaps)
             _body_gaps(node.orelse, gaps)
+        elif isinstance(node, ast.Try):
+            if len(node.handlers) != 1 or node.handlers[0].type is None or node.orelse:
+                gaps.add("try-advanced")
+            for part in [node.body, node.finalbody, *(h.body for h in node.handlers)]:
+                _body_gaps(part, gaps)
+        elif isinstance(node, ast.With):
+            if len(node.items) != 1 or not isinstance(node.items[0].optional_vars, (ast.Name, type(None))):
+                gaps.add("with-advanced")
+            _body_gaps(node.body, gaps)
         for child in ast.walk(node):
             if isinstance(child, (ast.Yield, ast.YieldFrom)):
                 gaps.add("generators")
@@ -95,11 +102,13 @@ def unsupported(source):
             continue  # docstring
         if isinstance(node, ast.FunctionDef):
             _function_gaps(node, gaps)
+        elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            _body_gaps([node], gaps)  # a module constant
         elif type(node).__name__ in STATEMENT_GAPS:
             gaps.add(STATEMENT_GAPS[type(node).__name__])
             _body_gaps([node], gaps)
         else:
-            gaps.add("module-level-code")
+            gaps.add("module-level-statements")
             _body_gaps([node], gaps)
     return sorted(gaps)
 

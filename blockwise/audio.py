@@ -9,7 +9,7 @@ import math
 import struct
 import wave
 
-from .schema import NOTES, validate_score
+from .schema import CHILDREN, NOTES, validate_score
 
 SAMPLE_RATE = 8000
 BEAT_SECONDS = 0.32
@@ -30,10 +30,8 @@ def flatten_events(score):
         for index, node in enumerate(body):
             address = scope + f"/{index}"
             add(module, function, node, depth, address)
-            if node["kind"] in ("branch", "loop"):
-                traverse(module, function, node["body"], depth + 1, address + "/body")
-            if node["kind"] == "branch":
-                traverse(module, function, node["otherwise"], depth + 1, address + "/otherwise")
+            for key in CHILDREN.get(node["kind"], ()):
+                traverse(module, function, node[key], depth + 1, address + "/" + key)
 
     for module in score["modules"]:
         for function in module["functions"]:

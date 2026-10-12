@@ -1,124 +1,518 @@
 {
-  "python": "3.11+",
-  "statuses": {
-    "block": "Has its own visual block; the Studio and presets can build it.",
-    "expression": "No block of its own, but works inside any block's expression or condition field.",
-    "planned": "Cannot be represented in a Blockwise plan yet."
+ "python": "3.11+",
+ "statuses": {
+  "block": "Has its own visual block; the Studio and presets can build it.",
+  "expression": "No block of its own, but works inside any block's expression or condition field.",
+  "planned": "Cannot be represented in a Blockwise plan yet."
+ },
+ "concepts": [
+  {
+   "id": "function-def",
+   "domain": "functions",
+   "concept": "Function definition",
+   "status": "block",
+   "blockwise": "function",
+   "example": "def greet(name: str) -> str:\n    return name",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions",
+   "lesson": "first-function"
   },
-  "concepts": [
-    {"id": "function-def", "domain": "functions", "concept": "Function definition", "status": "block", "blockwise": "function",
-     "example": "def greet(name: str) -> str:\n    return name", "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions", "lesson": "first-function"},
-    {"id": "return", "domain": "functions", "concept": "return", "status": "block", "blockwise": "return",
-     "example": "def f(x: int) -> int:\n    return x", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-return-statement", "lesson": "first-function"},
-    {"id": "type-hints", "domain": "typing", "concept": "Parameter and return annotations", "status": "block", "blockwise": "function",
-     "example": "def f(x: int | None) -> list[str]:\n    return []", "ref": "https://docs.python.org/3/library/typing.html", "lesson": "first-function"},
-    {"id": "call-statement", "domain": "functions", "concept": "Calling a function for its effect", "status": "block", "blockwise": "call",
-     "example": "def f(items: list) -> None:\n    items.append(1)", "ref": "https://docs.python.org/3/reference/expressions.html#calls", "lesson": "filter-list"},
-    {"id": "validate-call", "domain": "exceptions", "concept": "Guard clause via a check function", "status": "block", "blockwise": "validate",
-     "example": "def f(q: int) -> int:\n    require_positive(q)\n    return q", "ref": "https://docs.python.org/3/reference/expressions.html#calls", "lesson": "guard-inputs"},
-    {"id": "assignment", "domain": "names and binding", "concept": "Assign a value to a name", "status": "block", "blockwise": "assign",
-     "example": "def f() -> int:\n    total = 0\n    return total", "ref": "https://docs.python.org/3/reference/simple_stmts.html#assignment-statements", "lesson": "cart-loop"},
-    {"id": "if-else", "domain": "control flow", "concept": "if / else", "status": "block", "blockwise": "branch",
-     "example": "def f(a: int) -> bool:\n    if a >= 18:\n        return True\n    else:\n        return False", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-if-statement", "lesson": "if-else"},
-    {"id": "elif", "domain": "control flow", "concept": "elif chains", "status": "block", "blockwise": "branch",
-     "example": "def f(s: int) -> str:\n    if s >= 90:\n        return 'A'\n    elif s >= 80:\n        return 'B'\n    return 'F'", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-if-statement", "lesson": "elif-grades"},
-    {"id": "for-loop", "domain": "iteration", "concept": "for loop over an iterable", "status": "block", "blockwise": "loop",
-     "example": "def f(items: list) -> None:\n    for item in items:\n        print(item)", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement", "lesson": "cart-loop"},
-    {"id": "raise", "domain": "exceptions", "concept": "Raise an exception", "status": "block", "blockwise": "raise",
-     "example": "def f() -> None:\n    raise ValueError('bad input')", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-raise-statement", "lesson": "guard-inputs"},
-    {"id": "todo-hole", "domain": "verification", "concept": "Typed placeholder for unwritten work", "status": "block", "blockwise": "hole",
-     "example": "def f() -> None:\n    raise NotImplementedError('TODO:write this')", "ref": "https://docs.python.org/3/library/exceptions.html#NotImplementedError", "lesson": "find-largest"},
-    {"id": "import-from", "domain": "modules and imports", "concept": "from ... import ...", "status": "block", "blockwise": "import",
-     "example": "from auth.users import find_user", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-import-statement", "lesson": "split-files"},
-    {"id": "import", "domain": "modules and imports", "concept": "import module", "status": "block", "blockwise": "import",
-     "example": "import math", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-import-statement"},
-    {"id": "packages", "domain": "modules and imports", "concept": "Modules in folders (packages)", "status": "block", "blockwise": "module",
-     "example": "from shop.cart import cart_total", "ref": "https://docs.python.org/3/tutorial/modules.html#packages", "lesson": "split-files"},
-
-    {"id": "arithmetic", "domain": "expressions", "concept": "Arithmetic operators", "status": "expression",
-     "example": "quantity * price + 2 ** 3 - 7 // 2 % 3", "ref": "https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations", "lesson": "guard-inputs"},
-    {"id": "comparisons", "domain": "expressions", "concept": "Comparisons and chained comparisons", "status": "expression",
-     "example": "0 <= score <= 100", "ref": "https://docs.python.org/3/reference/expressions.html#comparisons", "lesson": "if-else"},
-    {"id": "boolean-ops", "domain": "expressions", "concept": "and / or / not", "status": "expression",
-     "example": "not numbers or (a and b)", "ref": "https://docs.python.org/3/reference/expressions.html#boolean-operations", "lesson": "find-largest"},
-    {"id": "membership", "domain": "expressions", "concept": "in / not in", "status": "expression",
-     "example": "name not in users", "ref": "https://docs.python.org/3/reference/expressions.html#membership-test-operations", "lesson": "split-files"},
-    {"id": "identity", "domain": "objects", "concept": "is / is not", "status": "expression",
-     "example": "user.get('active') is not True", "ref": "https://docs.python.org/3/reference/expressions.html#is-not", "lesson": "split-files"},
-    {"id": "conditional-expr", "domain": "expressions", "concept": "Conditional expression (x if c else y)", "status": "expression",
-     "example": "'adult' if age >= 18 else 'minor'", "ref": "https://docs.python.org/3/reference/expressions.html#conditional-expressions"},
-    {"id": "f-strings", "domain": "strings", "concept": "f-strings", "status": "expression", "since": "3.6",
-     "example": "f'Hello, {name}!'", "ref": "https://docs.python.org/3/reference/lexical_analysis.html#f-strings", "lesson": "first-function"},
-    {"id": "literals", "domain": "objects", "concept": "Literals: numbers, strings, lists, dicts, sets, tuples", "status": "expression",
-     "example": "[1, 2.5, 'a', (1, 2), {'k': 1}, {3}]", "ref": "https://docs.python.org/3/reference/expressions.html#atoms"},
-    {"id": "subscription", "domain": "collections", "concept": "Indexing and slicing", "status": "expression",
-     "example": "numbers[0] + sum(numbers[1:-1])", "ref": "https://docs.python.org/3/reference/expressions.html#subscriptions", "lesson": "find-largest"},
-    {"id": "attribute-access", "domain": "objects", "concept": "Attribute access and method calls", "status": "expression",
-     "example": "text.strip().lower()", "ref": "https://docs.python.org/3/reference/expressions.html#attribute-references", "lesson": "filter-list"},
-    {"id": "comprehensions", "domain": "iteration", "concept": "List, dict and set comprehensions", "status": "expression",
-     "example": "[n for n in numbers if n % 2 == 0]", "ref": "https://docs.python.org/3/reference/expressions.html#displays-for-lists-sets-and-dictionaries"},
-    {"id": "generator-expr", "domain": "iteration", "concept": "Generator expressions", "status": "expression",
-     "example": "sum(item['price'] for item in items)", "ref": "https://docs.python.org/3/reference/expressions.html#generator-expressions"},
-    {"id": "lambda", "domain": "functions", "concept": "lambda", "status": "expression",
-     "example": "sorted(users, key=lambda u: u['name'])", "ref": "https://docs.python.org/3/reference/expressions.html#lambda"},
-    {"id": "walrus", "domain": "names and binding", "concept": "Assignment expression (:=)", "status": "expression", "since": "3.8",
-     "example": "(n := len(items)) > 10", "ref": "https://docs.python.org/3/reference/expressions.html#assignment-expressions"},
-    {"id": "keyword-args", "domain": "functions", "concept": "Keyword and unpacked arguments in calls", "status": "expression",
-     "example": "build(name='x', *parts, **options)", "ref": "https://docs.python.org/3/reference/expressions.html#calls"},
-
-    {"id": "while-loop", "domain": "control flow", "concept": "while loop", "status": "planned",
-     "example": "while n > 0:\n    n -= 1", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-while-statement"},
-    {"id": "break-continue", "domain": "control flow", "concept": "break / continue", "status": "planned",
-     "example": "for x in items:\n    if x:\n        break\n    continue", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-break-statement"},
-    {"id": "for-else", "domain": "control flow", "concept": "for ... else", "status": "planned",
-     "example": "for x in items:\n    pass\nelse:\n    found = False", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement"},
-    {"id": "loop-unpacking", "domain": "iteration", "concept": "Unpacking in a for target (for k, v in ...)", "status": "planned",
-     "example": "for key, value in counts.items():\n    print(key)", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement"},
-    {"id": "match", "domain": "control flow", "concept": "match / case", "status": "planned", "since": "3.10",
-     "example": "match command:\n    case 'go':\n        pass", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-match-statement"},
-    {"id": "augmented-assign", "domain": "names and binding", "concept": "Augmented assignment (+=, -=, ...)", "status": "planned",
-     "example": "total += price", "ref": "https://docs.python.org/3/reference/simple_stmts.html#augmented-assignment-statements",
-     "note": "Write total = total + price with a Set variable block for now."},
-    {"id": "target-assign", "domain": "names and binding", "concept": "Assign to an attribute, index or several names", "status": "planned",
-     "example": "user['active'] = False", "ref": "https://docs.python.org/3/reference/simple_stmts.html#assignment-statements",
-     "note": "A Call block can do the same job for now, e.g. user.update(active=False)."},
-    {"id": "try-except", "domain": "exceptions", "concept": "try / except / else / finally", "status": "planned",
-     "example": "try:\n    value = int(text)\nexcept ValueError:\n    value = 0", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-try-statement"},
-    {"id": "raise-from", "domain": "exceptions", "concept": "raise ... from ...", "status": "planned",
-     "example": "raise KeyError(name) from None", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-raise-statement"},
-    {"id": "assert", "domain": "verification", "concept": "assert", "status": "planned",
-     "example": "assert total >= 0", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-assert-statement"},
-    {"id": "with", "domain": "resource lifecycles", "concept": "with (context managers)", "status": "planned",
-     "example": "with open(path) as handle:\n    data = handle.read()", "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-with-statement"},
-    {"id": "default-params", "domain": "functions", "concept": "Default parameter values", "status": "planned",
-     "example": "def greet(name: str = 'friend') -> str:\n    return name", "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions"},
-    {"id": "star-params", "domain": "functions", "concept": "*args, **kwargs, keyword-only parameters", "status": "planned",
-     "example": "def log(*parts: str, **fields: object) -> None:\n    pass", "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions"},
-    {"id": "decorators", "domain": "functions", "concept": "Decorators", "status": "planned",
-     "example": "@cache\ndef f() -> int:\n    return 1", "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions"},
-    {"id": "nested-functions", "domain": "scope", "concept": "Nested functions and closures", "status": "planned",
-     "example": "def outer() -> None:\n    def inner() -> None:\n        pass", "ref": "https://docs.python.org/3/reference/executionmodel.html#resolution-of-names"},
-    {"id": "global-nonlocal", "domain": "scope", "concept": "global / nonlocal", "status": "planned",
-     "example": "def f() -> None:\n    global counter", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-global-statement"},
-    {"id": "module-level-code", "domain": "modules and imports", "concept": "Module-level statements and constants", "status": "planned",
-     "example": "MAX_ITEMS = 10", "ref": "https://docs.python.org/3/reference/executionmodel.html",
-     "note": "Plans hold imports and functions only; module-level code is the main thing apps need next."},
-    {"id": "del", "domain": "names and binding", "concept": "del", "status": "planned",
-     "example": "del cache[key]", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-del-statement"},
-    {"id": "classes", "domain": "classes and protocols", "concept": "class definitions", "status": "planned",
-     "example": "class Cart:\n    pass", "ref": "https://docs.python.org/3/reference/compound_stmts.html#class-definitions"},
-    {"id": "dataclasses", "domain": "classes and protocols", "concept": "Dataclasses", "status": "planned",
-     "example": "@dataclass\nclass Item:\n    price: int", "ref": "https://docs.python.org/3/library/dataclasses.html"},
-    {"id": "dunder-protocols", "domain": "classes and protocols", "concept": "Special methods (__len__, __eq__, ...)", "status": "planned",
-     "example": "class Bag:\n    def __len__(self) -> int:\n        return 0", "ref": "https://docs.python.org/3/reference/datamodel.html#special-method-names"},
-    {"id": "generators", "domain": "iteration", "concept": "Generator functions (yield)", "status": "planned",
-     "example": "def count_up(n: int):\n    yield n", "ref": "https://docs.python.org/3/reference/expressions.html#yield-expressions"},
-    {"id": "async", "domain": "async", "concept": "async def / await / async for / async with", "status": "planned",
-     "example": "async def fetch(url: str) -> bytes:\n    return await get(url)", "ref": "https://docs.python.org/3/reference/compound_stmts.html#coroutines"},
-    {"id": "type-aliases", "domain": "typing", "concept": "type statement and generic syntax", "status": "planned", "since": "3.12",
-     "example": "type Pair = tuple[int, int]", "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-type-statement"},
-    {"id": "lazy-import", "domain": "modules and imports", "concept": "lazy import", "status": "planned", "since": "3.15",
-     "example": "lazy import json", "ref": "https://peps.python.org/pep-0810/",
-     "note": "New in 3.15; the checker cannot parse it on older Pythons, so it is listed but not verified there."}
-  ]
+  {
+   "id": "return",
+   "domain": "functions",
+   "concept": "return",
+   "status": "block",
+   "blockwise": "return",
+   "example": "def f(x: int) -> int:\n    return x",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-return-statement",
+   "lesson": "first-function"
+  },
+  {
+   "id": "type-hints",
+   "domain": "typing",
+   "concept": "Parameter and return annotations",
+   "status": "block",
+   "blockwise": "function",
+   "example": "def f(x: int | None) -> list[str]:\n    return []",
+   "ref": "https://docs.python.org/3/library/typing.html",
+   "lesson": "first-function"
+  },
+  {
+   "id": "call-statement",
+   "domain": "functions",
+   "concept": "Calling a function for its effect",
+   "status": "block",
+   "blockwise": "call",
+   "example": "def f(items: list) -> None:\n    items.append(1)",
+   "ref": "https://docs.python.org/3/reference/expressions.html#calls",
+   "lesson": "filter-list"
+  },
+  {
+   "id": "validate-call",
+   "domain": "exceptions",
+   "concept": "Guard clause via a check function",
+   "status": "block",
+   "blockwise": "validate",
+   "example": "def f(q: int) -> int:\n    require_positive(q)\n    return q",
+   "ref": "https://docs.python.org/3/reference/expressions.html#calls",
+   "lesson": "guard-inputs"
+  },
+  {
+   "id": "assignment",
+   "domain": "names and binding",
+   "concept": "Assign a value to a name",
+   "status": "block",
+   "blockwise": "assign",
+   "example": "def f() -> int:\n    total = 0\n    return total",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#assignment-statements",
+   "lesson": "cart-loop"
+  },
+  {
+   "id": "if-else",
+   "domain": "control flow",
+   "concept": "if / else",
+   "status": "block",
+   "blockwise": "branch",
+   "example": "def f(a: int) -> bool:\n    if a >= 18:\n        return True\n    else:\n        return False",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-if-statement",
+   "lesson": "if-else"
+  },
+  {
+   "id": "elif",
+   "domain": "control flow",
+   "concept": "elif chains",
+   "status": "block",
+   "blockwise": "branch",
+   "example": "def f(s: int) -> str:\n    if s >= 90:\n        return 'A'\n    elif s >= 80:\n        return 'B'\n    return 'F'",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-if-statement",
+   "lesson": "elif-grades"
+  },
+  {
+   "id": "for-loop",
+   "domain": "iteration",
+   "concept": "for loop over an iterable",
+   "status": "block",
+   "blockwise": "loop",
+   "example": "def f(items: list) -> None:\n    for item in items:\n        print(item)",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement",
+   "lesson": "cart-loop"
+  },
+  {
+   "id": "raise",
+   "domain": "exceptions",
+   "concept": "Raise an exception",
+   "status": "block",
+   "blockwise": "raise",
+   "example": "def f() -> None:\n    raise ValueError('bad input')",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-raise-statement",
+   "lesson": "guard-inputs"
+  },
+  {
+   "id": "todo-hole",
+   "domain": "verification",
+   "concept": "Typed placeholder for unwritten work",
+   "status": "block",
+   "blockwise": "hole",
+   "example": "def f() -> None:\n    raise NotImplementedError('TODO:write this')",
+   "ref": "https://docs.python.org/3/library/exceptions.html#NotImplementedError",
+   "lesson": "find-largest"
+  },
+  {
+   "id": "import-from",
+   "domain": "modules and imports",
+   "concept": "from ... import ...",
+   "status": "block",
+   "blockwise": "import",
+   "example": "from auth.users import find_user",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-import-statement",
+   "lesson": "split-files"
+  },
+  {
+   "id": "import",
+   "domain": "modules and imports",
+   "concept": "import module",
+   "status": "block",
+   "blockwise": "import",
+   "example": "import math",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-import-statement"
+  },
+  {
+   "id": "packages",
+   "domain": "modules and imports",
+   "concept": "Modules in folders (packages)",
+   "status": "block",
+   "blockwise": "module",
+   "example": "from shop.cart import cart_total",
+   "ref": "https://docs.python.org/3/tutorial/modules.html#packages",
+   "lesson": "split-files"
+  },
+  {
+   "id": "arithmetic",
+   "domain": "expressions",
+   "concept": "Arithmetic operators",
+   "status": "expression",
+   "example": "quantity * price + 2 ** 3 - 7 // 2 % 3",
+   "ref": "https://docs.python.org/3/reference/expressions.html#binary-arithmetic-operations",
+   "lesson": "guard-inputs"
+  },
+  {
+   "id": "comparisons",
+   "domain": "expressions",
+   "concept": "Comparisons and chained comparisons",
+   "status": "expression",
+   "example": "0 <= score <= 100",
+   "ref": "https://docs.python.org/3/reference/expressions.html#comparisons",
+   "lesson": "if-else"
+  },
+  {
+   "id": "boolean-ops",
+   "domain": "expressions",
+   "concept": "and / or / not",
+   "status": "expression",
+   "example": "not numbers or (a and b)",
+   "ref": "https://docs.python.org/3/reference/expressions.html#boolean-operations",
+   "lesson": "find-largest"
+  },
+  {
+   "id": "membership",
+   "domain": "expressions",
+   "concept": "in / not in",
+   "status": "expression",
+   "example": "name not in users",
+   "ref": "https://docs.python.org/3/reference/expressions.html#membership-test-operations",
+   "lesson": "split-files"
+  },
+  {
+   "id": "identity",
+   "domain": "objects",
+   "concept": "is / is not",
+   "status": "expression",
+   "example": "user.get('active') is not True",
+   "ref": "https://docs.python.org/3/reference/expressions.html#is-not",
+   "lesson": "split-files"
+  },
+  {
+   "id": "conditional-expr",
+   "domain": "expressions",
+   "concept": "Conditional expression (x if c else y)",
+   "status": "expression",
+   "example": "'adult' if age >= 18 else 'minor'",
+   "ref": "https://docs.python.org/3/reference/expressions.html#conditional-expressions"
+  },
+  {
+   "id": "f-strings",
+   "domain": "strings",
+   "concept": "f-strings",
+   "status": "expression",
+   "since": "3.6",
+   "example": "f'Hello, {name}!'",
+   "ref": "https://docs.python.org/3/reference/lexical_analysis.html#f-strings",
+   "lesson": "first-function"
+  },
+  {
+   "id": "literals",
+   "domain": "objects",
+   "concept": "Literals: numbers, strings, lists, dicts, sets, tuples",
+   "status": "expression",
+   "example": "[1, 2.5, 'a', (1, 2), {'k': 1}, {3}]",
+   "ref": "https://docs.python.org/3/reference/expressions.html#atoms"
+  },
+  {
+   "id": "subscription",
+   "domain": "collections",
+   "concept": "Indexing and slicing",
+   "status": "expression",
+   "example": "numbers[0] + sum(numbers[1:-1])",
+   "ref": "https://docs.python.org/3/reference/expressions.html#subscriptions",
+   "lesson": "find-largest"
+  },
+  {
+   "id": "attribute-access",
+   "domain": "objects",
+   "concept": "Attribute access and method calls",
+   "status": "expression",
+   "example": "text.strip().lower()",
+   "ref": "https://docs.python.org/3/reference/expressions.html#attribute-references",
+   "lesson": "filter-list"
+  },
+  {
+   "id": "comprehensions",
+   "domain": "iteration",
+   "concept": "List, dict and set comprehensions",
+   "status": "expression",
+   "example": "[n for n in numbers if n % 2 == 0]",
+   "ref": "https://docs.python.org/3/reference/expressions.html#displays-for-lists-sets-and-dictionaries"
+  },
+  {
+   "id": "generator-expr",
+   "domain": "iteration",
+   "concept": "Generator expressions",
+   "status": "expression",
+   "example": "sum(item['price'] for item in items)",
+   "ref": "https://docs.python.org/3/reference/expressions.html#generator-expressions"
+  },
+  {
+   "id": "lambda",
+   "domain": "functions",
+   "concept": "lambda",
+   "status": "expression",
+   "example": "sorted(users, key=lambda u: u['name'])",
+   "ref": "https://docs.python.org/3/reference/expressions.html#lambda"
+  },
+  {
+   "id": "walrus",
+   "domain": "names and binding",
+   "concept": "Assignment expression (:=)",
+   "status": "expression",
+   "since": "3.8",
+   "example": "(n := len(items)) > 10",
+   "ref": "https://docs.python.org/3/reference/expressions.html#assignment-expressions"
+  },
+  {
+   "id": "keyword-args",
+   "domain": "functions",
+   "concept": "Keyword and unpacked arguments in calls",
+   "status": "expression",
+   "example": "build(name='x', *parts, **options)",
+   "ref": "https://docs.python.org/3/reference/expressions.html#calls"
+  },
+  {
+   "id": "while-loop",
+   "domain": "control flow",
+   "concept": "while loop",
+   "status": "planned",
+   "example": "while n > 0:\n    n -= 1",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-while-statement"
+  },
+  {
+   "id": "break-continue",
+   "domain": "control flow",
+   "concept": "break / continue",
+   "status": "planned",
+   "example": "for x in items:\n    if x:\n        break\n    continue",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-break-statement"
+  },
+  {
+   "id": "for-else",
+   "domain": "control flow",
+   "concept": "for ... else",
+   "status": "planned",
+   "example": "for x in items:\n    pass\nelse:\n    found = False",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement"
+  },
+  {
+   "id": "loop-unpacking",
+   "domain": "iteration",
+   "concept": "Unpacking in a for target (for k, v in ...)",
+   "status": "planned",
+   "example": "for key, value in counts.items():\n    print(key)",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-for-statement"
+  },
+  {
+   "id": "match",
+   "domain": "control flow",
+   "concept": "match / case",
+   "status": "planned",
+   "since": "3.10",
+   "example": "match command:\n    case 'go':\n        pass",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-match-statement"
+  },
+  {
+   "id": "augmented-assign",
+   "domain": "names and binding",
+   "concept": "Augmented assignment (+=, -=, ...)",
+   "status": "planned",
+   "example": "total += price",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#augmented-assignment-statements",
+   "note": "Write total = total + price with a Set variable block for now."
+  },
+  {
+   "id": "target-assign",
+   "domain": "names and binding",
+   "concept": "Assign to an attribute, index or several names",
+   "status": "planned",
+   "example": "user['active'] = False",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#assignment-statements",
+   "note": "A Call block can do the same job for now, e.g. user.update(active=False)."
+  },
+  {
+   "id": "try-except",
+   "domain": "exceptions",
+   "concept": "try / except / finally (one except clause)",
+   "status": "block",
+   "example": "def f(text: str) -> int:\n    try:\n        return int(text)\n    except ValueError as error:\n        return 0\n    finally:\n        print('done')",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-try-statement",
+   "blockwise": "try",
+   "lesson": "try-except"
+  },
+  {
+   "id": "try-advanced",
+   "domain": "exceptions",
+   "concept": "Several except clauses, try / else, bare except, except*",
+   "status": "planned",
+   "example": "try:\n    run()\nexcept ValueError:\n    pass\nexcept KeyError:\n    pass",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-try-statement",
+   "note": "Catch several types in one block for now: (ValueError, KeyError)."
+  },
+  {
+   "id": "raise-from",
+   "domain": "exceptions",
+   "concept": "raise ... from ...",
+   "status": "planned",
+   "example": "raise KeyError(name) from None",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-raise-statement"
+  },
+  {
+   "id": "assert",
+   "domain": "verification",
+   "concept": "assert",
+   "status": "planned",
+   "example": "assert total >= 0",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-assert-statement"
+  },
+  {
+   "id": "with",
+   "domain": "resource lifecycles",
+   "concept": "with (context managers)",
+   "status": "block",
+   "example": "def f(path: str) -> str:\n    with open(path, encoding='utf-8') as handle:\n        return handle.read()",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-with-statement",
+   "blockwise": "with"
+  },
+  {
+   "id": "with-advanced",
+   "domain": "resource lifecycles",
+   "concept": "with over several context managers, or unpacking",
+   "status": "planned",
+   "example": "with open(a) as src, open(b, 'w') as dst:\n    pass",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#the-with-statement",
+   "note": "Nest one With block inside another for now."
+  },
+  {
+   "id": "default-params",
+   "domain": "functions",
+   "concept": "Default parameter values",
+   "status": "block",
+   "example": "def greet(name: str = 'friend') -> str:\n    return name",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions",
+   "blockwise": "function",
+   "lesson": "try-except"
+  },
+  {
+   "id": "star-params",
+   "domain": "functions",
+   "concept": "*args, **kwargs, keyword-only parameters",
+   "status": "planned",
+   "example": "def log(*parts: str, **fields: object) -> None:\n    pass",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions"
+  },
+  {
+   "id": "decorators",
+   "domain": "functions",
+   "concept": "Decorators",
+   "status": "planned",
+   "example": "@cache\ndef f() -> int:\n    return 1",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#function-definitions"
+  },
+  {
+   "id": "nested-functions",
+   "domain": "scope",
+   "concept": "Nested functions and closures",
+   "status": "planned",
+   "example": "def outer() -> None:\n    def inner() -> None:\n        pass",
+   "ref": "https://docs.python.org/3/reference/executionmodel.html#resolution-of-names"
+  },
+  {
+   "id": "global-nonlocal",
+   "domain": "scope",
+   "concept": "global / nonlocal",
+   "status": "planned",
+   "example": "def f() -> None:\n    global counter",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-global-statement"
+  },
+  {
+   "id": "constants",
+   "domain": "modules and imports",
+   "concept": "Module-level constants",
+   "status": "block",
+   "blockwise": "constant",
+   "example": "MAX_ITEMS = 10\nROLES = ('admin', 'owner')",
+   "ref": "https://peps.python.org/pep-0008/#constants"
+  },
+  {
+   "id": "module-level-statements",
+   "domain": "modules and imports",
+   "concept": "Other module-level code (top-level calls, if __name__ == '__main__')",
+   "status": "planned",
+   "example": "if __name__ == '__main__':\n    main()",
+   "ref": "https://docs.python.org/3/library/__main__.html",
+   "note": "Put the work in a function; a main entry-point block is planned next."
+  },
+  {
+   "id": "del",
+   "domain": "names and binding",
+   "concept": "del",
+   "status": "planned",
+   "example": "del cache[key]",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-del-statement"
+  },
+  {
+   "id": "classes",
+   "domain": "classes and protocols",
+   "concept": "class definitions",
+   "status": "planned",
+   "example": "class Cart:\n    pass",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#class-definitions"
+  },
+  {
+   "id": "dataclasses",
+   "domain": "classes and protocols",
+   "concept": "Dataclasses",
+   "status": "planned",
+   "example": "@dataclass\nclass Item:\n    price: int",
+   "ref": "https://docs.python.org/3/library/dataclasses.html"
+  },
+  {
+   "id": "dunder-protocols",
+   "domain": "classes and protocols",
+   "concept": "Special methods (__len__, __eq__, ...)",
+   "status": "planned",
+   "example": "class Bag:\n    def __len__(self) -> int:\n        return 0",
+   "ref": "https://docs.python.org/3/reference/datamodel.html#special-method-names"
+  },
+  {
+   "id": "generators",
+   "domain": "iteration",
+   "concept": "Generator functions (yield)",
+   "status": "planned",
+   "example": "def count_up(n: int):\n    yield n",
+   "ref": "https://docs.python.org/3/reference/expressions.html#yield-expressions"
+  },
+  {
+   "id": "async",
+   "domain": "async",
+   "concept": "async def / await / async for / async with",
+   "status": "planned",
+   "example": "async def fetch(url: str) -> bytes:\n    return await get(url)",
+   "ref": "https://docs.python.org/3/reference/compound_stmts.html#coroutines"
+  },
+  {
+   "id": "type-aliases",
+   "domain": "typing",
+   "concept": "type statement and generic syntax",
+   "status": "planned",
+   "since": "3.12",
+   "example": "type Pair = tuple[int, int]",
+   "ref": "https://docs.python.org/3/reference/simple_stmts.html#the-type-statement"
+  },
+  {
+   "id": "lazy-import",
+   "domain": "modules and imports",
+   "concept": "lazy import",
+   "status": "planned",
+   "since": "3.15",
+   "example": "lazy import json",
+   "ref": "https://peps.python.org/pep-0810/",
+   "note": "New in 3.15; the checker cannot parse it on older Pythons, so it is listed but not verified there."
+  }
+ ]
 }

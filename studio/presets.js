@@ -757,6 +757,323 @@ window.BLOCKWISE_PRESETS = [
   "preview": "def average(total: float, count: float) -> float:\n    if count == 0:\n        return 0\n    return total / count\n"
  },
  {
+  "id": "parse_int_or_default",
+  "title": "Turn text into a whole number, or fall back",
+  "category": "data",
+  "summary": "Return int(text); when the text is not a whole number (or not text at all), return the fallback.",
+  "params": {
+   "function": {
+    "kind": "identifier",
+    "default": "to_int"
+   },
+   "text": {
+    "kind": "identifier",
+    "default": "text"
+   },
+   "fallback": {
+    "kind": "identifier",
+    "default": "fallback"
+   },
+   "fallback_value": {
+    "kind": "number",
+    "default": 0
+   }
+  },
+  "function": {
+   "name": "{{function}}",
+   "parameters": [
+    {
+     "name": "{{text}}",
+     "type": "str"
+    },
+    {
+     "name": "{{fallback}}",
+     "type": "int",
+     "default": "{{fallback_value}}"
+    }
+   ],
+   "returns": "int",
+   "body": [
+    {
+     "kind": "try",
+     "exception": "(TypeError, ValueError)",
+     "body": [
+      {
+       "kind": "return",
+       "expression": "int({{text}})"
+      }
+     ],
+     "handler": [
+      {
+       "kind": "return",
+       "expression": "{{fallback}}"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "args": [
+     "42"
+    ],
+    "returns": 42
+   },
+   {
+    "args": [
+     " 7 "
+    ],
+    "returns": 7
+   },
+   {
+    "args": [
+     "4.5"
+    ],
+    "returns": 0
+   },
+   {
+    "args": [
+     "abc",
+     -1
+    ],
+    "returns": -1
+   },
+   {
+    "args": [
+     null
+    ],
+    "returns": 0
+   }
+  ],
+  "preview": "def to_int(text: str, fallback: int=0) -> int:\n    try:\n        return int(text)\n    except (TypeError, ValueError):\n        return fallback\n"
+ },
+ {
+  "id": "read_text_file",
+  "title": "Read a whole text file",
+  "category": "files",
+  "summary": "Open a text file, return everything in it, and always close the file.",
+  "params": {
+   "function": {
+    "kind": "identifier",
+    "default": "read_text"
+   },
+   "path": {
+    "kind": "identifier",
+    "default": "path"
+   },
+   "encoding": {
+    "kind": "string",
+    "default": "utf-8"
+   }
+  },
+  "function": {
+   "name": "{{function}}",
+   "parameters": [
+    {
+     "name": "{{path}}",
+     "type": "str"
+    }
+   ],
+   "returns": "str",
+   "body": [
+    {
+     "kind": "with",
+     "context": "open({{path}}, encoding={{encoding}})",
+     "alias": "handle",
+     "body": [
+      {
+       "kind": "return",
+       "expression": "handle.read()"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "files": {
+     "note.txt": "hello\nworld"
+    },
+    "args": [
+     "{dir}/note.txt"
+    ],
+    "returns": "hello\nworld"
+   },
+   {
+    "args": [
+     "{dir}/missing.txt"
+    ],
+    "raises": "FileNotFoundError"
+   }
+  ],
+  "preview": "def read_text(path: str) -> str:\n    with open(path, encoding='utf-8') as handle:\n        return handle.read()\n"
+ },
+ {
+  "id": "write_text_file",
+  "title": "Write a text file",
+  "category": "files",
+  "summary": "Replace a file's contents with the given text, and always close the file.",
+  "params": {
+   "function": {
+    "kind": "identifier",
+    "default": "write_text"
+   },
+   "path": {
+    "kind": "identifier",
+    "default": "path"
+   },
+   "text": {
+    "kind": "identifier",
+    "default": "text"
+   },
+   "encoding": {
+    "kind": "string",
+    "default": "utf-8"
+   }
+  },
+  "function": {
+   "name": "{{function}}",
+   "parameters": [
+    {
+     "name": "{{path}}",
+     "type": "str"
+    },
+    {
+     "name": "{{text}}",
+     "type": "str"
+    }
+   ],
+   "returns": "None",
+   "body": [
+    {
+     "kind": "with",
+     "context": "open({{path}}, 'w', encoding={{encoding}})",
+     "alias": "handle",
+     "body": [
+      {
+       "kind": "call",
+       "expression": "handle.write({{text}})"
+      }
+     ]
+    },
+    {
+     "kind": "return",
+     "expression": "None"
+    }
+   ]
+  },
+  "examples": [
+   {
+    "args": [
+     "{dir}/out.txt",
+     "saved"
+    ],
+    "returns": null,
+    "then_files": {
+     "out.txt": "saved"
+    }
+   }
+  ],
+  "preview": "def write_text(path: str, text: str) -> None:\n    with open(path, 'w', encoding='utf-8') as handle:\n        handle.write(text)\n    return None\n"
+ },
+ {
+  "id": "read_json_or_default",
+  "title": "Read a JSON file, or fall back",
+  "category": "files",
+  "summary": "Return the data in a JSON file; if the file is missing, unreadable or not valid JSON, return the fallback instead.",
+  "params": {
+   "function": {
+    "kind": "identifier",
+    "default": "load_settings"
+   },
+   "path": {
+    "kind": "identifier",
+    "default": "path"
+   },
+   "fallback": {
+    "kind": "identifier",
+    "default": "fallback"
+   },
+   "fallback_value": {
+    "kind": "expression",
+    "default": "None"
+   }
+  },
+  "imports": [
+   "import json"
+  ],
+  "function": {
+   "name": "{{function}}",
+   "parameters": [
+    {
+     "name": "{{path}}",
+     "type": "str"
+    },
+    {
+     "name": "{{fallback}}",
+     "type": "object",
+     "default": "{{fallback_value}}"
+    }
+   ],
+   "returns": "object",
+   "body": [
+    {
+     "kind": "try",
+     "exception": "(OSError, ValueError)",
+     "body": [
+      {
+       "kind": "with",
+       "context": "open({{path}}, encoding='utf-8')",
+       "alias": "handle",
+       "body": [
+        {
+         "kind": "return",
+         "expression": "json.load(handle)"
+        }
+       ]
+      }
+     ],
+     "handler": [
+      {
+       "kind": "return",
+       "expression": "{{fallback}}"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "files": {
+     "s.json": "{\"theme\": \"dark\"}"
+    },
+    "args": [
+     "{dir}/s.json"
+    ],
+    "returns": {
+     "theme": "dark"
+    }
+   },
+   {
+    "files": {
+     "bad.json": "{not json"
+    },
+    "args": [
+     "{dir}/bad.json",
+     {}
+    ],
+    "returns": {}
+   },
+   {
+    "args": [
+     "{dir}/missing.json"
+    ],
+    "returns": null
+   }
+  ],
+  "preview": "def load_settings(path: str, fallback: object=None) -> object:\n    try:\n        with open(path, encoding='utf-8') as handle:\n            return json.load(handle)\n    except (OSError, ValueError):\n        return fallback\n"
+ },
+ {
   "id": "require_positive",
   "title": "Reject zero and negative numbers",
   "category": "validation",
@@ -854,7 +1171,7 @@ window.BLOCKWISE_PRESETS = [
    "body": [
     {
      "kind": "branch",
-     "condition": "not isinstance({{value}}, {{type}}) or isinstance({{value}}, bool) and {{type}} is not bool",
+     "condition": "not isinstance({{value}}, {{type}}) or (isinstance({{value}}, bool) and {{type}} is not bool)",
      "body": [
       {
        "kind": "raise",

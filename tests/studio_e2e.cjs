@@ -54,6 +54,14 @@ const { chromium } = require("playwright");
     result.generated[id] = await page.evaluate(() => Object.fromEntries(state.plan.modules.map(m => [m.path, genModule(m)])));
   }
 
+  // 1b. Every template, with its default parameters, as the Studio would generate it.
+  result.presets = await page.evaluate(() => Object.fromEntries(BLOCKWISE_PRESETS.map(p => {
+    const values = Object.fromEntries(Object.entries(p.params).map(([k, spec]) => [k, renderValue(spec, spec.default)]));
+    const f = substitute(p.function, values); f.requirements = []; f.body = normNodes(f.body);
+    return [p.id, { plan: { format: "blockwise-plan-v1", modules: [{ path: "m.py", imports: substitute(p.imports || [], values), constants: [], functions: [f] }] },
+      source: genModule({ imports: substitute(p.imports || [], values), constants: [], functions: [f] }) }];
+  })));
+
   // 2. Real clicks: lesson 2 (if / else) built through the UI.
   await page.selectOption("#lessonPick", "if-else");
   await page.click("#startLesson");
@@ -100,6 +108,27 @@ const { chromium } = require("playwright");
   await page.click('.tab[data-tab="lesson"]');
   await page.locator('#lessonPanel [data-word="condition"]').click();
   result.ui.glossary_jump = await page.isVisible("#word-condition.hit");
+
+  // 5c. New blocks by clicking: a default value, a constant, and a Try / Except with a Return on each side.
+  await page.evaluate(() => { state.lesson = null; state.plan = normalize({ modules: [{ path: "p.py", functions: [{ name: "to_int", parameters: [], body: [] }] }] }); state.m = 0; state.f = 0; render(); });
+  await page.fill("#fnParams", "text: str, fallback: int=0");
+  await page.locator("#builder details summary").click();
+  await page.fill("#fnConsts", "LIMIT = 10");
+  await page.locator("#palette .pal", { hasText: "Try / Except" }).click();
+  await page.locator("#builder .slot:not(.root) > .add-here").nth(0).click();
+  await page.locator("#builder .addmenu button", { hasText: "Return" }).click();
+  await page.locator('#builder input[aria-label="Return expression"]').nth(0).fill("int(text)");
+  await page.locator("#builder .slot:not(.root) > .add-here").nth(1).click();
+  await page.locator("#builder .addmenu button", { hasText: "Return" }).click();
+  await page.locator('#builder input[aria-label="Return expression"]').nth(1).fill("fallback");
+  await page.locator('#builder input[aria-label="Try / Except exception"]').fill("ValueError, KeyError");
+  result.ui.bad_exception_flagged = (await page.textContent("#fieldMsg")).includes("brackets");
+  await page.locator('#builder input[aria-label="Try / Except exception"]').fill("(ValueError, TypeError)");
+  result.ui.try_code = await page.evaluate(() => genModule(state.plan.modules[0]));
+  result.ui.kinds_without_color = await page.evaluate(() => Object.keys(KINDS).filter(k => !getComputedStyle(document.documentElement).getPropertyValue(`--k-${k}`).trim()));
+  await page.fill("#fnParams", "fallback: int=0, text: str");
+  result.ui.default_order_message = await page.textContent("#fieldMsg");
+  await page.screenshot({ path: path.join(out, "studio-try.png"), fullPage: true });
 
   // 6. Advisor reacts to deep nesting.
   await page.evaluate(() => {

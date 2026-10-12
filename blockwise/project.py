@@ -106,7 +106,7 @@ def apply_preset(project, preset_id, into, params=None):
 def walk(body):
     for node in body:
         yield node
-        for key in ("body", "otherwise"):
+        for key in ("body", "otherwise", "handler", "finally"):
             yield from walk(node.get(key, []))
 
 

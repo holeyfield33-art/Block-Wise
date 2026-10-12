@@ -18,23 +18,32 @@ def build(preset_id, params=None):
 
 def test_library_is_not_empty_and_ids_are_unique():
     assert len(PRESETS) >= 15
-    assert {p["category"] for p in PRESETS.values()} == {"validation", "auth", "data"}
+    assert {p["category"] for p in PRESETS.values()} == {"validation", "auth", "data", "files"}
 
 
 @pytest.mark.parametrize("preset_id", sorted(PRESETS))
-def test_preset_defaults_render_and_examples_hold(preset_id):
+def test_preset_defaults_render_and_examples_hold(preset_id, tmp_path):
     preset = PRESETS[preset_id]
     if not preset["examples"]:
         render(preset)  # presets with TODOs still render to valid plans
         return
     function = build(preset_id)
-    for example in preset["examples"]:
+    for number, example in enumerate(preset["examples"]):
+        # File examples: "files" are written to a fresh folder, "{dir}" in text args points at it,
+        # and "then_files" lists the contents expected afterwards.
+        folder = tmp_path / str(number)
+        folder.mkdir()
+        for name, content in example.get("files", {}).items():
+            (folder / name).write_text(content, encoding="utf-8")
+        args = [a.replace("{dir}", str(folder)) if isinstance(a, str) else a for a in example["args"]]
         if "raises" in example:
             with pytest.raises(Exception) as caught:
-                function(*example["args"])
+                function(*args)
             assert type(caught.value).__name__ == example["raises"]
         else:
-            assert function(*example["args"]) == example["returns"]
+            assert function(*args) == example["returns"]
+        for name, content in example.get("then_files", {}).items():
+            assert (folder / name).read_text(encoding="utf-8") == content
 
 
 def test_parameters_change_the_code():

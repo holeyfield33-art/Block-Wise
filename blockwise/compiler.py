@@ -31,6 +31,15 @@ def compile_nodes(nodes):
             statements.append(ast.For(target=ast.Name(id=node["target"], ctx=ast.Store()),
                                       iter=expression(node["iterable"], kind),
                                       body=compile_nodes(node["body"]) or [ast.Pass()], orelse=[]))
+        elif kind == "try":
+            handler = ast.ExceptHandler(type=expression(node["exception"], kind), name=node["alias"] or None,
+                                        body=compile_nodes(node["handler"]) or [ast.Pass()])
+            statements.append(ast.Try(body=compile_nodes(node["body"]) or [ast.Pass()], handlers=[handler],
+                                      orelse=[], finalbody=compile_nodes(node["finally"])))
+        elif kind == "with":
+            alias = ast.Name(id=node["alias"], ctx=ast.Store()) if node["alias"] else None
+            statements.append(ast.With(items=[ast.withitem(context_expr=expression(node["context"], kind), optional_vars=alias)],
+                                       body=compile_nodes(node["body"]) or [ast.Pass()]))
         elif kind == "hole":
             statements.append(ast.Raise(exc=ast.Call(func=ast.Name(id="NotImplementedError", ctx=ast.Load()),
                                                      args=[ast.Constant(HOLE_PREFIX + node["label"])], keywords=[]), cause=None))
@@ -56,11 +65,15 @@ def compile_score(score):
         body = [ast.Expr(value=ast.Constant(DOCSTRING))]
         for imported in module["imports"]:
             body.extend(ast.parse(imported).body)
+        for constant in module["constants"]:
+            body.append(ast.Assign(targets=[ast.Name(id=constant["name"], ctx=ast.Store())],
+                                   value=expression(constant["value"], "constant")))
         for function in module["functions"]:
             parameters = [ast.arg(arg=item["name"], annotation=expression(item["type"], "type"))
                           for item in function["parameters"]]
+            defaults = [expression(item["default"], "default") for item in function["parameters"] if "default" in item]
             arguments = ast.arguments(posonlyargs=[], args=parameters, vararg=None, kwonlyargs=[],
-                                      kw_defaults=[], kwarg=None, defaults=[])
+                                      kw_defaults=[], kwarg=None, defaults=defaults)
             statements = compile_nodes(function["body"])
             if function["requirements"]:
                 statements.insert(0, ast.Expr(value=ast.Constant("Requirements:\n" + "\n".join(function["requirements"]))))

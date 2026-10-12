@@ -10,7 +10,9 @@ FORMAT = "blockwise-plan-v1"
 # Scores exported by Sonic Code Studio use the same grammar and remain accepted.
 LEGACY_FORMATS = ("sonic-template-v1",)
 NOTES = {"function": 60, "validate": 62, "branch": 64, "loop": 65,
-         "call": 67, "raise": 69, "return": 71, "hole": 72, "assign": 74}
+         "call": 67, "raise": 69, "return": 71, "hole": 72, "assign": 74, "try": 76, "with": 77}
+# Nested statement lists, by element kind.
+CHILDREN = {"branch": ("body", "otherwise"), "loop": ("body",), "try": ("body", "handler", "finally"), "with": ("body",)}
 MAX_NODES = 256
 MAX_DEPTH = 16
 
@@ -118,7 +120,11 @@ def validate_score(score):
                 fields |= {"target", "iterable", "body"}
             elif kind == "hole":
                 fields |= {"label", "allowed_calls"}
-            required = fields - {"otherwise", "allowed_calls"}
+            elif kind == "try":
+                fields |= {"body", "exception", "alias", "handler", "finally"}
+            elif kind == "with":
+                fields |= {"context", "alias", "body"}
+            required = fields - {"otherwise", "allowed_calls", "alias", "handler", "finally"}
             keys(node, fields, required, f"{kind} element")
             if "expression" in fields:
                 parsed = expression(node["expression"], kind)
@@ -134,6 +140,22 @@ def validate_score(score):
             if kind == "loop":
                 expression(node["iterable"], "Loop iterable")
                 nodes(node["body"], depth + 1)
+            if kind in ("try", "with"):
+                node.setdefault("alias", "")
+                if node["alias"] != "":
+                    identifier(node["alias"], f"{kind} alias")
+            if kind == "try":
+                parsed = expression(node["exception"], "Exception type")
+                if not isinstance(parsed, (ast.Name, ast.Attribute, ast.Tuple)) or isinstance(parsed, ast.Tuple) and (
+                        not parsed.elts or not all(isinstance(e, (ast.Name, ast.Attribute)) for e in parsed.elts)):
+                    raise ScoreError("Exception type must be a name like ValueError or a tuple of names")
+                node.setdefault("handler", [])
+                node.setdefault("finally", [])
+                for key in CHILDREN["try"]:
+                    nodes(node[key], depth + 1)
+            if kind == "with":
+                expression(node["context"], "With context")
+                nodes(node["body"], depth + 1)
             if kind == "hole":
                 text(node["label"], "Hole label", 512)
                 node.setdefault("allowed_calls", [])
@@ -143,7 +165,7 @@ def validate_score(score):
                         raise ScoreError("Allowed calls must be dotted symbol names")
 
     for module in modules:
-        keys(module, {"path", "imports", "functions"}, {"path", "functions"}, "Module")
+        keys(module, {"path", "imports", "constants", "functions"}, {"path", "functions"}, "Module")
         module_path(module["path"])
         if module["path"].casefold() in paths:
             raise ScoreError("Duplicate module path (including case aliases)")
@@ -158,6 +180,17 @@ def validate_score(score):
             if (len(parsed.body) != 1 or not isinstance(parsed.body[0], (ast.Import, ast.ImportFrom))
                     or any(alias.name == "*" for alias in parsed.body[0].names)):
                 raise ScoreError("Each import must be one explicit import statement")
+        module.setdefault("constants", [])
+        if not isinstance(module["constants"], list) or len(module["constants"]) > 64:
+            raise ScoreError("Constants must be a list of at most 64 elements")
+        top_names = set()
+        for constant in module["constants"]:
+            keys(constant, {"name", "value"}, {"name", "value"}, "Constant")
+            identifier(constant["name"], "Constant name")
+            expression(constant["value"], "Constant value")
+            if constant["name"] in top_names:
+                raise ScoreError("Duplicate constant name")
+            top_names.add(constant["name"])
         if not isinstance(module["functions"], list) or not 1 <= len(module["functions"]) <= 32:
             raise ScoreError("Each module requires 1 to 32 functions")
         names = set()
@@ -165,17 +198,22 @@ def validate_score(score):
             keys(function, {"name", "parameters", "returns", "requirements", "body"},
                  {"name", "parameters", "body"}, "Function")
             identifier(function["name"], "Function name")
-            if function["name"] in names:
-                raise ScoreError("Duplicate function name")
+            if function["name"] in names or function["name"] in top_names:
+                raise ScoreError("Duplicate function name (or a constant with the same name)")
             names.add(function["name"])
             parameters = function["parameters"]
             if not isinstance(parameters, list) or len(parameters) > 32:
                 raise ScoreError("Parameters must be a list of at most 32 elements")
-            params = set()
+            params, seen_default = set(), False
             for parameter in parameters:
-                keys(parameter, {"name", "type"}, {"name", "type"}, "Parameter")
+                keys(parameter, {"name", "type", "default"}, {"name", "type"}, "Parameter")
                 identifier(parameter["name"], "Parameter name")
                 annotation(parameter["type"], "Parameter type")
+                if "default" in parameter:
+                    expression(parameter["default"], "Parameter default")
+                    seen_default = True
+                elif seen_default:
+                    raise ScoreError(f"Parameter '{parameter['name']}' needs a default: it comes after one that has a default")
                 if parameter["name"] in params:
                     raise ScoreError("Duplicate parameter name")
                 params.add(parameter["name"])
