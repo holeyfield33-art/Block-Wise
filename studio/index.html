@@ -4,166 +4,269 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blockwise Studio</title>
-<meta name="description" content="Build Python from blocks: functions, if/else, loops and nesting, with live code, guided lessons and a structure advisor.">
+<meta name="description" content="Learn Python by snapping blocks together: live code, guided lessons, real tests that run in your browser, and a library of tested templates.">
+<meta name="theme-color" content="#f2ece1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='4' width='18' height='8' rx='2' fill='%23e8590c'/%3E%3Crect x='8' y='13' width='20' height='8' rx='2' fill='%233b5bdb'/%3E%3Crect x='4' y='22' width='14' height='8' rx='2' fill='%232b8a3e'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+/* Workbench theme: warm paper, ink outlines, hard shadows, toy-block colors. The code pane is always a dark slate. */
 :root {
-  --ink: #0d1220; --ink-2: #141b2d; --panel: #182036; --panel-2: #1f2943; --line: #2c3a5c; --line-soft: #233052;
-  --text: #e8ecf6; --muted: #9aa6c2; --focus: #ffd166; --accent: #f5b84c; --accent-2: #7aa2ff; --good: #5ad1a5; --bad: #ff6b6b;
-  --k-function: #f5b84c; --k-validate: #5ad1a5; --k-branch: #7aa2ff; --k-loop: #c792ea; --k-call: #4fd6e8;
-  --k-raise: #ff6b6b; --k-return: #a3e635; --k-hole: #f0a8d0; --k-assign: #ffd166;
-  --grid: rgba(122, 162, 255, .07);
-  --radius: 14px; --shadow: 0 10px 30px rgba(0,0,0,.35);
-  --display: "Bricolage Grotesque", Georgia, serif; --body: "Atkinson Hyperlegible", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
-  color-scheme: dark;
+  --bg: #f2ece1; --dot: rgba(60, 45, 25, .13); --panel: #fffaf2; --panel-2: #f6efe2; --sunk: #ece3d3;
+  --text: #1d1913; --muted: #6b6152; --line: #1d1913; --line-soft: #d8cbb5; --shadow-c: #1d1913;
+  --accent: #e8590c; --on-accent: #fff; --focus: #e8590c; --good: #2b8a3e; --bad: #d42a2a; --chip-ink: #fff;
+  --k-function: #e8590c; --k-validate: #2b8a3e; --k-branch: #3b5bdb; --k-loop: #7048e8; --k-call: #0b7285;
+  --k-raise: #d42a2a; --k-return: #5c940d; --k-hole: #c2255c; --k-assign: #a86b00;
+  --code-bg: #1e1b16; --code-text: #f2ece1; --code-muted: #9d927f; --code-kw: #91a7ff; --code-str: #a9e34b;
+  --code-num: #ffd43b; --code-fn: #ffa94d; --code-todo: #f783ac;
+  --radius: 16px; --display: "Fraunces", Georgia, serif; --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace; color-scheme: light;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --ink: #e9eef6; --ink-2: #dde5f1; --panel: #f8fafd; --panel-2: #eef3fa; --line: #b9c6dc; --line-soft: #d3dcea;
-    --text: #1d2233; --muted: #5e6578; --focus: #b5470b; --accent: #b5670b; --accent-2: #2f5bd3; --good: #11845b; --bad: #c43535;
-    --k-function: #b5670b; --k-validate: #11845b; --k-branch: #2f5bd3; --k-loop: #7d3fb3; --k-call: #0f7f93;
-    --k-raise: #c43535; --k-return: #4d7c0f; --k-hole: #b03a80; --k-assign: #9a6b00;
-    --grid: rgba(47, 91, 211, .08); --shadow: 0 10px 24px rgba(30,50,90,.12); color-scheme: light;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15130f; --dot: rgba(255, 236, 210, .07); --panel: #201c17; --panel-2: #29241d; --sunk: #12100c;
+    --text: #f2ece1; --muted: #a89d8a; --line: #5d5345; --line-soft: #3b342a; --shadow-c: #000;
+    --accent: #ff7a45; --on-accent: #1a120a; --focus: #ffa94d; --good: #51cf66; --bad: #ff6b6b; --chip-ink: #15130f;
+    --k-function: #ff922b; --k-validate: #51cf66; --k-branch: #748ffc; --k-loop: #9775fa; --k-call: #3bc9db;
+    --k-raise: #ff6b6b; --k-return: #a9e34b; --k-hole: #f783ac; --k-assign: #fcc419;
+    --code-bg: #0f0d0a; color-scheme: dark;
   }
 }
-:root[data-theme="light"] {
-  --ink: #e9eef6; --ink-2: #dde5f1; --panel: #f8fafd; --panel-2: #eef3fa; --line: #b9c6dc; --line-soft: #d3dcea;
-  --text: #1d2233; --muted: #5e6578; --focus: #b5470b; --accent: #b5670b; --accent-2: #2f5bd3; --good: #11845b; --bad: #c43535;
-  --k-function: #b5670b; --k-validate: #11845b; --k-branch: #2f5bd3; --k-loop: #7d3fb3; --k-call: #0f7f93;
-  --k-raise: #c43535; --k-return: #4d7c0f; --k-hole: #b03a80; --k-assign: #9a6b00;
-  --grid: rgba(47, 91, 211, .08); --shadow: 0 10px 24px rgba(30,50,90,.12); color-scheme: light;
+:root[data-theme="dark"] {
+  --bg: #15130f; --dot: rgba(255, 236, 210, .07); --panel: #201c17; --panel-2: #29241d; --sunk: #12100c;
+  --text: #f2ece1; --muted: #a89d8a; --line: #5d5345; --line-soft: #3b342a; --shadow-c: #000;
+  --accent: #ff7a45; --on-accent: #1a120a; --focus: #ffa94d; --good: #51cf66; --bad: #ff6b6b; --chip-ink: #15130f;
+  --k-function: #ff922b; --k-validate: #51cf66; --k-branch: #748ffc; --k-loop: #9775fa; --k-call: #3bc9db;
+  --k-raise: #ff6b6b; --k-return: #a9e34b; --k-hole: #f783ac; --k-assign: #fcc419;
+  --code-bg: #0f0d0a; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body {
   font: 16px/1.5 var(--body); color: var(--text); min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 85% -10%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
-    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 24px 24px,
-    var(--ink);
+  background: radial-gradient(var(--dot) 1.2px, transparent 1.4px) 0 0 / 22px 22px, var(--bg);
 }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
+code { font: .9em var(--mono); background: var(--sunk); border-radius: 5px; padding: 0 4px; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: -.01em; }
+
+/* Header */
 header.top {
-  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between;
-  padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: color-mix(in srgb, var(--ink) 80%, transparent);
-  backdrop-filter: blur(8px); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-bottom: 2px solid var(--line); background: var(--panel);
+  position: sticky; top: 0; z-index: 20;
 }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand-mark { width: 38px; height: 38px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
-.brand-mark span { border-radius: 4px; }
-.brand-mark span:nth-child(1) { background: var(--k-function); } .brand-mark span:nth-child(2) { background: var(--k-branch); }
-.brand-mark span:nth-child(3) { background: var(--k-loop); } .brand-mark span:nth-child(4) { background: var(--k-return); }
-.brand h1 { font: 800 1.35rem/1 var(--display); margin: 0; letter-spacing: -.02em; }
-.brand small { color: var(--muted); display: block; font-size: .8rem; }
+.brand-mark { width: 36px; height: 36px; position: relative; flex: none; }
+.brand-mark span { position: absolute; height: 10px; border-radius: 3px; border: 2px solid var(--line); }
+.brand-mark span:nth-child(1) { top: 0; left: 0; width: 24px; background: var(--k-function); }
+.brand-mark span:nth-child(2) { top: 13px; left: 8px; width: 28px; background: var(--k-branch); }
+.brand-mark span:nth-child(3) { top: 26px; left: 3px; width: 20px; background: var(--k-validate); }
+.brand h1 { font-size: 1.45rem; line-height: 1; margin: 0; }
+.brand h1 em { font-style: normal; color: var(--accent); }
+.brand small { color: var(--muted); display: block; font-size: .8rem; margin-top: 3px; }
 .top-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.divider { width: 2px; align-self: stretch; background: var(--line-soft); border-radius: 2px; }
 .btn {
-  border: 1px solid var(--line); background: var(--panel-2); padding: 8px 12px; border-radius: 10px;
-  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+  border: 2px solid var(--line); background: var(--panel); padding: 6px 12px; border-radius: 10px;
+  box-shadow: 2px 2px 0 var(--shadow-c); font-weight: 700; line-height: 1.3;
+  transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
 }
-.btn:hover { border-color: var(--accent); transform: translateY(-1px); }
-.btn.primary { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--k-raise))); color: #1b1404; border: 0; font-weight: 700; }
-.btn.ghost { background: transparent; }
-.btn.small { padding: 4px 8px; font-size: .85rem; border-radius: 8px; }
-select.btn { padding-right: 28px; }
-.toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .9rem; }
+.btn:hover { background: var(--panel-2); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--shadow-c); }
+.btn:disabled { opacity: .45; cursor: default; transform: none; box-shadow: 2px 2px 0 var(--shadow-c); }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
+.btn.ghost { box-shadow: none; border-color: transparent; background: transparent; }
+.btn.ghost:hover { border-color: var(--line-soft); }
+.btn.small { padding: 3px 9px; font-size: .85rem; border-radius: 8px; }
+.btn.icon { width: 36px; padding: 6px 0; text-align: center; }
+select.btn { padding-right: 8px; max-width: 100%; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .88rem; font-weight: 700; }
+.seg { display: inline-flex; border: 2px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 2px 2px 0 var(--shadow-c); }
+.seg button { border: 0; background: var(--panel); padding: 6px 12px; font-weight: 700; color: var(--muted); }
+.seg button + button { border-left: 2px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--panel); }
 
-main.layout { display: grid; grid-template-columns: 290px minmax(0, 1fr) minmax(0, 0.9fr); gap: 16px; padding: 16px 20px 40px; max-width: 1600px; margin: 0 auto; }
-.panel { background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line-soft); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
-.panel > h2, .panel-head { font: 800 1rem/1.2 var(--display); letter-spacing: .01em; margin: 0; padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* Layout */
+main.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr) minmax(0, .95fr); gap: 18px; padding: 18px 20px 40px; max-width: 1640px; margin: 0 auto; }
+.panel { background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: 4px 4px 0 var(--shadow-c); min-width: 0; align-self: start; }
+.panel > h2, .panel-head { font: 800 1.08rem/1.2 var(--display); margin: 0; padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .panel-body { padding: 0 16px 16px; }
-.eyebrow { font: 600 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 14px 0 8px; }
+.eyebrow { font: 700 .7rem/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); margin: 18px 0 8px; }
+.muted { color: var(--muted); }
+.target-note { font-size: .82rem; color: var(--muted); margin: 8px 0 0; }
 
 /* Project tree */
-.files { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-.file { border: 1px solid var(--line-soft); border-radius: 10px; padding: 8px; background: var(--panel-2); }
+.files { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.file { border: 2px solid var(--line-soft); border-radius: 12px; padding: 8px; background: var(--panel-2); }
 .file-row { display: flex; gap: 6px; align-items: center; }
-.file-row input { flex: 1; min-width: 0; background: transparent; border: 1px dashed transparent; border-radius: 6px; padding: 2px 4px; font: 600 .9rem var(--mono); }
-.file-row input:hover, .file-row input:focus { border-color: var(--line); }
-.folder-tag { font: .7rem var(--mono); color: var(--muted); }
-.fn-list { list-style: none; padding: 4px 0 0 10px; margin: 0; display: grid; gap: 4px; }
-.fn-btn { width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 8px; font: .88rem var(--mono); color: var(--muted); }
-.fn-btn[aria-current="true"] { border-color: var(--k-function); color: var(--text); background: color-mix(in srgb, var(--k-function) 12%, transparent); }
-.palette { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.pal { border: 1px solid var(--line-soft); background: var(--panel-2); border-left: 5px solid var(--c); border-radius: 10px; padding: 7px 8px; text-align: left; font-size: .86rem; line-height: 1.2; }
-.pal b { display: block; font-family: var(--display); font-size: .92rem; }
-.pal span { color: var(--muted); font-size: .74rem; }
-.pal:hover { transform: translateY(-1px); border-color: var(--c); }
-.target-note { font-size: .8rem; color: var(--muted); margin: 6px 0 0; }
+.file-row input { flex: 1; min-width: 0; background: transparent; border: 1px dashed transparent; border-radius: 6px; padding: 2px 4px; font: 600 .88rem var(--mono); }
+.file-row input:hover, .file-row input:focus { border-color: var(--line); background: var(--panel); }
+.folder-tag { font: .72rem var(--mono); color: var(--muted); padding: 2px 4px; }
+.fn-list { list-style: none; padding: 4px 0 0 8px; margin: 0; display: grid; gap: 3px; }
+.fn-btn { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; background: transparent; border: 2px solid transparent; border-radius: 8px; padding: 3px 8px; font: .86rem var(--mono); color: var(--muted); }
+.fn-btn:hover { color: var(--text); }
+.fn-btn[aria-current="true"] { border-color: var(--k-function); color: var(--text); background: color-mix(in srgb, var(--k-function) 12%, var(--panel)); font-weight: 600; }
+.palette { display: grid; grid-template-columns: 1fr; gap: 7px; }
+.pal {
+  display: grid; grid-template-columns: 1fr auto; gap: 0 8px; align-items: baseline; text-align: left;
+  border: 2px solid var(--line); border-left: 8px solid var(--c); background: var(--panel); border-radius: 10px;
+  padding: 6px 9px; box-shadow: 2px 2px 0 color-mix(in srgb, var(--c) 60%, var(--shadow-c));
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.pal:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 color-mix(in srgb, var(--c) 60%, var(--shadow-c)); }
+.pal:active { transform: translate(2px, 2px); box-shadow: none; }
+.pal b { font: 800 .95rem var(--display); }
+.pal code { font-size: .74rem; background: none; color: var(--c); padding: 0; white-space: nowrap; }
+.pal span { grid-column: 1 / -1; color: var(--muted); font-size: .78rem; line-height: 1.3; }
 
 /* Builder */
-.sig { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; background: var(--panel-2); border: 1px solid var(--line-soft); border-left: 6px solid var(--k-function); border-radius: 12px; padding: 12px; }
-.sig label { font: 600 .78rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
-.field { width: 100%; background: var(--ink-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: .9rem var(--mono); }
-.field.bad { border-color: var(--bad); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 25%, transparent); }
-textarea.field { min-height: 52px; resize: vertical; font-family: var(--body); }
-.tree { margin-top: 12px; }
-.slot { position: relative; display: grid; gap: 8px; padding: 8px 0 4px 18px; border-left: 2px dashed var(--line); margin-left: 8px; }
+.field-msg { min-height: 0; margin: 0 0 10px; padding: 0; font-size: .88rem; }
+.field-msg:not(:empty) { padding: 8px 12px; border: 2px solid var(--bad); border-radius: 10px; background: color-mix(in srgb, var(--bad) 10%, var(--panel)); }
+.sig { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; align-items: center; background: var(--panel-2); border: 2px solid var(--line); border-left: 8px solid var(--k-function); border-radius: 12px; padding: 12px; box-shadow: 3px 3px 0 color-mix(in srgb, var(--k-function) 55%, var(--shadow-c)); }
+.sig label { font: 700 .74rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+.sig details { grid-column: 1 / -1; }
+.sig summary { cursor: pointer; font-size: .85rem; color: var(--muted); font-weight: 700; }
+.sig .more { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; align-items: center; margin-top: 8px; }
+.field { width: 100%; background: var(--panel); border: 2px solid var(--line-soft); border-radius: 8px; padding: 5px 8px; font: .9rem var(--mono); }
+.field:focus { border-color: var(--line); }
+.field.bad { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--panel)); }
+textarea.field { min-height: 48px; resize: vertical; }
+textarea#fnReqs { font-family: var(--body); }
+.tree { margin-top: 14px; }
+.slot { position: relative; display: grid; gap: 8px; padding: 8px 0 4px 16px; border-left: 3px dotted var(--line-soft); margin-left: 10px; }
 .slot.root { border-left: 0; padding-left: 0; margin-left: 0; }
-.slot.is-target { border-left-color: var(--focus); }
-.slot.is-target::before { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: var(--focus); box-shadow: 0 0 12px var(--focus); animation: glow 1.6s ease-in-out infinite; }
-.slot.root.is-target::before { display: none; }
-@keyframes glow { 50% { opacity: .35; } }
-.slot-label { font: 700 .74rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin: 2px 0 -2px; }
-.block { background: var(--panel-2); border: 1px solid var(--line-soft); border-left: 6px solid var(--c); border-radius: 12px; padding: 8px 10px; animation: snap .28s cubic-bezier(.2, 1.4, .4, 1); }
-.block.flash { animation: snap .28s cubic-bezier(.2, 1.4, .4, 1), pulse .9s ease; }
+.slot.is-target { border-left: 3px solid var(--focus); }
+.slot.root.is-target { border-left: 0; }
+.slot-label { font: 700 .7rem var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin: 2px 0 -2px; }
+.block {
+  background: var(--panel); border: 2px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-left: 8px solid var(--c);
+  border-radius: 12px; padding: 8px 10px; box-shadow: 3px 3px 0 color-mix(in srgb, var(--c) 45%, transparent);
+  animation: snap .26s cubic-bezier(.2, 1.4, .4, 1);
+}
+.block.flash { animation: snap .26s cubic-bezier(.2, 1.4, .4, 1), pulse .9s ease; }
 @keyframes snap { from { transform: translateY(-8px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes pulse { 30% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 45%, transparent); } }
+@keyframes pulse { 30% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 40%, transparent); } }
 .block-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.chip { font: 800 .8rem var(--display); color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.chip { font: 800 .8rem var(--display); color: var(--chip-ink); background: var(--c); border-radius: 7px; padding: 3px 9px; white-space: nowrap; cursor: help; }
 .block-head .field { flex: 1 1 140px; width: auto; }
-.inline-word { font: .85rem var(--mono); color: var(--muted); }
+.inline-word { font: 600 .85rem var(--mono); color: var(--muted); }
 .tools { display: flex; gap: 2px; margin-left: auto; }
-.tools button { background: transparent; border: 1px solid transparent; border-radius: 6px; width: 28px; height: 28px; color: var(--muted); }
-.tools button:hover { border-color: var(--line); color: var(--text); }
-.add-here { justify-self: start; background: transparent; border: 1px dashed var(--line); border-radius: 999px; padding: 3px 12px; color: var(--muted); font-size: .85rem; transition: all .15s ease; }
-.add-here:hover, .slot.is-target > .add-here { border-color: var(--focus); color: var(--text); }
-.addmenu { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--ink-2); animation: snap .2s ease; }
-.addmenu button { border: 1px solid var(--line-soft); border-left: 4px solid var(--c); background: var(--panel-2); border-radius: 8px; padding: 4px 8px; font-size: .85rem; }
-.empty-hint { color: var(--muted); font-size: .9rem; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; text-align: center; }
+.tools button { background: transparent; border: 2px solid transparent; border-radius: 7px; width: 30px; height: 30px; color: var(--muted); font-weight: 700; }
+.tools button:hover { border-color: var(--line-soft); color: var(--text); background: var(--panel-2); }
+.add-here { justify-self: start; background: transparent; border: 2px dashed var(--line-soft); border-radius: 9px; padding: 3px 12px; color: var(--muted); font-size: .85rem; font-weight: 700; }
+.add-here:hover, .slot.is-target > .add-here { border-color: var(--focus); color: var(--text); border-style: solid; }
+.addmenu { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); animation: snap .18s ease; }
+.addmenu button { border: 2px solid var(--line); border-left: 6px solid var(--c); background: var(--panel); border-radius: 8px; padding: 3px 9px; font-size: .85rem; font-weight: 700; }
+.addmenu button:hover { background: color-mix(in srgb, var(--c) 14%, var(--panel)); }
+.empty-hint { color: var(--muted); font-size: .92rem; padding: 14px; border: 2px dashed var(--line-soft); border-radius: 12px; text-align: center; }
 
 /* Right column */
-.tabs { display: flex; gap: 4px; padding: 10px 12px 0; flex-wrap: wrap; }
-.tab { background: transparent; border: 1px solid transparent; border-bottom: 0; border-radius: 10px 10px 0 0; padding: 8px 12px; color: var(--muted); font-weight: 700; }
-.tab[aria-selected="true"] { background: var(--panel-2); border-color: var(--line-soft); color: var(--text); }
-.tabpanel { border-top: 1px solid var(--line-soft); padding: 14px 16px 16px; }
+.tabs { display: flex; gap: 4px; padding: 10px 12px 0; flex-wrap: wrap; border-bottom: 2px solid var(--line); }
+.tab { background: transparent; border: 2px solid transparent; border-bottom: 0; border-radius: 10px 10px 0 0; padding: 7px 11px; color: var(--muted); font-weight: 700; margin-bottom: -2px; }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { background: var(--panel); border-color: var(--line); color: var(--text); box-shadow: inset 0 3px 0 var(--accent); }
+.tabpanel { padding: 14px 16px 16px; }
 .tabpanel[hidden] { display: none; }
-pre.code { margin: 0; background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 12px; padding: 14px; overflow: auto; font: .86rem/1.55 var(--mono); max-height: 62vh; white-space: pre; }
-.tok-kw { color: var(--k-branch); font-weight: 600; } .tok-str { color: var(--k-return); } .tok-num { color: var(--k-assign); }
-.tok-com { color: var(--muted); font-style: italic; } .tok-fn { color: var(--k-function); } .tok-todo { color: var(--k-hole); font-weight: 600; }
+pre.code { margin: 0; background: var(--code-bg); color: var(--code-text); border: 2px solid var(--line); border-radius: 12px; padding: 14px; overflow: auto; font: .86rem/1.6 var(--mono); max-height: 52vh; white-space: pre; }
+.tok-kw { color: var(--code-kw); font-weight: 600; } .tok-str { color: var(--code-str); } .tok-num { color: var(--code-num); }
+.tok-com { color: var(--code-muted); font-style: italic; } .tok-fn { color: var(--code-fn); } .tok-todo { color: var(--code-todo); font-weight: 600; }
 .code-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 0; }
-.lesson-card { border: 1px solid var(--line-soft); border-radius: 12px; background: var(--panel-2); padding: 12px 14px; }
-.lesson-card h3 { font: 800 1.1rem var(--display); margin: 0 0 4px; }
-.pill { display: inline-block; font: .72rem var(--mono); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); margin-right: 4px; }
-ol.steps { padding-left: 0; list-style: none; counter-reset: step; display: grid; gap: 8px; margin: 12px 0; }
-ol.steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; gap: 8px; }
-ol.steps li::before { content: counter(step); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--accent-2) 22%, transparent); color: var(--accent-2); font: 800 .85rem var(--display); }
+.console { margin-top: 16px; border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--panel-2); }
+.console label { font: 800 .95rem var(--display); display: block; margin-bottom: 6px; }
+.console-row { display: flex; gap: 6px; align-items: center; }
+.console-row .prompt { font: 600 .85rem var(--mono); color: var(--muted); }
+.console-row .field { flex: 1; min-width: 0; }
+.console-out { margin: 8px 0 0; background: var(--code-bg); color: var(--code-text); border-radius: 10px; padding: 10px 12px; font: .84rem/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.console-out:empty { display: none; }
+.console-out .err { color: #ffa8a8; } .console-out .val { color: var(--code-str); }
+.lesson-card { border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); padding: 12px 14px; }
+.lesson-card h3 { font-size: 1.25rem; margin: 0 0 6px; line-height: 1.2; }
+.lesson-card p { margin: 8px 0 0; }
+.pill { display: inline-block; font: 600 .72rem var(--mono); border: 2px solid var(--line-soft); border-radius: 999px; padding: 0 8px; color: var(--muted); margin: 0 4px 4px 0; background: var(--panel); }
+button.pill { cursor: pointer; } button.pill:hover { border-color: var(--line); color: var(--text); }
+.rail { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; }
+.rail-label { font: 700 .72rem var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-right: 4px; }
+.rail button { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--line); background: var(--panel); font: 800 .85rem var(--display); padding: 0; }
+.rail button.done { background: var(--good); color: var(--chip-ink); border-color: var(--line); }
+.rail button[aria-current="true"] { box-shadow: 0 0 0 3px var(--focus); }
+ol.steps { padding-left: 0; list-style: none; counter-reset: step; display: grid; gap: 6px; margin: 12px 0; }
+ol.steps li { counter-increment: step; }
+ol.steps button { width: 100%; display: grid; grid-template-columns: 30px 1fr; gap: 10px; text-align: left; background: transparent; border: 2px solid transparent; border-radius: 10px; padding: 6px; }
+ol.steps button:hover { border-color: var(--line-soft); background: var(--panel-2); }
+ol.steps button::before { content: counter(step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; border: 2px solid var(--line); background: var(--panel); font: 800 .85rem var(--display); }
+ol.steps button[aria-pressed="true"] { color: var(--muted); }
+ol.steps button[aria-pressed="true"]::before { content: "✓"; background: var(--good); color: var(--chip-ink); }
 ol.steps b { display: block; }
-.result { border-radius: 12px; padding: 12px 14px; margin-top: 10px; border: 1px solid var(--line); }
-.result.ok { border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); animation: stamp .45s cubic-bezier(.2, 1.6, .4, 1); }
-.result.no { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, transparent); }
-@keyframes stamp { from { transform: scale(1.06) rotate(-1deg); opacity: 0; } to { transform: none; opacity: 1; } }
+ol.steps button[aria-pressed="true"] b { text-decoration: line-through; text-decoration-thickness: 2px; }
+.step-note { font-size: .8rem; color: var(--muted); margin: -6px 0 8px; }
+.result { border-radius: 12px; padding: 10px 14px; margin-top: 10px; border: 2px solid var(--line); background: var(--panel); }
+.result.ok { border-color: var(--good); background: color-mix(in srgb, var(--good) 13%, var(--panel)); animation: stamp .45s cubic-bezier(.2, 1.6, .4, 1); }
+.result.no { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 9%, var(--panel)); }
+.result .btn { margin-top: 8px; }
+@keyframes stamp { from { transform: scale(1.05) rotate(-1deg); opacity: 0; } to { transform: none; opacity: 1; } }
+ul.tests { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 4px; font: .82rem/1.45 var(--mono); }
+ul.tests li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; }
+ul.tests .mark { font-weight: 800; }
+ul.tests .pass .mark { color: var(--good); } ul.tests .fail .mark { color: var(--bad); }
+ul.tests small { display: block; color: var(--muted); font-family: var(--body); font-size: .82rem; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 3px solid var(--line-soft); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .tips { display: grid; gap: 8px; }
-.tip { border: 1px solid var(--line-soft); border-left: 5px solid var(--c, var(--accent-2)); border-radius: 10px; padding: 10px 12px; background: var(--panel-2); animation: slide .3s ease; }
+.tip { border: 2px solid var(--line-soft); border-left: 8px solid var(--c, var(--k-branch)); border-radius: 10px; padding: 9px 12px; background: var(--panel-2); animation: slide .3s ease; }
 @keyframes slide { from { transform: translateX(10px); opacity: 0; } to { transform: none; opacity: 1; } }
 .tip b { display: block; font-family: var(--display); }
 .tip p { margin: 4px 0 0; color: var(--muted); font-size: .92rem; }
-details.guide { border: 1px solid var(--line-soft); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); margin-top: 8px; }
+details.guide { border: 2px solid var(--line-soft); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); margin-top: 8px; }
 details.guide summary { cursor: pointer; font-weight: 700; }
 details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
-.preset-list { display: grid; gap: 8px; }
-.preset { border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px; background: var(--panel-2); }
-.preset b { font-family: var(--display); }
+.search-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.search-row .field { flex: 1 1 160px; width: auto; font-family: var(--body); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chips button { border: 2px solid var(--line-soft); background: var(--panel); border-radius: 999px; padding: 1px 10px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.chips button[aria-pressed="true"] { border-color: var(--line); background: var(--text); color: var(--panel); }
+.preset-list { display: grid; gap: 10px; }
+.preset { border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--panel-2); }
+.preset h3 { font-size: 1rem; margin: 0 6px 0 0; display: inline; }
 .preset p { margin: 4px 0 8px; color: var(--muted); font-size: .9rem; }
 .preset .params { display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; align-items: center; font: .8rem var(--mono); margin-bottom: 8px; }
-.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; box-shadow: var(--shadow); z-index: 50; animation: snap .25s ease; max-width: calc(100vw - 32px); }
+.preset details { margin-bottom: 8px; font-size: .85rem; }
+.preset summary { cursor: pointer; color: var(--muted); font-weight: 700; }
+.preset pre { margin: 6px 0 0; background: var(--code-bg); color: var(--code-text); border-radius: 8px; padding: 8px 10px; font: .78rem/1.5 var(--mono); overflow: auto; }
+dl.glossary { margin: 0; display: grid; gap: 8px; }
+dl.glossary div { border: 2px solid var(--line-soft); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); scroll-margin-top: 90px; }
+dl.glossary div.hit { border-color: var(--focus); animation: stamp .45s ease; }
+dl.glossary dt { font: 800 1rem var(--display); }
+dl.glossary dd { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--panel); padding: 10px 16px; border-radius: 12px; box-shadow: 3px 3px 0 var(--accent); z-index: 60; animation: snap .25s ease; max-width: calc(100vw - 32px); font-weight: 700; }
+
+/* Welcome */
+dialog.welcome { border: 2px solid var(--line); border-radius: 20px; padding: 0; max-width: min(720px, calc(100vw - 32px)); width: 100%; background: var(--panel); color: var(--text); box-shadow: 6px 6px 0 var(--shadow-c); }
+dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
+.welcome-in { padding: 24px 26px 22px; }
+.welcome h2 { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0 0 6px; line-height: 1.1; }
+.welcome h2 em { font-style: normal; color: var(--accent); }
+.welcome .lede { margin: 0 0 16px; color: var(--muted); font-size: 1.05rem; }
+.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 18px; padding: 0; list-style: none; }
+.how li { border: 2px solid var(--line); border-top: 8px solid var(--c); border-radius: 12px; padding: 10px 12px; background: var(--panel-2); }
+.how b { font: 800 1rem var(--display); display: block; }
+.how span { font-size: .88rem; color: var(--muted); }
+.tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.track { text-align: left; border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--panel); box-shadow: 3px 3px 0 var(--shadow-c); }
+.track:hover { background: var(--panel-2); }
+.track:active { transform: translate(2px, 2px); box-shadow: none; }
+.track.primary { background: var(--accent); color: var(--on-accent); }
+.track b { font: 800 1.1rem var(--display); display: block; }
+.track span { font-size: .88rem; opacity: .85; }
+.welcome-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); }
+
 .mobile-nav { display: none; }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (max-width: 1180px) {
   main.layout { grid-template-columns: 260px minmax(0, 1fr); }
@@ -171,16 +274,22 @@ details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
 }
 @media (max-width: 760px) {
   header.top { padding: 10px 16px; position: static; }
-  .brand small { display: none; }
+  .brand small, .divider { display: none; }
+  .top-actions { width: 100%; }
+  .group.lesson-group { width: 100%; }
+  .group.lesson-group select#lessonPick { flex: 1 1 100%; }
   main.layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px 90px; gap: 12px; }
   main.layout > .panel { display: none; }
   main.layout > .panel.show { display: block; }
-  .mobile-nav { display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .mobile-nav { display: grid; grid-template-columns: repeat(3, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: var(--panel); border-top: 2px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
   .mobile-nav button { background: transparent; border: 0; padding: 12px 4px; font-weight: 700; color: var(--muted); }
-  .mobile-nav button[aria-current="true"] { color: var(--text); box-shadow: inset 0 3px 0 var(--accent); }
-  .sig { grid-template-columns: 1fr; }
+  .mobile-nav button[aria-current="true"] { color: var(--text); box-shadow: inset 0 4px 0 var(--accent); }
+  .sig, .sig .more { grid-template-columns: 1fr; }
   .palette { grid-template-columns: 1fr 1fr; }
+  .pal code { display: none; }
   pre.code { max-height: none; }
+  .how, .tracks { grid-template-columns: 1fr; }
+  .welcome-in { padding: 18px 16px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
 </style>
@@ -188,27 +297,40 @@ details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
 <body>
 <header class="top">
   <div class="brand">
-    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-    <div><h1>Blockwise Studio</h1><small>Build Python from blocks. See the real code as you go.</small></div>
+    <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div><h1>Block<em>wise</em> Studio</h1><small>Snap blocks together. Get real Python.</small></div>
   </div>
   <div class="top-actions">
-    <label class="sr-only" for="lessonPick">Lesson</label>
-    <select id="lessonPick" class="btn"></select>
-    <label class="sr-only" for="modePick">Start mode</label>
-    <select id="modePick" class="btn" title="How the lesson starts">
-      <option value="guided">Guided (pre-filled)</option>
-      <option value="blank">Blank (signatures only)</option>
-    </select>
-    <button class="btn" id="startLesson">Start</button>
-    <button class="btn primary" id="checkWork">Check my work</button>
-    <label class="toggle" title="Optional extra: hear each block kind as a note"><input type="checkbox" id="soundToggle"> Sound</label>
-    <button class="btn ghost small" id="themeToggle" aria-label="Switch light or dark theme">◐</button>
+    <div class="seg" role="group" aria-label="Track">
+      <button id="trackLearn" aria-pressed="true">Learn</button>
+      <button id="trackLibrary" aria-pressed="false">Templates</button>
+    </div>
+    <span class="divider" aria-hidden="true"></span>
+    <div class="group lesson-group">
+      <label class="sr-only" for="lessonPick">Lesson</label>
+      <select id="lessonPick" class="btn"></select>
+      <label class="sr-only" for="modePick">Start mode</label>
+      <select id="modePick" class="btn" title="Guided starts part-built; Blank gives you only the function names">
+        <option value="guided">Guided</option>
+        <option value="blank">Blank</option>
+      </select>
+      <button class="btn" id="startLesson">Start</button>
+      <button class="btn primary" id="checkWork">Check my work</button>
+    </div>
+    <span class="divider" aria-hidden="true"></span>
+    <div class="group">
+      <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
+      <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
+      <button class="btn icon" id="helpBtn" title="How Blockwise works" aria-label="How Blockwise works">?</button>
+      <button class="btn icon" id="themeToggle" title="Switch light or dark" aria-label="Switch light or dark theme">◐</button>
+      <label class="toggle" title="Optional extra: hear each block kind as a note"><input type="checkbox" id="soundToggle"> Sound</label>
+    </div>
   </div>
 </header>
 
 <main class="layout">
   <section class="panel show" id="side-left" aria-label="Project and blocks">
-    <h2>Project <span><button class="btn small" id="addFile">+ File</button></span></h2>
+    <h2>Project <button class="btn small" id="addFile">+ File</button></h2>
     <div class="panel-body">
       <ul class="files" id="files"></ul>
       <p class="eyebrow">Blocks</p>
@@ -219,19 +341,23 @@ details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
 
   <section class="panel show" id="side-mid" aria-label="Builder">
     <div class="panel-head"><span id="fnTitle">Function</span>
-      <span><button class="btn small" id="playFn" title="Optional: play this function's block notes" hidden>▶ Play</button></span></div>
-    <div class="panel-body" id="builder"></div>
+      <button class="btn small" id="playFn" title="Optional: play this function's block notes" hidden>▶ Play</button></div>
+    <div class="panel-body">
+      <div class="field-msg" id="fieldMsg" role="status" aria-live="polite"></div>
+      <div id="builder"></div>
+    </div>
   </section>
 
-  <section class="panel show" id="side-right" aria-label="Code and guide">
+  <section class="panel show" id="side-right" aria-label="Lesson, code and guide">
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-tab="code">Python</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="lesson">Lesson</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="advice">Advisor</button>
-      <button class="tab" role="tab" aria-selected="false" data-tab="presets">Presets</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="presets">Templates</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="words">Words</button>
     </div>
     <div class="tabpanel" data-panel="code">
-      <pre class="code" id="code" aria-live="polite"></pre>
+      <pre class="code" id="code" aria-label="Generated Python"></pre>
       <div class="code-actions">
         <button class="btn small" id="copyCode">Copy file</button>
         <button class="btn small" id="downloadPy">Download .py</button>
@@ -240,7 +366,15 @@ details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
         <label class="btn small" for="openPlan">Open plan.json</label>
         <input type="file" id="openPlan" accept=".json,application/json" hidden>
       </div>
-      <p class="target-note">Build a whole project from the plan: <code>blockwise build plan.json --out my-project</code></p>
+      <div class="console">
+        <label for="tryExpr">Try it: call your code</label>
+        <div class="console-row"><span class="prompt" aria-hidden="true">&gt;&gt;&gt;</span>
+          <input id="tryExpr" class="field" spellcheck="false" autocomplete="off">
+          <button class="btn primary small" id="tryRun">Run ▶</button></div>
+        <pre class="console-out" id="tryOut" aria-live="polite"></pre>
+        <p class="target-note">Runs real Python in your browser. The first run downloads Python (about 10 MB), so it takes a few seconds.</p>
+      </div>
+      <p class="target-note">Build the whole project on your computer: <code>blockwise build plan.json --out my-project</code></p>
     </div>
     <div class="tabpanel" data-panel="lesson" hidden><div id="lessonPanel"></div></div>
     <div class="tabpanel" data-panel="advice" hidden>
@@ -259,32 +393,161 @@ details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
         <li>Name files and folders after what they do, in lowercase with underscores.</li></ul></details>
     </div>
     <div class="tabpanel" data-panel="presets" hidden>
-      <p class="target-note" style="margin-top:0">Tested building blocks. Insert one as a new function in the current file, then study or change it.</p>
+      <p class="target-note" style="margin:0 0 10px">Tested building blocks. Insert one as a new function in the current file, then study it or change it. Agents can call the same templates from the <code>blockwise</code> command line.</p>
+      <div class="search-row"><label class="sr-only" for="presetSearch">Search templates</label>
+        <input class="field" id="presetSearch" type="search" placeholder="Search templates, e.g. role, empty, count"></div>
+      <div class="chips" id="presetCats" role="group" aria-label="Template category"></div>
       <div class="preset-list" id="presetList"></div>
+    </div>
+    <div class="tabpanel" data-panel="words" hidden>
+      <p class="target-note" style="margin:0 0 10px">Plain-language meanings of the words used in the lessons.</p>
+      <dl class="glossary" id="glossary"></dl>
     </div>
   </section>
 </main>
 
 <nav class="mobile-nav" aria-label="Sections">
-  <button data-show="side-left" aria-current="false">Project</button>
+  <button data-show="side-left" aria-current="false">Blocks</button>
   <button data-show="side-mid" aria-current="true">Build</button>
-  <button data-show="side-right" aria-current="false">Code &amp; Guide</button>
+  <button data-show="side-right" aria-current="false">Code &amp; Lesson</button>
 </nav>
 
+<dialog class="welcome" id="welcome" aria-labelledby="welcomeTitle">
+  <div class="welcome-in">
+    <h2 id="welcomeTitle">Build real Python, <em>one block at a time.</em></h2>
+    <p class="lede">No install, no typing whole programs. Snap blocks together and watch the Python appear.</p>
+    <ol class="how">
+      <li style="--c: var(--k-function)"><b>1 · Pick a block</b><span>Blocks like If / Else and Repeat live on the left. Click one to add it.</span></li>
+      <li style="--c: var(--k-branch)"><b>2 · Fill it in</b><span>Type a condition or a value. Red outline? Read the message above the blocks.</span></li>
+      <li style="--c: var(--k-validate)"><b>3 · Check and run</b><span>See the Python on the right, check your work and run real tests.</span></li>
+    </ol>
+    <div class="tracks">
+      <button class="track primary" id="welcomeLearn"><b>Start lesson 1 →</b><span>8 short lessons, from your first function to code split across files.</span></button>
+      <button class="track" id="welcomeLibrary"><b>Browse templates</b><span>Tested building blocks: input checks, permissions, counting and more.</span></button>
+    </div>
+    <div class="welcome-foot"><span>Your work saves in this browser. Undo with Ctrl+Z.</span>
+      <button class="btn ghost small" id="welcomeClose">Just let me build</button></div>
+  </div>
+</dialog>
+
+<!-- Runs inside Pyodide (in a web worker). Input: REQ (JSON). Output: RESULT (JSON). tests/test_studio.py runs it with CPython too. -->
+<script type="text/x-python" id="pyHarness">
+import contextlib
+import importlib
+import io
+import json
+import os
+import shutil
+import sys
+
+req = json.loads(REQ)
+root = req.get("root", "/home/pyodide/blockwise_run")
+shutil.rmtree(root, ignore_errors=True)
+os.makedirs(root)
+tops = set()
+for path, source in req["files"].items():
+    full = os.path.join(root, *path.split("/"))
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    with open(full, "w", encoding="utf-8") as handle:
+        handle.write(source)
+    parts = path[:-3].split("/")
+    tops.add(parts[0])
+    for i in range(1, len(parts)):
+        init = os.path.join(root, *parts[:i], "__init__.py")
+        if not os.path.exists(init):
+            open(init, "w").close()
+if root in sys.path:
+    sys.path.remove(root)
+sys.path.insert(0, root)
+for name in list(sys.modules):
+    if name.split(".")[0] in tops:
+        del sys.modules[name]
+importlib.invalidate_caches()
+
+
+def short(error):
+    return f"{type(error).__name__}: {error}"
+
+
+names = {}
+result = {"load_error": None, "tests": [], "value": None, "error": False, "output": ""}
+printed = io.StringIO()
+with contextlib.redirect_stdout(printed):
+    try:
+        for path in req["files"]:
+            module = importlib.import_module(path[:-3].replace("/", "."))
+            names.update({k: v for k, v in vars(module).items() if not k.startswith("__")})
+    except Exception as error:
+        result["load_error"] = short(error)
+    if result["load_error"] is None:
+        for test in req.get("tests", []):
+            row = {"call": test["call"]}
+            want = f"raises {test['raises']}" if "raises" in test else test["expect"]
+            try:
+                got = eval(test["call"], dict(names))
+                if "raises" in test:
+                    row.update(ok=False, got=repr(got), want=want)
+                else:
+                    expected = eval(test["expect"], {})
+                    row.update(ok=type(got) is type(expected) and got == expected, got=repr(got), want=repr(expected))
+            except Exception as error:
+                row.update(ok="raises" in test and type(error).__name__ == test["raises"], got=short(error), want=want)
+            result["tests"].append(row)
+        if req.get("expr"):
+            try:
+                try:
+                    code = compile(req["expr"], "<try>", "eval")
+                except SyntaxError:
+                    exec(compile(req["expr"], "<try>", "exec"), names)
+                else:
+                    result["value"] = repr(eval(code, names))
+            except Exception as error:
+                result["value"], result["error"] = short(error), True
+result["output"] = printed.getvalue()[-4000:]
+sys.path.remove(root)
+RESULT = json.dumps(result)
+</script>
 <script src="lessons.js"></script>
 <script src="presets.js"></script>
 <script>
 "use strict";
 const KINDS = {
-  validate: { label: "Check", help: "Call a check function that raises an error on bad input.", fields: ["expression"], defaults: { expression: "require_positive(amount)" }, note: 62 },
-  branch: { label: "If / Else", help: "Run blocks only when a condition is true; optional else side.", fields: ["condition"], defaults: { condition: "x > 0" }, note: 64 },
-  loop: { label: "Repeat for each", help: "Run the inside blocks once for every item.", fields: ["target", "iterable"], defaults: { target: "item", iterable: "items" }, note: 65 },
-  assign: { label: "Set variable", help: "Store a value under a name.", fields: ["target", "expression"], defaults: { target: "total", expression: "0" }, note: 74 },
-  call: { label: "Call", help: "Run another function or method.", fields: ["expression"], defaults: { expression: "print(total)" }, note: 67 },
-  return: { label: "Return", help: "Give a value back and leave the function.", fields: ["expression"], defaults: { expression: "result" }, note: 71 },
-  raise: { label: "Raise error", help: "Stop with an error message.", fields: ["expression"], defaults: { expression: "ValueError('bad input')" }, note: 69 },
-  hole: { label: "TODO", help: "A placeholder: describe work to write later.", fields: ["label"], defaults: { label: "Describe the work" }, note: 72 },
+  validate: { label: "Check", py: "check(x)", help: "Call a check function that raises an error on bad input.", fields: ["expression"], defaults: { expression: "require_positive(amount)" }, note: 62 },
+  branch: { label: "If / Else", py: "if …: else:", help: "Run blocks only when a condition is true; optional else side.", fields: ["condition"], defaults: { condition: "x > 0" }, note: 64 },
+  loop: { label: "Repeat for each", py: "for … in …:", help: "Run the inside blocks once for every item.", fields: ["target", "iterable"], defaults: { target: "item", iterable: "items" }, note: 65 },
+  assign: { label: "Set variable", py: "name = …", help: "Store a value under a name.", fields: ["target", "expression"], defaults: { target: "total", expression: "0" }, note: 74 },
+  call: { label: "Call", py: "do_this()", help: "Run another function or method.", fields: ["expression"], defaults: { expression: "print(total)" }, note: 67 },
+  return: { label: "Return", py: "return …", help: "Give a value back and leave the function.", fields: ["expression"], defaults: { expression: "result" }, note: 71 },
+  raise: { label: "Raise error", py: "raise …", help: "Stop with an error message.", fields: ["expression"], defaults: { expression: "ValueError('bad input')" }, note: 69 },
+  hole: { label: "TODO", py: "# later", help: "A placeholder: describe work to write later.", fields: ["label"], defaults: { label: "Describe the work" }, note: 72 },
 };
+const GLOSSARY = [
+  ["function", "A named, reusable recipe. You define it once with def and run it by calling its name with brackets: greet('Ana')."],
+  ["parameter", "An input a function expects, written in the brackets after its name. In def greet(name: str), name is the parameter and str says it should be text."],
+  ["return", "Hands a value back to whoever called the function, and leaves the function right away."],
+  ["string", "Text in quotes, like 'hello'. An f-string such as f'Hi {name}' drops values into the text."],
+  ["if / else", "Runs one group of blocks when a condition is true, and the else group when it is false."],
+  ["elif", "Short for 'else if': another question, asked only when the earlier ones were false. In Blockwise it is an If placed alone on an else side."],
+  ["condition", "A question with a yes/no answer, such as age >= 18. Python works it out to True or False."],
+  ["boolean", "One of the two values True and False. Conditions produce booleans."],
+  ["comparison", "Operators that compare two values: == equal, != not equal, < less, <= less or equal, > greater, >= greater or equal."],
+  ["raise", "Stops the function with an error (an exception) such as ValueError('amount must be positive'), so the caller learns what went wrong."],
+  ["validation", "Checking that input makes sense before using it, and refusing it with an error if it does not."],
+  ["calling functions", "Running a function by writing its name and brackets with the inputs inside, like require_positive(quantity)."],
+  ["method call", "A function that belongs to a value, called with a dot: evens.append(n) adds n to the end of the list evens."],
+  ["guard clause", "A check at the start of a function that stops early on bad input, so the rest of the code can trust the input."],
+  ["loop", "Repeats blocks. Repeat for each (a for loop) runs its inside once per item: for item in items."],
+  ["variable", "A name that points at a value, set with =. total = 0 makes total point at 0; you can point it at a new value later."],
+  ["nesting", "Putting blocks inside other blocks, like an If inside a loop. More than about 3 levels deep gets hard to read."],
+  ["accumulator", "A variable that collects a result while you loop, such as a running total that starts at 0."],
+  ["list", "An ordered collection in square brackets: [3, 9, 2]. Positions count from 0, so numbers[0] is the first item."],
+  ["dictionary", "A lookup table of key: value pairs in curly brackets: {'price': 2, 'qty': 3}. item['price'] reads the value stored under 'price'."],
+  ["module", "A Python file. Other files can use its functions with an import."],
+  ["folder (package)", "A folder of modules. Folders group files that belong to one feature, such as auth/users.py and auth/login.py."],
+  ["import", "Brings a function from another module into this one: from auth.users import find_user."],
+  ["separation of concerns", "Giving each function, file and folder one clear job, so code is easier to find, test and change."],
+  ["TODO", "A placeholder block for work you have not written yet. It raises NotImplementedError until you replace it."],
+];
 const KEYWORDS = new Set("False None True and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield".split(" "));
 const $ = (s, el = document) => el.querySelector(s);
 const clone = v => JSON.parse(JSON.stringify(v));
@@ -292,8 +555,9 @@ const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable: keep working in memory */ } },
 };
+const readJSON = (k, fallback) => { try { return JSON.parse(store.get(k)) ?? fallback; } catch { return fallback; } };
 
-const state = { plan: null, m: 0, f: 0, target: [], menu: null, lesson: null, sound: false, flash: null };
+const state = { plan: null, m: 0, f: 0, target: [], menu: null, lesson: null, sound: false, flash: null, checkResult: null, tests: null, presetCat: "all", presetQuery: "" };
 
 /* ---------- plan helpers ---------- */
 function fn() { const mod = state.plan.modules[state.m]; return mod && mod.functions[state.f]; }
@@ -325,6 +589,20 @@ function fieldOk(field, value) {
   if (field === "target" || field === "name") return isIdent(value);
   if (field === "label") return value.trim().length > 0;
   return value.trim().length > 0 && balanced(value) && !/[\n;]/.test(value);
+}
+// Plain-language reason a field was refused; shown above the blocks.
+function whyBad(field, value) {
+  const v = value.trim();
+  if (field === "target" || field === "name") {
+    if (!v) return "A name can't be empty.";
+    if (/^\d/.test(v)) return `"${v}" starts with a digit. Names must start with a letter or _ (try item1 instead of 1item).`;
+    if (KEYWORDS.has(v)) return `"${v}" is a Python word with its own meaning. Pick another name, such as ${v}_value.`;
+    return `"${v}" has a character names can't use. Use letters, digits and _ only, with no spaces (my_total, not my total).`;
+  }
+  if (field === "label") return "Write a few words describing the work.";
+  if (!v) return "This box can't be empty. Type a value, such as 0 or name.";
+  if (/[\n;]/.test(value)) return "Keep it to one line, without semicolons. Use another block for the next step.";
+  return "Brackets or quotes don't match. Every ( needs a ), every [ a ], and every quote needs a closing quote.";
 }
 function parseParams(text) {
   return text.split(",").map(s => s.trim()).filter(Boolean).map(p => {
@@ -387,6 +665,28 @@ function highlight(code) {
   }).join("\n");
 }
 
+/* ---------- undo / redo: snapshots of the plan ---------- */
+const hist = { past: [], future: [], last: null, timer: 0 };
+function snapshot() {
+  clearTimeout(hist.timer);
+  const s = JSON.stringify(state.plan);
+  if (s === hist.last) return;
+  if (hist.last !== null) { hist.past.push(hist.last); if (hist.past.length > 200) hist.past.shift(); hist.future = []; }
+  hist.last = s; updateUndo();
+}
+function resetHistory() { hist.past = []; hist.future = []; hist.last = null; snapshot(); }
+function updateUndo() { $("#undoBtn").disabled = !hist.past.length; $("#redoBtn").disabled = !hist.future.length; }
+function travel(from, to, word) {
+  snapshot();
+  if (!from.length) return;
+  to.push(hist.last); hist.last = from.pop(); state.plan = JSON.parse(hist.last);
+  state.m = Math.min(state.m, state.plan.modules.length - 1);
+  state.f = Math.max(0, Math.min(state.f, state.plan.modules[state.m].functions.length - 1));
+  state.target = []; state.menu = null; render(); updateUndo(); toast(word);
+}
+const undo = () => travel(hist.past, hist.future, "Undone");
+const redo = () => travel(hist.future, hist.past, "Redone");
+
 /* ---------- optional sound ---------- */
 let audio;
 function note(kind, when = 0) {
@@ -405,17 +705,17 @@ function flatten(nodes, out = []) { for (const n of nodes) { out.push(n.kind); i
 /* ---------- rendering ---------- */
 function render() {
   renderFiles(); renderBuilder(); renderCode(); renderAdvice();
-  store.set("blockwise-plan", JSON.stringify(state.plan));
+  store.set("blockwise-plan", JSON.stringify(state.plan)); snapshot();
 }
 function renderFiles() {
   const ul = $("#files"); ul.innerHTML = "";
   state.plan.modules.forEach((mod, mi) => {
     const li = document.createElement("li"); li.className = "file";
     const folder = mod.path.includes("/") ? mod.path.split("/").slice(0, -1).join("/") + "/" : "";
-    li.innerHTML = `<div class="file-row"><input aria-label="File path" value="${mod.path}">
-      <button class="btn small" title="Add function to this file">+ fn</button>
-      <button class="btn small ghost" title="Delete file">✕</button></div>
-      ${folder ? `<div class="folder-tag">📁 in folder ${folder}</div>` : ""}
+    li.innerHTML = `<div class="file-row"><input aria-label="File path" value="${attr(mod.path)}">
+      <button class="btn small" title="Add a function to this file">+ fn</button>
+      <button class="btn small ghost" title="Delete file" aria-label="Delete file ${attr(mod.path)}">✕</button></div>
+      ${folder ? `<div class="folder-tag">in folder ${esc(folder)}</div>` : ""}
       <ul class="fn-list"></ul>`;
     const [pathInput, addFn, del] = li.querySelectorAll("input, button");
     pathInput.addEventListener("change", () => {
@@ -430,19 +730,19 @@ function renderFiles() {
     });
     del.addEventListener("click", () => {
       if (state.plan.modules.length === 1) { toast("A project needs at least one file."); return; }
-      confirmClick(del, () => { state.plan.modules.splice(mi, 1); state.m = 0; state.f = 0; state.target = []; render(); toast(`Deleted ${mod.path}`); });
+      confirmClick(del, () => { state.plan.modules.splice(mi, 1); state.m = 0; state.f = 0; state.target = []; render(); toast(`Deleted ${mod.path}. Undo brings it back.`); });
     });
     const fnList = li.querySelector(".fn-list");
     mod.functions.forEach((f, fi) => {
       const b = document.createElement("button"); b.className = "fn-btn";
       b.textContent = `def ${f.name}()`; b.setAttribute("aria-current", String(mi === state.m && fi === state.f));
       b.addEventListener("click", () => { state.m = mi; state.f = fi; state.target = []; state.menu = null; render(); showPanel("side-mid"); });
-      fnList.appendChild(Object.assign(document.createElement("li"), {})).appendChild(b);
+      fnList.appendChild(document.createElement("li")).appendChild(b);
     });
     ul.appendChild(li);
   });
   const t = fn();
-  $("#targetNote").textContent = t ? `Palette adds to: ${describeTarget()}` : "Add a function to start.";
+  $("#targetNote").textContent = t ? `Clicking a block adds it to: ${describeTarget()}` : "Add a function to start.";
 }
 function describeTarget() {
   if (!state.target.length) return `${fn().name}() — main level`;
@@ -454,7 +754,7 @@ function renderPalette() {
   const pal = $("#palette"); pal.innerHTML = "";
   for (const [kind, k] of Object.entries(KINDS)) {
     const b = document.createElement("button"); b.className = "pal"; b.style.setProperty("--c", `var(--k-${kind})`);
-    b.innerHTML = `<b>${k.label}</b><span>${k.help}</span>`;
+    b.innerHTML = `<b>${k.label}</b><code>${esc(k.py)}</code><span>${k.help}</span>`;
     b.addEventListener("click", () => addBlock(state.target, kind));
     pal.appendChild(b);
   }
@@ -465,45 +765,54 @@ function renderBuilder() {
   $("#fnTitle").textContent = `${state.plan.modules[state.m].path} › ${f.name}()`;
   $("#playFn").hidden = !state.sound;
   const sig = document.createElement("div"); sig.className = "sig";
-  sig.innerHTML = `<label for="fnName">def</label><input id="fnName" class="field" value="${attr(f.name)}">
-    <label for="fnParams">inputs</label><input id="fnParams" class="field" placeholder="amount: int, role: str" value="${attr(paramsText(f.parameters))}">
-    <label for="fnReturns">returns</label><input id="fnReturns" class="field" value="${attr(f.returns || "None")}">
+  const extras = state.plan.modules[state.m].imports.length;
+  sig.innerHTML = `<label for="fnName">def</label><input id="fnName" class="field" value="${attr(f.name)}" spellcheck="false">
+    <label for="fnParams">inputs</label><input id="fnParams" class="field" placeholder="amount: int, role: str" value="${attr(paramsText(f.parameters))}" spellcheck="false">
+    <label for="fnReturns">returns</label><input id="fnReturns" class="field" value="${attr(f.returns || "None")}" spellcheck="false">
+    <details${extras ? " open" : ""}><summary>Notes and imports</summary><div class="more">
     <label for="fnReqs">notes</label><textarea id="fnReqs" class="field" placeholder="What should this function do? (becomes the docstring)">${esc((f.requirements || []).join("\n"))}</textarea>
-    <label for="fnImports">imports</label><textarea id="fnImports" class="field" placeholder="from checks import require_positive">${esc(state.plan.modules[state.m].imports.join("\n"))}</textarea>`;
+    <label for="fnImports">imports</label><textarea id="fnImports" class="field" placeholder="from checks import require_positive" spellcheck="false">${esc(state.plan.modules[state.m].imports.join("\n"))}</textarea></div></details>`;
   root.appendChild(sig);
-  bindField($("#fnName", sig), v => isIdent(v), v => { f.name = v; });
-  bindField($("#fnParams", sig), v => !v.trim() || parseParams(v).every(p => isIdent(p.name)), v => { f.parameters = parseParams(v); });
-  bindField($("#fnReturns", sig), v => v.trim() && balanced(v), v => { f.returns = v.trim(); });
+  bindField($("#fnName", sig), v => isIdent(v), v => { f.name = v; }, v => whyBad("name", v));
+  bindField($("#fnParams", sig), v => !v.trim() || parseParams(v).every(p => isIdent(p.name)), v => { f.parameters = parseParams(v); },
+    v => { const bad = parseParams(v).find(p => !isIdent(p.name)); return `Inputs look like name: type, separated by commas (amount: int, role: str). ${bad ? whyBad("name", bad.name) : ""}`; });
+  bindField($("#fnReturns", sig), v => v.trim() && balanced(v), v => { f.returns = v.trim(); }, () => "Write the type this function gives back, such as int, str, bool or None.");
   bindField($("#fnReqs", sig), () => true, v => { f.requirements = v.split("\n").filter(s => s.trim()); });
   bindField($("#fnImports", sig), v => v.split("\n").every(l => !l.trim() || /^(from\s+[\w.]+\s+)?import\s+[\w.,\s]+$/.test(l.trim())),
-    v => { state.plan.modules[state.m].imports = v.split("\n").map(s => s.trim()).filter(Boolean); });
+    v => { state.plan.modules[state.m].imports = v.split("\n").map(s => s.trim()).filter(Boolean); },
+    () => "Each import line looks like: from checks import require_positive (or: import math).");
   const tree = document.createElement("div"); tree.className = "tree";
   tree.appendChild(renderSlot(f.body, [], "root"));
   root.appendChild(tree);
 }
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const attr = s => esc(s).replace(/"/g, "&quot;");
-function bindField(input, ok, apply) {
+function bindField(input, ok, apply, why) {
+  const report = () => { const good = ok(input.value); input.classList.toggle("bad", !good); input.setAttribute("aria-invalid", String(!good)); $("#fieldMsg").textContent = good || !why ? "" : why(input.value); return good; };
   input.addEventListener("input", () => {
-    const good = ok(input.value); input.classList.toggle("bad", !good);
-    input.title = good ? "" : "Check this field: names use letters, digits and _; brackets and quotes must match.";
-    if (good) { apply(input.value); renderCode(); renderAdvice(); renderFiles(); store.set("blockwise-plan", JSON.stringify(state.plan)); }
+    if (report()) {
+      apply(input.value); renderCode(); renderAdvice(); renderFiles(); store.set("blockwise-plan", JSON.stringify(state.plan));
+      clearTimeout(hist.timer); hist.timer = setTimeout(snapshot, 600);
+    }
   });
+  input.addEventListener("focus", () => { if (input.classList.contains("bad")) report(); });
+  input.addEventListener("blur", () => { if (!input.classList.contains("bad")) $("#fieldMsg").textContent = ""; snapshot(); });
 }
 function renderSlot(list, path, variant, label) {
   const slot = document.createElement("div");
   slot.className = "slot" + (variant === "root" ? " root" : "") + (same(path, state.target) ? " is-target" : "");
   if (label) slot.appendChild(Object.assign(document.createElement("div"), { className: "slot-label", textContent: label }));
-  if (variant === "root" && !list.length) slot.appendChild(Object.assign(document.createElement("div"), { className: "empty-hint", textContent: "Empty function. Add your first block below, or pick one from the Blocks palette." }));
+  if (variant === "root" && !list.length) slot.appendChild(Object.assign(document.createElement("div"), { className: "empty-hint", textContent: "Empty function. Add your first block below, or click one in the Blocks list." }));
   list.forEach((node, i) => slot.appendChild(renderBlock(node, [...path, i], list, i)));
   const add = document.createElement("button"); add.className = "add-here";
   add.textContent = variant === "root" ? "+ add a block" : "+ add inside";
+  add.setAttribute("aria-expanded", String(same(state.menu, path)));
   add.addEventListener("click", () => { state.target = path; state.menu = same(state.menu, path) ? null : path; renderBuilder(); renderFiles(); });
   slot.appendChild(add);
   if (same(state.menu, path)) {
     const menu = document.createElement("div"); menu.className = "addmenu";
     for (const [kind, k] of Object.entries(KINDS)) {
-      const b = document.createElement("button"); b.style.setProperty("--c", `var(--k-${kind})`); b.textContent = k.label;
+      const b = document.createElement("button"); b.style.setProperty("--c", `var(--k-${kind})`); b.textContent = k.label; b.title = k.help;
       b.addEventListener("click", () => addBlock(path, kind)); menu.appendChild(b);
     }
     slot.appendChild(menu);
@@ -515,19 +824,19 @@ function renderBlock(node, path, list, index) {
   const k = KINDS[node.kind], el = document.createElement("div");
   el.className = "block" + (same(state.flash, path) ? " flash" : ""); el.style.setProperty("--c", `var(--k-${node.kind})`);
   const head = document.createElement("div"); head.className = "block-head";
-  head.innerHTML = `<span class="chip">${k.label}</span>`;
+  head.innerHTML = `<span class="chip" title="${attr(k.help + " Python: " + k.py)}">${k.label}</span>`;
   const words = { loop: ["for", "in"], assign: ["", "="] };
   k.fields.forEach((field, i) => {
     if (words[node.kind] && words[node.kind][i]) head.appendChild(Object.assign(document.createElement("span"), { className: "inline-word", textContent: words[node.kind][i] }));
-    const input = document.createElement("input"); input.className = "field"; input.value = node[field];
+    const input = document.createElement("input"); input.className = "field"; input.value = node[field]; input.spellcheck = false;
     input.setAttribute("aria-label", `${k.label} ${field}`);
     if (!fieldOk(field, node[field])) input.classList.add("bad");
-    bindField(input, v => fieldOk(field, v), v => { node[field] = field === "label" ? v : v.trim(); });
+    bindField(input, v => fieldOk(field, v), v => { node[field] = field === "label" ? v : v.trim(); }, v => whyBad(field, v));
     head.appendChild(input);
   });
   const tools = document.createElement("div"); tools.className = "tools";
   for (const [sym, title, act] of [["↑", "Move up", -1], ["↓", "Move down", 1], ["✕", "Delete block", 0]]) {
-    const b = document.createElement("button"); b.textContent = sym; b.title = title; b.setAttribute("aria-label", title);
+    const b = document.createElement("button"); b.textContent = sym; b.title = title; b.setAttribute("aria-label", `${title}: ${k.label}`);
     b.addEventListener("click", () => {
       if (act === 0) { list.splice(index, 1); state.target = []; state.menu = null; }
       else { const j = index + act; if (j < 0 || j >= list.length) return; [list[index], list[j]] = [list[j], list[index]]; }
@@ -547,6 +856,8 @@ function addBlock(path, kind) {
   let list; try { list = container(f.body, path); } catch { path = []; list = f.body; }
   list.push(newNode(kind)); state.flash = [...path, list.length - 1]; state.target = path; state.menu = null;
   note(kind); render(); state.flash = null;
+  const inputs = document.querySelectorAll("#builder .block.flash .block-head > .field");
+  if (inputs.length) { inputs[0].focus(); inputs[0].select(); }
 }
 function renderCode() { const mod = state.plan.modules[state.m]; $("#code").innerHTML = mod ? highlight(genModule(mod)) : ""; }
 
@@ -587,8 +898,87 @@ function renderAdvice() {
   $('[data-tab="advice"]').textContent = tips.length ? `Advisor (${tips.length})` : "Advisor";
 }
 
+/* ---------- running Python (Pyodide in a web worker, loaded on first use) ---------- */
+const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v0.27.2/full/";
+const runner = { worker: null, ready: null, isReady: false, seq: 0, pending: new Map() };
+function bootRunner() {
+  const src = `importScripts(${JSON.stringify(PYODIDE_URL + "pyodide.js")});
+const boot = loadPyodide({ indexURL: ${JSON.stringify(PYODIDE_URL)} });
+boot.then(() => postMessage({ type: "ready" }), e => postMessage({ type: "fail", error: String(e) }));
+onmessage = async e => {
+  const py = await boot, { id, harness, req } = e.data;
+  try { py.globals.set("REQ", JSON.stringify(req)); py.runPython(harness); postMessage({ type: "result", id, result: JSON.parse(py.globals.get("RESULT")) }); }
+  catch (err) { postMessage({ type: "result", id, error: String(err) }); }
+};`;
+  const url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+  const w = new Worker(url); runner.worker = w;
+  runner.ready = new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("Python took too long to download. Check your connection and try again.")), 90000);
+    w.addEventListener("message", e => {
+      if (e.data.type === "ready") { clearTimeout(t); runner.isReady = true; resolve(); }
+      else if (e.data.type === "fail") { clearTimeout(t); reject(new Error("Python could not start: " + e.data.error)); }
+    });
+    w.addEventListener("error", e => { clearTimeout(t); reject(new Error("Python could not start" + (e.message ? ": " + e.message : ". You may be offline."))); });
+  });
+  w.addEventListener("message", e => {
+    if (e.data.type !== "result") return;
+    const done = runner.pending.get(e.data.id); if (done) { runner.pending.delete(e.data.id); done(e.data); }
+  });
+  runner.ready.catch(() => { if (runner.worker === w) resetRunner(); });
+}
+function resetRunner() {
+  if (runner.worker) runner.worker.terminate();
+  runner.worker = null; runner.ready = null; runner.isReady = false;
+  for (const done of runner.pending.values()) done({ error: "stopped" });
+  runner.pending.clear();
+}
+async function runPython(req) {
+  if (!runner.worker) bootRunner();
+  await runner.ready;
+  const id = ++runner.seq, harness = $("#pyHarness").textContent;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => { runner.pending.delete(id); resetRunner(); reject(new Error("Your code ran for more than 10 seconds, so it was stopped. Is something repeating forever?")); }, 10000);
+    runner.pending.set(id, msg => { clearTimeout(timer); if (msg.error) reject(new Error(msg.error)); else resolve(msg.result); });
+    runner.worker.postMessage({ id, harness, req });
+  });
+}
+const projectFiles = () => Object.fromEntries(state.plan.modules.map(m => [m.path, genModule(m)]));
+const loadingNote = () => runner.isReady ? "Running…" : "Starting Python in your browser. The first time takes a few seconds…";
+// Friendlier wording for the errors beginners hit most.
+function explainError(text) {
+  const t = String(text);
+  if (t.startsWith("NotImplementedError: TODO:")) return `Still a TODO here: "${t.slice(26)}". Replace the TODO block with real blocks.`;
+  if (t.startsWith("NameError")) return `${t}. Python doesn't know that name yet: check the spelling, or set it with a Set variable block first.`;
+  if (t.startsWith("SyntaxError")) return `${t}. Python couldn't read one of the boxes: look for a typo or a missing bracket.`;
+  if (t.startsWith("TypeError")) return `${t}. A value is the wrong kind for this job (for example adding text to a number).`;
+  return t;
+}
+async function tryRun() {
+  const expr = $("#tryExpr").value.trim(), out = $("#tryOut");
+  if (!expr) { $("#tryExpr").focus(); return; }
+  out.innerHTML = `<span class="spinner"></span>${loadingNote()}`;
+  $("#tryRun").disabled = true;
+  try {
+    const r = await runPython({ files: projectFiles(), expr });
+    let html = `<span class="muted">&gt;&gt;&gt; ${esc(expr)}</span>\n`;
+    if (r.output) html += esc(r.output);
+    if (r.load_error) html += `<span class="err">${esc(explainError(r.load_error))}</span>`;
+    else if (r.value !== null) html += `<span class="${r.error ? "err" : "val"}">${esc(r.error ? explainError(r.value) : r.value)}</span>`;
+    else if (!r.output) html += `<span class="muted">(done, nothing to show)</span>`;
+    out.innerHTML = html;
+  } catch (e) { out.innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+  $("#tryRun").disabled = false;
+}
+function suggestTry() {
+  const l = state.lesson, f = fn();
+  if (l && l.tests && l.tests.length) return l.tests[0].call;
+  return f ? `${f.name}(${f.parameters.map(() => "").join(", ")})` : "";
+}
+
 /* ---------- lessons ---------- */
 const LESSONS = window.BLOCKWISE_LESSONS || [];
+const doneSet = () => new Set(readJSON("blockwise-done", []));
+function markDone(id) { const d = doneSet(); d.add(id); store.set("blockwise-done", JSON.stringify([...d])); fillLessonPick(); }
 function lessonPlan(lesson, mode) {
   if (mode === "guided") return clone(lesson.starter);
   const plan = clone(lesson.solution);
@@ -598,21 +988,49 @@ function lessonPlan(lesson, mode) {
 function startLesson(id, mode) {
   const lesson = LESSONS.find(l => l.id === id); if (!lesson) return;
   state.lesson = lesson; state.plan = normalize(lessonPlan(lesson, mode)); state.m = 0; state.f = 0; state.target = []; state.menu = null;
-  store.set("blockwise-lesson", id); render(); renderLesson(); selectTab("lesson");
+  state.checkResult = null; state.tests = null; $("#modePick").value = mode; $("#lessonPick").value = id;
+  $("#tryExpr").value = suggestTry(); $("#tryOut").textContent = "";
+  store.set("blockwise-lesson", id); render(); resetHistory(); renderLesson(); selectTab("lesson");
 }
 function renderLesson(result) {
-  const l = state.lesson, p = $("#lessonPanel");
-  if (!l) { p.innerHTML = `<div class="lesson-card"><h3>Free build</h3><p>Pick a lesson at the top, or build anything you like. The Python tab always shows your real code.</p></div>`; return; }
-  p.innerHTML = `<div class="lesson-card"><h3>${esc(l.title)}</h3>
-    <span class="pill">${esc(l.level)}</span><span class="pill">${l.minutes} min</span>${l.concepts.map(c => `<span class="pill">${esc(c)}</span>`).join("")}
-    <p><b>Goal:</b> ${esc(l.goal)}</p></div>
-    <ol class="steps">${l.steps.map(s => `<li><div><b>${esc(s.title)}</b>${esc(s.text)}</div></li>`).join("")}</ol>
-    <div id="resultBox"></div>
-    <div class="code-actions"><button class="btn small" id="showAnswer">Show the answer</button><button class="btn small ghost" id="resetLesson">Restart lesson</button></div>`;
-  if (result) $("#resultBox").appendChild(result);
-  $("#showAnswer").addEventListener("click", e => confirmClick(e.currentTarget, () => { state.plan = normalize(clone(l.solution)); render(); toast("Answer loaded. Compare it with the Python tab."); }));
-  $("#resetLesson").addEventListener("click", () => startLesson(l.id, $("#modePick").value));
+  if (result !== undefined) state.checkResult = result;
+  const l = state.lesson, p = $("#lessonPanel"), done = doneSet();
+  const rail = `<div class="rail" role="group" aria-label="Lessons"><span class="rail-label">${done.size}/${LESSONS.length} done</span>${LESSONS.map((x, i) =>
+    `<button data-lesson="${x.id}" class="${done.has(x.id) ? "done" : ""}" aria-current="${!!(l && l.id === x.id)}" title="${attr(x.title)}${done.has(x.id) ? " (done)" : ""}">${i + 1}</button>`).join("")}</div>`;
+  if (!l) {
+    p.innerHTML = rail + `<div class="lesson-card"><h3>Free build</h3><p>Pick a lesson number above, or build anything you like. The Python tab always shows your real code, and Try it runs it.</p></div>`;
+  } else {
+    const ticks = new Set(readJSON("blockwise-steps", {})[l.id] || []);
+    p.innerHTML = rail + `<div class="lesson-card"><h3>${esc(l.title)}</h3>
+      <span class="pill">${esc(l.level)}</span><span class="pill">${l.minutes} min</span>${l.concepts.map(c => `<button class="pill" data-word="${attr(c)}" title="What does ${attr(c)} mean?">${esc(c)}</button>`).join("")}
+      <p><b>Goal:</b> ${esc(l.goal)}</p></div>
+      <ol class="steps">${l.steps.map((s, i) => `<li><button aria-pressed="${ticks.has(i)}" data-step="${i}"><span><b>${esc(s.title)}</b>${esc(s.text)}</span></button></li>`).join("")}</ol>
+      <p class="step-note">Tick each step as you finish it. Stuck? Check my work tells you where to look, without giving the answer away.</p>
+      <div class="code-actions"><button class="btn primary small" id="checkInline">Check my work</button>
+        <button class="btn small" id="runTests">Run tests ▶</button>
+        <button class="btn small ghost" id="showAnswer">Show the answer</button><button class="btn small ghost" id="resetLesson">Restart lesson</button></div>
+      <div id="resultBox"></div><div id="testBox"></div>`;
+    p.querySelectorAll("[data-step]").forEach(b => b.addEventListener("click", () => {
+      const all = readJSON("blockwise-steps", {}), set = new Set(all[l.id] || []), i = Number(b.dataset.step);
+      set.has(i) ? set.delete(i) : set.add(i); all[l.id] = [...set]; store.set("blockwise-steps", JSON.stringify(all));
+      b.setAttribute("aria-pressed", String(set.has(i)));
+    }));
+    p.querySelectorAll("[data-word]").forEach(b => b.addEventListener("click", () => showWord(b.dataset.word)));
+    $("#checkInline").addEventListener("click", checkWork);
+    $("#runTests").addEventListener("click", runTests);
+    $("#showAnswer").addEventListener("click", e => confirmClick(e.currentTarget, () => { state.plan = normalize(clone(l.solution)); render(); toast("Answer loaded. Compare it with the Python tab. Undo takes you back."); }));
+    $("#resetLesson").addEventListener("click", e => confirmClick(e.currentTarget, () => startLesson(l.id, $("#modePick").value)));
+    if (state.checkResult) $("#resultBox").appendChild(state.checkResult);
+    if (state.tests) $("#testBox").appendChild(state.tests);
+  }
+  p.querySelectorAll("[data-lesson]").forEach(b => b.addEventListener("click", () => startLesson(b.dataset.lesson, $("#modePick").value)));
 }
+function nextLessonButton(l) {
+  const i = LESSONS.indexOf(l), next = LESSONS[i + 1];
+  if (!next) return `<br><span>That was the last lesson. Try building your own project, or explore the Templates tab.</span>`;
+  return `<br><button class="btn primary small" data-next="${next.id}">Next: ${esc(next.title)} →</button>`;
+}
+function wireNext(box) { const b = box.querySelector("[data-next]"); if (b) b.addEventListener("click", () => startLesson(b.dataset.next, $("#modePick").value)); }
 const norm = s => String(s).replace(/\s+/g, "").replace(/"/g, "'");
 function compareBody(want, got, where) {
   for (let i = 0; i < Math.max(want.length, got.length); i++) {
@@ -628,40 +1046,73 @@ function compareBody(want, got, where) {
   }
   return null;
 }
+function structureProblem(l) {
+  for (const wm of l.solution.modules) {
+    const gm = state.plan.modules.find(m => m.path === wm.path);
+    if (!gm) return `File ${wm.path} is missing.`;
+    if (norm(wm.imports.join("|")) !== norm(gm.imports.join("|"))) return `${wm.path}: the imports are not right yet.`;
+    for (const wf of wm.functions) {
+      const gf = gm.functions.find(f => f.name === wf.name);
+      if (!gf) return `${wm.path}: function ${wf.name}() is missing.`;
+      if (norm(paramsText(wf.parameters)) !== norm(paramsText(gf.parameters))) return `${wf.name}(): the inputs should be (${paramsText(wf.parameters)}).`;
+      const problem = compareBody(wf.body, gf.body, `${wf.name}()`);
+      if (problem) return problem;
+    }
+  }
+  return null;
+}
 function checkWork() {
   const l = state.lesson;
   const box = document.createElement("div"); box.className = "result";
-  if (!l) { box.className += " no"; box.textContent = "Start a lesson first to check your work."; renderLesson(box); selectTab("lesson"); return; }
-  let problem = null;
-  for (const wm of l.solution.modules) {
-    const gm = state.plan.modules.find(m => m.path === wm.path);
-    if (!gm) { problem = `File ${wm.path} is missing.`; break; }
-    if (norm(wm.imports.join("|")) !== norm(gm.imports.join("|"))) { problem = `${wm.path}: the imports are not right yet.`; break; }
-    for (const wf of wm.functions) {
-      const gf = gm.functions.find(f => f.name === wf.name);
-      if (!gf) { problem = `${wm.path}: function ${wf.name}() is missing.`; break; }
-      if (norm(paramsText(wf.parameters)) !== norm(paramsText(gf.parameters))) { problem = `${wf.name}(): the inputs should be (${paramsText(wf.parameters)}).`; break; }
-      problem = compareBody(wf.body, gf.body, `${wf.name}()`);
-      if (problem) break;
-    }
-    if (problem) break;
-  }
+  if (!l) { box.className += " no"; box.textContent = "Start a lesson first to check your work."; renderLesson(box); selectTab("lesson"); showPanel("side-right"); return; }
+  const problem = structureProblem(l);
   if (problem) { box.className += " no"; box.innerHTML = `<b>Not yet.</b> ${esc(problem)}`; }
   else {
-    box.className += " ok"; box.innerHTML = `<b>✓ Correct!</b> ${esc(l.explain)}`;
-    const done = new Set(JSON.parse(store.get("blockwise-done") || "[]")); done.add(l.id); store.set("blockwise-done", JSON.stringify([...done]));
-    fillLessonPick();
+    box.className += " ok"; box.innerHTML = `<b>✓ Correct!</b> ${esc(l.explain)} ${l.tests ? "Press Run tests to see it work for real." : ""}${nextLessonButton(l)}`;
+    wireNext(box); markDone(l.id);
     if (state.sound) ["function", "return", "branch", "loop"].forEach((k, i) => note(k, i * 0.12));
   }
   renderLesson(box); selectTab("lesson"); showPanel("side-right");
 }
+async function runTests() {
+  const l = state.lesson; if (!l || !l.tests) return;
+  const box = document.createElement("div"); box.className = "result";
+  box.innerHTML = `<span class="spinner"></span>${loadingNote()}`;
+  state.tests = box; renderLesson();
+  let r;
+  try { r = await runPython({ files: projectFiles(), tests: l.tests }); }
+  catch (e) { box.className = "result no"; box.innerHTML = `<b>Could not run.</b> ${esc(e.message)}`; return; }
+  if (state.tests !== box) return;
+  if (r.load_error) { box.className = "result no"; box.innerHTML = `<b>Python couldn't load your code.</b> ${esc(explainError(r.load_error))}`; return; }
+  const passed = r.tests.filter(t => t.ok).length, all = passed === r.tests.length;
+  const rows = r.tests.map(t => `<li class="${t.ok ? "pass" : "fail"}"><span class="mark">${t.ok ? "✓" : "✗"}</span><span>${esc(t.call)}${t.ok ? ` → ${esc(t.got)}` :
+    `<small>Expected ${esc(t.want)}. ${explainError(t.got) === t.got ? `Your code gave ${esc(t.got)}.` : esc(explainError(t.got))}</small>`}</span></li>`).join("");
+  box.className = "result " + (all ? "ok" : "no");
+  let head = all ? `<b>✓ All ${passed} tests pass.</b> Your code really works.` : `<b>${passed} of ${r.tests.length} tests pass.</b> Look at the ✗ lines: what did your code give back, and what was expected?`;
+  if (all && structureProblem(l)) head += ` It's built a little differently from the lesson's answer, and that's fine: there is often more than one right way.`;
+  if (all) { head += nextLessonButton(l); markDone(l.id); }
+  box.innerHTML = head + `<ul class="tests">${rows}</ul>` + (r.output ? `<pre class="console-out">${esc(r.output)}</pre>` : "");
+  wireNext(box); renderLesson();
+}
 function fillLessonPick() {
-  const done = new Set(JSON.parse(store.get("blockwise-done") || "[]")), pick = $("#lessonPick"), cur = pick.value;
+  const done = doneSet(), pick = $("#lessonPick"), cur = pick.value;
   pick.innerHTML = `<option value="">Free build</option>` + LESSONS.map(l => `<option value="${l.id}">${done.has(l.id) ? "✓ " : ""}${esc(l.title)}</option>`).join("");
   pick.value = cur || (state.lesson ? state.lesson.id : "");
 }
 
-/* ---------- presets ---------- */
+/* ---------- glossary ---------- */
+const slug = s => "word-" + s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+function renderGlossary() {
+  $("#glossary").innerHTML = GLOSSARY.map(([w, d]) => `<div id="${slug(w)}"><dt>${esc(w)}</dt><dd>${esc(d)}</dd></div>`).join("");
+}
+function showWord(word) {
+  selectTab("words"); showPanel("side-right");
+  const el = document.getElementById(slug(word)); if (!el) return;
+  document.querySelectorAll("dl.glossary .hit").forEach(x => x.classList.remove("hit"));
+  el.classList.add("hit"); el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+/* ---------- presets (the template library) ---------- */
 function renderValue(spec, value) {
   if (spec.kind === "string") return pyStr(value);
   if (spec.kind === "string_list") { const items = (Array.isArray(value) ? value : String(value).split(",")).map(s => s.trim()).filter(Boolean); return "(" + items.map(pyStr).join(", ") + (items.length === 1 ? ",)" : ")"); }
@@ -673,17 +1124,26 @@ function substitute(node, values) {
   if (node && typeof node === "object") return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, substitute(v, values)]));
   return node;
 }
+function renderPresetFilters() {
+  const presets = window.BLOCKWISE_PRESETS || [], cats = ["all", ...new Set(presets.map(p => p.category))];
+  $("#presetCats").innerHTML = cats.map(c => `<button data-cat="${c}" aria-pressed="${state.presetCat === c}">${c === "all" ? `All (${presets.length})` : `${esc(c)} (${presets.filter(p => p.category === c).length})`}</button>`).join("");
+  $("#presetCats").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { state.presetCat = b.dataset.cat; renderPresetFilters(); renderPresets(); }));
+}
 function renderPresets() {
-  const list = $("#presetList"), presets = window.BLOCKWISE_PRESETS || [];
-  if (!presets.length) { list.innerHTML = `<div class="empty-hint">presets.js not found. Run: blockwise export-presets --out studio/presets.js</div>`; return; }
-  list.innerHTML = "";
+  const list = $("#presetList"), q = state.presetQuery.toLowerCase();
+  const presets = (window.BLOCKWISE_PRESETS || []).filter(p => (state.presetCat === "all" || p.category === state.presetCat)
+    && (!q || `${p.title} ${p.summary} ${p.id} ${p.category}`.toLowerCase().includes(q)));
+  if (!window.BLOCKWISE_PRESETS) { list.innerHTML = `<div class="empty-hint">presets.js not found. Run: blockwise export-presets --out studio/presets.js</div>`; return; }
+  list.innerHTML = presets.length ? "" : `<div class="empty-hint">No templates match. Try another word.</div>`;
   for (const p of presets) {
     const card = document.createElement("div"); card.className = "preset";
-    card.innerHTML = `<b>${esc(p.title)}</b> <span class="pill">${esc(p.category)}</span><p>${esc(p.summary)}</p><div class="params"></div><button class="btn small">Insert into current file</button>`;
+    card.innerHTML = `<h3>${esc(p.title)}</h3><span class="pill">${esc(p.category)}</span><p>${esc(p.summary)}</p>
+      <details><summary>Preview the code</summary><pre>${highlight(p.preview || "")}</pre></details>
+      <div class="params"></div><button class="btn small">Insert into current file</button>`;
     const params = card.querySelector(".params"), inputs = {};
     for (const [name, spec] of Object.entries(p.params)) {
       const id = `p-${p.id}-${name}`;
-      params.insertAdjacentHTML("beforeend", `<label for="${id}">${name}</label><input class="field" id="${id}" value="${attr(Array.isArray(spec.default) ? spec.default.join(", ") : spec.default)}">`);
+      params.insertAdjacentHTML("beforeend", `<label for="${id}">${name}</label><input class="field" id="${id}" spellcheck="false" value="${attr(Array.isArray(spec.default) ? spec.default.join(", ") : spec.default)}">`);
       inputs[name] = () => $("#" + id, card).value;
     }
     card.querySelector("button").addEventListener("click", () => {
@@ -711,6 +1171,13 @@ function renderPresets() {
 function selectTab(name) {
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === name)));
   document.querySelectorAll(".tabpanel").forEach(p => { p.hidden = p.dataset.panel !== name; });
+  setTrack(name === "presets" ? "library" : "learn", true);
+}
+function setTrack(track, quiet) {
+  $("#trackLearn").setAttribute("aria-pressed", String(track === "learn"));
+  $("#trackLibrary").setAttribute("aria-pressed", String(track === "library"));
+  if (quiet) return;
+  selectTab(track === "library" ? "presets" : "lesson"); showPanel("side-right");
 }
 function showPanel(id) {
   if (!window.matchMedia("(max-width: 760px)").matches) return;
@@ -724,6 +1191,7 @@ function confirmClick(button, action) {
   setTimeout(() => { button.dataset.armed = ""; if (button.isConnected) button.textContent = label; }, 3000);
 }
 function toast(msg) {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
   const t = Object.assign(document.createElement("div"), { className: "toast", textContent: msg, role: "status" });
   document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
 }
@@ -752,17 +1220,38 @@ function normalize(p) {
   }
   return p;
 }
+function closeWelcome() { store.set("blockwise-welcomed", "1"); const d = $("#welcome"); if (d.open) d.close(); }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => selectTab(t.dataset.tab)));
 document.querySelectorAll(".mobile-nav button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("main.layout > .panel").forEach(p => p.classList.toggle("show", p.id === b.dataset.show));
   document.querySelectorAll(".mobile-nav button").forEach(x => x.setAttribute("aria-current", String(x === b)));
 }));
+$("#trackLearn").addEventListener("click", () => setTrack("learn"));
+$("#trackLibrary").addEventListener("click", () => setTrack("library"));
 $("#startLesson").addEventListener("click", () => {
   const id = $("#lessonPick").value;
   if (!id) { state.lesson = null; renderLesson(); selectTab("lesson"); return; }
   startLesson(id, $("#modePick").value);
 });
 $("#checkWork").addEventListener("click", checkWork);
+$("#undoBtn").addEventListener("click", undo);
+$("#redoBtn").addEventListener("click", redo);
+$("#helpBtn").addEventListener("click", () => $("#welcome").showModal());
+$("#welcomeClose").addEventListener("click", closeWelcome);
+$("#welcome").addEventListener("close", () => store.set("blockwise-welcomed", "1"));
+$("#welcomeLearn").addEventListener("click", () => { closeWelcome(); startLesson(LESSONS[0].id, "guided"); });
+$("#welcomeLibrary").addEventListener("click", () => { closeWelcome(); setTrack("library"); });
+$("#tryRun").addEventListener("click", tryRun);
+$("#tryExpr").addEventListener("keydown", e => { if (e.key === "Enter") tryRun(); });
+$("#presetSearch").addEventListener("input", e => { state.presetQuery = e.target.value.trim(); renderPresets(); });
+document.addEventListener("keydown", e => {
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName);
+  if (e.key === "Escape" && state.menu) { state.menu = null; renderBuilder(); return; }
+  if (typing || !(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if ((k === "z" && e.shiftKey) || k === "y") { e.preventDefault(); redo(); }
+});
 $("#soundToggle").addEventListener("change", e => { state.sound = e.target.checked; $("#playFn").hidden = !state.sound; if (state.sound) note("function"); });
 $("#playFn").addEventListener("click", () => { const f = fn(); if (f) ["function", ...flatten(f.body)].forEach((k, i) => note(k, i * 0.3)); });
 $("#addFile").addEventListener("click", () => {
@@ -798,15 +1287,17 @@ $("#themeToggle").addEventListener("click", () => {
 (function init() {
   const theme = store.get("blockwise-theme"); if (theme) document.documentElement.dataset.theme = theme;
   if (window.BLOCKWISE_EMBEDDED) document.querySelectorAll("#downloadPy, #downloadPlan").forEach(b => { b.hidden = true; });
-  renderPalette(); renderPresets();
+  renderPalette(); renderPresetFilters(); renderPresets(); renderGlossary();
   let saved = null; try { saved = JSON.parse(store.get("blockwise-plan") || "null"); } catch { saved = null; }
   const lessonId = store.get("blockwise-lesson");
   state.lesson = LESSONS.find(l => l.id === lessonId) || null;
   if (validPlan(saved)) state.plan = normalize(saved);
   else if (LESSONS.length) { state.lesson = LESSONS[0]; state.plan = normalize(lessonPlan(LESSONS[0], "guided")); }
   else state.plan = normalize({ modules: [{ path: "main.py", functions: [{ name: "main", parameters: [], body: [] }] }] });
-  fillLessonPick(); render(); renderLesson();
+  fillLessonPick(); render(); resetHistory(); renderLesson();
+  $("#tryExpr").value = suggestTry();
   if (window.matchMedia("(max-width: 760px)").matches) showPanel("side-mid");
+  if (!store.get("blockwise-welcomed") && typeof $("#welcome").showModal === "function") $("#welcome").showModal();
 })();
 </script>
 </body>
