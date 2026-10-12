@@ -30,7 +30,7 @@ const { chromium } = require("playwright");
   await fresh.screenshot({ path: path.join(out, "studio-welcome.png") });
   await fresh.click("#welcomeLearn");
   result.ui.welcome_starts_lesson = !(await fresh.isVisible("#welcome[open]"))
-    && (await fresh.textContent("#lessonPanel")).includes("Your first function");
+    && (await fresh.textContent("#lessonPanel")).includes("Anatomy of a Python file") && (await fresh.textContent("#lessonPanel")).includes("Words you'll see");
   await fresh.close();
 
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
@@ -226,6 +226,22 @@ const { chromium } = require("playwright");
   result.ui.blueprint_inserted = await page.evaluate(() => state.plan.modules.map(m => m.path).join(",") === "main.py,todo.py" && state.f === -1
     && document.querySelector("#runArgs").value === "add buy milk");
   await page.screenshot({ path: path.join(out, "studio-blueprint.png") });
+
+  // 5l. Render: the split-files lesson as real files, plus a .zip of them (checked with Python's zipfile).
+  await page.selectOption("#lessonPick", "split-files");
+  await page.click("#startLesson");
+  await page.evaluate(() => { state.plan = normalize(JSON.parse(JSON.stringify(BLOCKWISE_LESSONS.find(l => l.id === "split-files").solution))); render(); });
+  await page.click("#renderOpen");
+  result.ui.render_tree = await page.locator("#renderTree button").allTextContents();
+  await page.locator("#renderTree button", { hasText: "login.py" }).click();
+  result.ui.render_shows = await page.textContent("#renderCode");
+  await page.screenshot({ path: path.join(out, "studio-render.png") });
+  result.render = await page.evaluate(async () => {
+    const files = renderedFiles(), bytes = new Uint8Array(await makeZip(files).arrayBuffer());
+    let binary = ""; for (const b of bytes) binary += String.fromCharCode(b);
+    return { plan: state.plan, files, zip: btoa(binary) };
+  });
+  await page.click("#renderClose");
 
   // 6. Advisor reacts to deep nesting.
   await page.evaluate(() => {
