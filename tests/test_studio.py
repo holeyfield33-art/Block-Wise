@@ -107,6 +107,18 @@ def test_studio_runs_without_errors_and_lessons_check(e2e):
     assert ui["undo_restores"] and ui["redo_reapplies"]
     assert "digit" in ui["bad_name_message"]
     assert ui["preset_filter_count"] >= 1 and ui["glossary_jump"]
+    assert ui["bad_exception_flagged"] and "needs a default" in ui["default_order_message"]
+    assert ui["kinds_without_color"] == []
+    assert ui["try_code"] == ("LIMIT = 10\n\n\ndef to_int(text: str, fallback: int=0) -> None:\n    try:\n        return int(text)\n"
+                              "    except (ValueError, TypeError):\n        return fallback\n")
+
+
+def test_studio_templates_match_compiler(e2e):
+    assert set(e2e["presets"]) == {p["id"] for p in json.loads(
+        (STUDIO / "presets.js").read_text(encoding="utf-8").split("= ", 1)[1].rstrip().rstrip(";"))}
+    for preset_id, item in e2e["presets"].items():
+        expected = compile_score(validate_score(item["plan"]))["m.py"]
+        assert item["source"] == without_module_docstring(expected), f"{preset_id}: write template expressions as Python prints them"
 
 
 @pytest.mark.parametrize("lesson", LESSONS, ids=[lesson["id"] for lesson in LESSONS])

@@ -137,5 +137,28 @@
       ]
     },
     "examples": [{"args": [10, 4], "returns": 2.5}, {"args": [10, 0], "returns": 0}]
+  },
+  {
+    "id": "parse_int_or_default",
+    "title": "Turn text into a whole number, or fall back",
+    "category": "data",
+    "summary": "Return int(text); when the text is not a whole number (or not text at all), return the fallback.",
+    "params": {
+      "function": {"kind": "identifier", "default": "to_int"},
+      "text": {"kind": "identifier", "default": "text"},
+      "fallback": {"kind": "identifier", "default": "fallback"},
+      "fallback_value": {"kind": "number", "default": 0}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{text}}", "type": "str"}, {"name": "{{fallback}}", "type": "int", "default": "{{fallback_value}}"}],
+      "returns": "int",
+      "body": [
+        {"kind": "try", "exception": "(TypeError, ValueError)", "body": [{"kind": "return", "expression": "int({{text}})"}],
+         "handler": [{"kind": "return", "expression": "{{fallback}}"}]}
+      ]
+    },
+    "examples": [{"args": ["42"], "returns": 42}, {"args": [" 7 "], "returns": 7}, {"args": ["4.5"], "returns": 0},
+                 {"args": ["abc", -1], "returns": -1}, {"args": [null], "returns": 0}]
   }
 ]

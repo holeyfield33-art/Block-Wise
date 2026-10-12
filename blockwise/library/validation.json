@@ -35,7 +35,7 @@
       "parameters": [{"name": "{{value}}", "type": "object"}],
       "returns": "None",
       "body": [
-        {"kind": "branch", "condition": "not isinstance({{value}}, {{type}}) or isinstance({{value}}, bool) and {{type}} is not bool",
+        {"kind": "branch", "condition": "not isinstance({{value}}, {{type}}) or (isinstance({{value}}, bool) and {{type}} is not bool)",
          "body": [{"kind": "raise", "expression": "TypeError('{{value}} must be {{type}}')"}]},
         {"kind": "return", "expression": "None"}
       ]

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "read_text_file",
+    "title": "Read a whole text file",
+    "category": "files",
+    "summary": "Open a text file, return everything in it, and always close the file.",
+    "params": {
+      "function": {"kind": "identifier", "default": "read_text"},
+      "path": {"kind": "identifier", "default": "path"},
+      "encoding": {"kind": "string", "default": "utf-8"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{path}}", "type": "str"}],
+      "returns": "str",
+      "body": [
+        {"kind": "with", "context": "open({{path}}, encoding={{encoding}})", "alias": "handle", "body": [
+          {"kind": "return", "expression": "handle.read()"}]}
+      ]
+    },
+    "examples": [
+      {"files": {"note.txt": "hello\nworld"}, "args": ["{dir}/note.txt"], "returns": "hello\nworld"},
+      {"args": ["{dir}/missing.txt"], "raises": "FileNotFoundError"}
+    ]
+  },
+  {
+    "id": "write_text_file",
+    "title": "Write a text file",
+    "category": "files",
+    "summary": "Replace a file's contents with the given text, and always close the file.",
+    "params": {
+      "function": {"kind": "identifier", "default": "write_text"},
+      "path": {"kind": "identifier", "default": "path"},
+      "text": {"kind": "identifier", "default": "text"},
+      "encoding": {"kind": "string", "default": "utf-8"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{path}}", "type": "str"}, {"name": "{{text}}", "type": "str"}],
+      "returns": "None",
+      "body": [
+        {"kind": "with", "context": "open({{path}}, 'w', encoding={{encoding}})", "alias": "handle", "body": [
+          {"kind": "call", "expression": "handle.write({{text}})"}]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [
+      {"args": ["{dir}/out.txt", "saved"], "returns": null, "then_files": {"out.txt": "saved"}}
+    ]
+  },
+  {
+    "id": "read_json_or_default",
+    "title": "Read a JSON file, or fall back",
+    "category": "files",
+    "summary": "Return the data in a JSON file; if the file is missing, unreadable or not valid JSON, return the fallback instead.",
+    "params": {
+      "function": {"kind": "identifier", "default": "load_settings"},
+      "path": {"kind": "identifier", "default": "path"},
+      "fallback": {"kind": "identifier", "default": "fallback"},
+      "fallback_value": {"kind": "expression", "default": "None"}
+    },
+    "imports": ["import json"],
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{path}}", "type": "str"}, {"name": "{{fallback}}", "type": "object", "default": "{{fallback_value}}"}],
+      "returns": "object",
+      "body": [
+        {"kind": "try", "exception": "(OSError, ValueError)", "body": [
+          {"kind": "with", "context": "open({{path}}, encoding='utf-8')", "alias": "handle", "body": [
+            {"kind": "return", "expression": "json.load(handle)"}]}],
+         "handler": [{"kind": "return", "expression": "{{fallback}}"}]}
+      ]
+    },
+    "examples": [
+      {"files": {"s.json": "{\"theme\": \"dark\"}"}, "args": ["{dir}/s.json"], "returns": {"theme": "dark"}},
+      {"files": {"bad.json": "{not json"}, "args": ["{dir}/bad.json", {}], "returns": {}},
+      {"args": ["{dir}/missing.json"], "returns": null}
+    ]
+  }
+]

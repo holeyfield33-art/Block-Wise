@@ -254,5 +254,33 @@ window.BLOCKWISE_LESSONS = [
           {"kind": "assign", "target": "user", "expression": "find_user(users, name)"},
           {"kind": "branch", "condition": "user.get('active') is not True", "body": [{"kind": "raise", "expression": "PermissionError('account disabled')"}], "otherwise": []},
           {"kind": "return", "expression": "user.get('password_hash') == password_hash"}]}]}]}
+  },
+  {
+    "id": "try-except",
+    "title": "9 · Handle mistakes with try / except",
+    "level": "Intermediate",
+    "minutes": 10,
+    "goal": "Turn text like '3' into a number, and give back a fallback instead of crashing when the text isn't a number.",
+    "concepts": ["try / except", "default value", "raise"],
+    "steps": [
+      {"title": "See the default value", "text": "The inputs say fallback: int=0. The =0 is a default value: callers can leave fallback out, and it will be 0."},
+      {"title": "Try the risky part", "text": "In the Try / Except block's try side, add Return with int(text). int('3') gives 3, but int('abc') raises ValueError."},
+      {"title": "Catch the mistake", "text": "The except side runs only when ValueError happens. Add Return with fallback there."},
+      {"title": "Check and run", "text": "Check your work, then Run tests. Try your own call too, like to_quantity('ten', 1)."}
+    ],
+    "explain": "try / except lets your code recover from an error you expect. Catch only the error you mean (ValueError here): catching everything can hide real bugs.",
+    "tests": [
+      {"call": "to_quantity('3')", "expect": "3"},
+      {"call": "to_quantity(' 7 ')", "expect": "7"},
+      {"call": "to_quantity('abc')", "expect": "0"},
+      {"call": "to_quantity('abc', 5)", "expect": "5"}
+    ],
+    "starter": {"format": "blockwise-plan-v1", "title": "Quantities", "modules": [{"path": "parsing.py", "imports": [], "functions": [
+      {"name": "to_quantity", "parameters": [{"name": "text", "type": "str"}, {"name": "fallback", "type": "int", "default": "0"}], "returns": "int", "requirements": ["Return fallback when text is not a whole number."], "body": [
+        {"kind": "try", "body": [], "exception": "ValueError", "alias": "", "handler": [], "finally": []}]}]}]},
+    "solution": {"format": "blockwise-plan-v1", "title": "Quantities", "modules": [{"path": "parsing.py", "imports": [], "functions": [
+      {"name": "to_quantity", "parameters": [{"name": "text", "type": "str"}, {"name": "fallback", "type": "int", "default": "0"}], "returns": "int", "requirements": ["Return fallback when text is not a whole number."], "body": [
+        {"kind": "try", "body": [{"kind": "return", "expression": "int(text)"}], "exception": "ValueError", "alias": "",
+         "handler": [{"kind": "return", "expression": "fallback"}], "finally": []}]}]}]}
   }
 ];

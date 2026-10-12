@@ -51,6 +51,21 @@ def matches_node(expected, actual):
         return (isinstance(actual, ast.For) and isinstance(actual.target, ast.Name) and actual.target.id == expected["target"]
                 and fingerprint(actual.iter) == fingerprint(ast.parse(expected["iterable"], mode="eval").body)
                 and not actual.orelse and matches_body(expected["body"], actual.body))
+    if kind == "try":
+        if not (isinstance(actual, ast.Try) and len(actual.handlers) == 1 and not actual.orelse):
+            return False
+        handler = actual.handlers[0]
+        return (fingerprint(handler.type) == fingerprint(ast.parse(expected["exception"], mode="eval").body)
+                and (handler.name or "") == expected["alias"] and matches_body(expected["body"], actual.body)
+                and matches_body(expected["handler"], handler.body)
+                and (matches_body(expected["finally"], actual.finalbody) if expected["finally"] else not actual.finalbody))
+    if kind == "with":
+        if not (isinstance(actual, ast.With) and len(actual.items) == 1):
+            return False
+        item = actual.items[0]
+        alias = item.optional_vars.id if isinstance(item.optional_vars, ast.Name) else ("" if item.optional_vars is None else None)
+        return (fingerprint(item.context_expr) == fingerprint(ast.parse(expected["context"], mode="eval").body)
+                and alias == expected["alias"] and matches_body(expected["body"], actual.body))
     return fingerprint(compile_nodes([expected])[0]) == fingerprint(actual)
 
 
@@ -117,7 +132,17 @@ def compare_score(score, repository):
         if [fingerprint(node) for node in imports] != [fingerprint(node) for node in wanted_imports]:
             issue(path, None, "imports_changed", "Import inventory/order differs from the plan",
                   module["imports"], [ast.unparse(node) for node in imports])
-        extra_top = [node for node in top if not isinstance(node, (ast.Import, ast.ImportFrom, ast.FunctionDef))]
+        wanted_constants = {c["name"]: c["value"] for c in module["constants"]}
+        assigned = {node.targets[0].id: node for node in top if isinstance(node, ast.Assign) and len(node.targets) == 1
+                    and isinstance(node.targets[0], ast.Name) and node.targets[0].id in wanted_constants}
+        for name, value in wanted_constants.items():
+            if name not in assigned:
+                issue(path, None, "missing_constant", f"Planned constant {name} is missing", f"{name} = {value}")
+            elif fingerprint(assigned[name].value) != fingerprint(ast.parse(value, mode="eval").body):
+                issue(path, None, "constant_changed", f"Constant {name} has a different value than planned",
+                      f"{name} = {value}", ast.unparse(assigned[name]))
+        extra_top = [node for node in top if not isinstance(node, (ast.Import, ast.ImportFrom, ast.FunctionDef))
+                     and not any(node is planned for planned in assigned.values())]
         for node in extra_top:
             issue(path, getattr(node, "name", None), "unexpected_top_level", "Unplanned top-level statement", actual=ast.unparse(node))
         functions = [node for node in top if isinstance(node, ast.FunctionDef)]

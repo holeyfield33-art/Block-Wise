@@ -35,7 +35,7 @@ in a browser. No server or install is needed.
 | Command | What comes back |
 |---|---|
 | `blockwise find <words>` | the 3 best-matching presets, e.g. `blockwise find reject negative number` |
-| `blockwise list [--category validation\|auth\|data]` | `[{id, category, does, params}]` |
+| `blockwise list [--category validation\|auth\|data\|files]` | `[{id, category, does, params}]` |
 | `blockwise apply <id> --into <file.py> [--set k=v ...]` | `{"ok":true,"added":"file.py:name"}` plus `todo` if the preset leaves work |
 | `blockwise check [--strict]` | `{"ok":true,...}` or a list of `{file, function, problem}` |
 | `blockwise coverage [--file f.py]` | what Blockwise can represent; with `--file`, which constructs in that file have no block yet |
@@ -66,9 +66,9 @@ How it works:
 | Agent writes one preset-sized function itself (output) | ~38 |
 | Agent calls the preset instead (output + reply read back) | ~10 + ~21 |
 | Saved per use, counting output at 5× input price | ~118 input-equivalent |
-| Discovery, one time: `list` (all 16) / `find` (top 3) | ~783 / ~135 |
+| Discovery, one time: `list` (all 20) / `find` (top 3) | ~995 / ~148 |
 
-So with `find`, a preset pays for itself on its first use. With `list`, it takes about 7 uses. The
+So with `find`, a preset pays for itself on its first use. With `list`, it takes about 8 uses. The
 savings are real but small, because today's presets are 3–8 line functions that a model writes
 cheaply anyway. The larger gains are reliability: the code is tested, `check` notices when it
 drifts from the plan, and every agent writes the same thing the same way. Token savings will grow
@@ -77,13 +77,13 @@ constructs those templates still need.
 
 ## Python coverage registry
 
-`blockwise/coverage.json` maps 54 Python concepts across 16 domains to what Blockwise can do with them:
+`blockwise/coverage.json` maps 57 Python concepts across 16 domains to what Blockwise can do with them:
 
-- **block:** has its own block (functions, if/elif/else, for, assignment, calls, return, raise,
-  imports, packages);
-- **expression:** works inside any block's fields (comprehensions, f-strings, lambda, `:=`, ...);
-- **planned:** cannot be represented yet (while, try, with, classes, async, decorators, default
-  parameters, module-level constants, ...).
+- **block (18):** has its own block (functions with default values, if/elif/else, for, try/except/
+  finally, with, assignment, calls, return, raise, module constants, imports, packages);
+- **expression (15):** works inside any block's fields (comprehensions, f-strings, lambda, `:=`, ...);
+- **planned (24):** cannot be represented yet (while, break, augmented assignment, several except
+  clauses, classes, async, decorators, `if __name__ == '__main__'`, ...).
 
 Each entry has an example and a link to the official Python reference. The tests hold the registry
 to the code: every *block* and *expression* example compiles through the plan grammar, every
@@ -93,15 +93,16 @@ whether a file could become a plan.
 
 ## For learners: Blockwise Studio
 
-- **Blocks:** Function, Check, If/Else, Repeat for each, Set variable, Call, Return, Raise error
-  and TODO. Click "+ add inside" anywhere to nest blocks. Each block in the list shows the Python
+- **Blocks:** Function, Check, If/Else, Repeat for each, Set variable, Call, Return, Raise error,
+  Try / Except (with an optional finally), Use resource (`with`) and TODO. Function inputs take
+  default values (`fallback: int=0`), and each file can hold constants (`MAX_ITEMS = 10`). Click "+ add inside" anywhere to nest blocks. Each block in the list shows the Python
   it becomes.
 - **Live Python:** the code pane shows exactly what `blockwise build` would generate. A test keeps
   the two byte-identical.
 - **Run it for real:** *Try it* calls your functions, and *Run tests* runs each lesson's test
   cases. Python runs in the browser (Pyodide, downloaded from a CDN on first use, in a web worker
   with a 10-second limit so a runaway loop can't freeze the page).
-- **Lessons (8):**
+- **Lessons (9):**
   1. Your first function
   2. If / Else
   3. More than two choices: elif
@@ -110,6 +111,7 @@ whether a file could become a plan.
   6. Build a list: keep the even numbers
   7. Find the biggest number
   8. Split code into files and folders
+  9. Handle mistakes with try / except
 
   Each lesson starts *Guided* (part-built, with TODOs) or *Blank* (signatures only). *Check my
   work* gives hints rather than answers. If your version passes every test but is built
@@ -138,6 +140,10 @@ merging to `main` publishes it. `.github/workflows/tests.yml` runs the test suit
 
 Presets live in `blockwise/library/*.json`. Each preset is a plan for one function with
 `{{param}}` placeholders, plus `examples` that the tests execute.
+For file templates, an example can list `files` to create first, use `{dir}` in its arguments
+for the folder they are written to, and list `then_files` with the contents expected afterwards.
+Write template expressions the way Python prints them (e.g. `a or (b and c)`): a test checks that
+the Studio shows exactly what `blockwise apply` writes.
 
 Parameter kinds:
 - `identifier`, `module` and `annotation`: names, module paths and type hints;
@@ -163,9 +169,10 @@ The Studio browser test needs Node and the `playwright` npm package (installed g
 - The check is **structural**. It confirms that the planned code is still there and in order. It
   does not prove behavior or security: code written inside a TODO can still be wrong. Always run
   real tests.
-- The plan grammar covers plain functions, if/else, for-loops, assignments to names, calls,
-  returns, raises and TODOs. It has no classes, `while`, `try` or `async` yet; `blockwise coverage
-  --status planned` lists every gap.
+- The plan grammar covers functions (with default values), module constants, if/else, for-loops,
+  try/except/finally with one except clause, `with`, assignments to names, calls, returns, raises
+  and TODOs. It has no classes, `while` or `async` yet; `blockwise coverage --status planned` lists
+  every gap.
 - The sound is decoration. It encodes only the kind of each block, never names or conditions.
 
 ## License
