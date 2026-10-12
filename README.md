@@ -132,7 +132,8 @@ whether a file could become a plan.
 - **Run it for real:** *Try it* calls your functions, and *Run tests* runs each lesson's test
   cases. Python runs in the browser (Pyodide, downloaded from a CDN on first use, in a web worker
   with a 10-second limit so a runaway loop can't freeze the page).
-- **Lessons (12):**
+- **Lessons (13):**
+  0. Anatomy of a Python file (start here: parts of a .py file and words like def)
   1. Your first function
   2. If / Else
   3. More than two choices: elif
@@ -146,7 +147,9 @@ whether a file could become a plan.
   11. Stop early with break
   12. Make it runnable: the main block
 
-  Each lesson starts *Guided* (part-built, with TODOs) or *Blank* (signatures only). *Check my
+  Every lesson opens with *Learn it first*: short explanations, an annotated example file with
+  numbered notes, and (lesson 0) a vocabulary list. Each lesson starts *Guided* (part-built, with
+  TODOs) or *Blank* (signatures only). *Check my
   work* gives hints rather than answers. If your version passes every test but is built
   differently from the model answer, it still counts.
 - **Beginner help:** a welcome guide on first visit (reopen with **?**), undo/redo (Ctrl+Z /
@@ -173,17 +176,28 @@ whether a file could become a plan.
   conditions, a missing return, and when to use a folder.
 - **Templates tab:** search and filter the preset library, preview each template's code, and insert
   it into your file with its parameters and imports.
+- **Render:** shows the whole project as real files, exactly as `blockwise build` writes them
+  (plus `plan.json` and a README), with Copy, *Download this file* and *Download project (.zip)*.
 - **Export and import:** download a `.py` file or `plan.json`, and turn a plan into a project with
   `blockwise build plan.json --out my-project`. Plans exported from Sonic Code Studio
   (`sonic-template-v1`) open too.
 
 To add a lesson, append an entry to `studio/lessons.js`. A lesson has a goal, steps, an explanation,
-`concepts` (each needs an entry in the page's glossary), `tests` (calls with an `expect`ed value or
+`learn` (at least two short explanations), an annotated `example` (`code` plus `notes` keyed by line
+number), `concepts` (each needs an entry in the page's glossary), `tests` (calls with an `expect`ed value or
 the exception they `raise`, or `run` + `argv` + expected `stdout` to run the file as a program), a `starter` plan and a `solution` plan. The tests check that every
 lesson compiles, that its solution passes its tests, and that the guided starter does not.
 
 The site is GitHub Pages serving the `main` branch; the root `index.html` forwards to `studio/`, so
 merging to `main` publishes it. `.github/workflows/tests.yml` runs the test suite on pushes and PRs.
+
+## Privacy
+
+The Studio collects nothing: no analytics, no cookies, no network requests except loading fonts and,
+when you press Run, Python itself from a CDN. Your work is saved only in your browser's local
+storage. The page calls a `track(event, detail)` hook at key moments (lesson start, template
+insert, runs, downloads); today it does nothing. If usage analytics are added later, they should
+come with a clear notice and opt-in consent first.
 
 ## Adding presets
 

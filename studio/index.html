@@ -242,6 +242,32 @@ ul.tests small { display: block; color: var(--muted); font-family: var(--body); 
 .template-card { border: 2px solid var(--line); border-left: 8px solid var(--accent); border-radius: 12px; background: var(--panel-2); padding: 10px 12px; margin: 0 0 12px; position: relative; }
 .template-card p { margin: 4px 30px 0 0; font-size: .92rem; }
 .template-card .close { position: absolute; top: 6px; right: 6px; }
+details.learn { border: 2px solid var(--line); border-radius: 12px; background: var(--panel); padding: 10px 14px; margin-top: 12px; }
+details.learn > summary { cursor: pointer; font: 800 1.05rem var(--display); }
+.learn h4 { font: 800 .98rem var(--display); margin: 12px 0 2px; }
+.learn p { margin: 0; color: var(--text); }
+.example { margin-top: 12px; }
+.example .caption { font: 700 .72rem var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: 6px; }
+.example-code { background: var(--code-bg); color: var(--code-text); border: 2px solid var(--line); border-radius: 10px; padding: 8px 0; font: .8rem/1.6 var(--mono); overflow-x: auto; }
+.example-code div { display: grid; grid-template-columns: 34px 1fr; white-space: pre; padding-right: 10px; }
+.example-code .ln { color: var(--code-muted); text-align: right; padding-right: 10px; user-select: none; }
+.example-code .noted { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.example-code .noted .ln { color: var(--code-num); font-weight: 600; }
+ol.notes { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 4px; font-size: .9rem; }
+ol.notes li { display: grid; grid-template-columns: 54px 1fr; gap: 6px; }
+ol.notes b { font: 600 .78rem var(--mono); color: var(--accent); padding-top: 2px; }
+dl.vocab { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0 0; font-size: .9rem; }
+dl.vocab dt { font: 600 .85rem var(--mono); }
+dl.vocab dd { margin: 0; color: var(--muted); }
+dialog.render { max-width: min(1060px, calc(100vw - 32px)); }
+.render-grid { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 14px; margin-top: 10px; }
+.render-tree { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; align-content: start; }
+.render-tree button { width: 100%; text-align: left; border: 2px solid transparent; background: transparent; border-radius: 8px; padding: 4px 8px; font: .85rem var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.render-tree button[aria-current="true"] { border-color: var(--line); background: var(--panel-2); color: var(--text); font-weight: 600; }
+.render-tree .dir { color: var(--muted); font-weight: 400; }
+.render-head { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.render-head code { font-weight: 600; margin-right: auto; }
+#renderCode { max-height: 56vh; }
 .new-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 details.guide { border: 2px solid var(--line-soft); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); margin-top: 8px; }
 details.guide summary { cursor: pointer; font-weight: 700; }
@@ -309,7 +335,8 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
   .palette { grid-template-columns: 1fr 1fr; }
   .pal code { display: none; }
   pre.code { max-height: none; }
-  .how, .tracks, .new-options { grid-template-columns: 1fr; }
+  .how, .tracks, .new-options, .render-grid { grid-template-columns: 1fr; }
+  dl.vocab { grid-template-columns: 1fr; }
   .welcome-in { padding: 18px 16px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
@@ -341,6 +368,7 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
     <span class="divider" aria-hidden="true"></span>
     <div class="group">
       <button class="btn" id="newProject" title="Start a new project">New</button>
+      <button class="btn" id="renderOpen" title="See your project as real files, and download them">Render</button>
       <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
       <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
       <button class="btn icon" id="helpBtn" title="How Blockwise works" aria-label="How Blockwise works">?</button>
@@ -381,6 +409,7 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
     <div class="tabpanel" data-panel="code">
       <pre class="code" id="code" aria-label="Generated Python"></pre>
       <div class="code-actions">
+        <button class="btn small primary" id="renderOpen2">Render files</button>
         <button class="btn small" id="copyCode">Copy file</button>
         <button class="btn small" id="downloadPy">Download .py</button>
         <button class="btn small" id="downloadPlan">Download plan.json</button>
@@ -449,7 +478,7 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
       <li style="--c: var(--k-validate)"><b>3 · Check and run</b><span>See the Python on the right, check your work and run real tests.</span></li>
     </ol>
     <div class="tracks">
-      <button class="track primary" id="welcomeLearn"><b>Start lesson 1 →</b><span>8 short lessons, from your first function to code split across files.</span></button>
+      <button class="track primary" id="welcomeLearn"><b>Start the course →</b><span>13 short lessons, starting with how a Python file is put together and what words like def mean.</span></button>
       <button class="track" id="welcomeLibrary"><b>Browse templates</b><span>Tested building blocks: input checks, permissions, counting and more.</span></button>
     </div>
     <div class="welcome-foot"><span>Your work saves in this browser. Undo with Ctrl+Z.</span>
@@ -469,6 +498,20 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
   </div>
 </dialog>
 <datalist id="nameList"></datalist>
+<dialog class="welcome render" id="renderDialog" aria-labelledby="renderTitle">
+  <div class="welcome-in">
+    <h2 id="renderTitle">Your project as files</h2>
+    <p class="lede">Exactly what <code>blockwise build</code> writes. Download one file, or the whole project as a .zip you can open on any computer.</p>
+    <div class="render-grid">
+      <ul class="render-tree" id="renderTree" aria-label="Files"></ul>
+      <div><div class="render-head"><code id="renderName"></code>
+        <button class="btn small" id="renderCopy">Copy</button><button class="btn small" id="renderDownload">Download this file</button></div>
+        <pre class="code" id="renderCode" tabindex="0"></pre></div>
+    </div>
+    <div class="welcome-foot"><span id="renderNote"></span>
+      <span><button class="btn primary small" id="downloadZip">Download project (.zip)</button> <button class="btn ghost small" id="renderClose">Close</button></span></div>
+  </div>
+</dialog>
 
 <!-- Runs inside Pyodide (in a web worker). Input: REQ (JSON). Output: RESULT (JSON). tests/test_studio.py runs it with CPython too. -->
 <script type="text/x-python" id="pyHarness">
@@ -637,6 +680,10 @@ const GLOSSARY = [
   ["break / continue", "break (Stop loop) leaves a loop right away. continue (Skip to next) skips the rest of this turn and goes to the next item."],
   ["main block", "The part of a file under if __name__ == '__main__':. It runs when you start the file (python greet.py), but not when another file imports it."],
   ["command-line arguments", "The words typed after the file name: in python greet.py Ana, sys.argv is ['greet.py', 'Ana'], so sys.argv[1] is 'Ana'."],
+  ["def", "The keyword that starts a function: def name(inputs) -> result type: followed by the indented body."],
+  ["type hint", "A note on the kind of value expected: amount: int, or -> str for what a function returns. Python doesn't enforce them, but they make code clearer."],
+  ["indentation", "The spaces at the start of a line. A line ending in a colon opens a block, and the block's lines are indented 4 spaces."],
+  ["docstring", "A string right after a def line (or at the top of a file) that explains what it does. Blockwise writes your function notes there."],
   ["TODO", "A placeholder block for work you have not written yet. It raises NotImplementedError until you replace it."],
 ];
 const ASSIGN_OPERATORS = ["=", "+=", "-=", "*=", "/=", "//=", "%=", "**=", "@=", "&=", "|=", "^=", "<<=", ">>="];
@@ -1090,7 +1137,7 @@ function addBlock(path, kind) {
   if (targetParent(path) === undefined) path = [];
   const list = container(f.body, path);
   list.push(newNode(kind)); state.flash = [...path, list.length - 1]; state.target = path; state.menu = null;
-  note(kind); render(); state.flash = null;
+  note(kind); render(); state.flash = null; track("block_add", { kind });
   const inputs = document.querySelectorAll("#builder .block.flash .block-head > .field");
   if (inputs.length) { inputs[0].focus(); inputs[0].select(); }
 }
@@ -1403,12 +1450,13 @@ function startLesson(id, mode) {
   state.checkResult = null; state.tests = null; $("#modePick").value = mode; $("#lessonPick").value = id;
   $("#tryExpr").value = suggestTry(); $("#tryOut").textContent = "";
   store.set("blockwise-lesson", id); render(); resetHistory(); renderLesson(); selectTab("lesson");
+  track("lesson_start", { lesson: id, mode });
 }
 function renderLesson(result) {
   if (result !== undefined) state.checkResult = result;
   const l = state.lesson, p = $("#lessonPanel"), done = doneSet();
   const rail = `<div class="rail" role="group" aria-label="Lessons"><span class="rail-label">${done.size}/${LESSONS.length} done</span>${LESSONS.map((x, i) =>
-    `<button data-lesson="${x.id}" class="${done.has(x.id) ? "done" : ""}" aria-current="${!!(l && l.id === x.id)}" title="${attr(x.title)}${done.has(x.id) ? " (done)" : ""}">${i + 1}</button>`).join("")}</div>`;
+    `<button data-lesson="${x.id}" class="${done.has(x.id) ? "done" : ""}" aria-current="${!!(l && l.id === x.id)}" title="${attr(x.title)}${done.has(x.id) ? " (done)" : ""}">${x.title.split(" · ")[0]}</button>`).join("")}</div>`;
   if (!l) {
     p.innerHTML = rail + `<div class="lesson-card"><h3>Free build</h3><p>Build anything you like. The checklist below suggests the next step, the Advisor helps you connect functions and files, and Try it runs your code.</p>
       <div class="code-actions"><button class="btn small" id="freeNew">New project</button><button class="btn small" id="freeTemplates">Browse templates</button></div></div>`;
@@ -1420,6 +1468,7 @@ function renderLesson(result) {
     p.innerHTML = rail + `<div class="lesson-card"><h3>${esc(l.title)}</h3>
       <span class="pill">${esc(l.level)}</span><span class="pill">${l.minutes} min</span>${l.concepts.map(c => `<button class="pill" data-word="${attr(c)}" title="What does ${attr(c)} mean?">${esc(c)}</button>`).join("")}
       <p><b>Goal:</b> ${esc(l.goal)}</p></div>
+      ${learnSection(l)}
       <ol class="steps">${l.steps.map((s, i) => `<li><button aria-pressed="${ticks.has(i)}" data-step="${i}"><span><b>${esc(s.title)}</b>${esc(s.text)}</span></button></li>`).join("")}</ol>
       <p class="step-note">Tick each step as you finish it. Stuck? Check my work tells you where to look, without giving the answer away.</p>
       <div class="code-actions"><button class="btn primary small" id="checkInline">Check my work</button>
@@ -1440,6 +1489,22 @@ function renderLesson(result) {
     if (state.tests) $("#testBox").appendChild(state.tests);
   }
   p.querySelectorAll("[data-lesson]").forEach(b => b.addEventListener("click", () => startLesson(b.dataset.lesson, $("#modePick").value)));
+}
+// "Learn it first": short explanations, an annotated example file and (lesson 0) a vocabulary list.
+function learnSection(l) {
+  if (!l.learn && !l.example) return "";
+  const open = !doneSet().has(l.id);
+  let html = `<details class="learn"${open ? " open" : ""}><summary>Learn it first</summary>`;
+  for (const s of l.learn || []) html += `<h4>${esc(s.title)}</h4><p>${esc(s.text)}</p>`;
+  if (l.example) {
+    const notes = l.example.notes || {};
+    const lines = l.example.code.split("\n").map((line, i) =>
+      `<div class="${notes[i + 1] ? "noted" : ""}"><span class="ln">${i + 1}</span><span>${highlight(line) || " "}</span></div>`).join("");
+    html += `<div class="example"><div class="caption">${esc(l.example.caption || "Example")}</div><div class="example-code" role="img" aria-label="Example code">${lines}</div>
+      <ol class="notes">${Object.entries(notes).map(([n, text]) => `<li><b>line ${n}</b><span>${esc(text)}</span></li>`).join("")}</ol></div>`;
+  }
+  if (l.vocab) html += `<h4>Words you'll see</h4><dl class="vocab">${l.vocab.map(([w, d]) => `<dt>${esc(w)}</dt><dd>${esc(d)}</dd>`).join("")}</dl>`;
+  return html + "</details>";
 }
 function nextLessonButton(l) {
   const i = LESSONS.indexOf(l), next = LESSONS[i + 1];
@@ -1588,7 +1653,7 @@ function renderPresets() {
         example: sample ? `${f.name}(${sample.args.map(pyLit).join(", ")})` : null };
       f.requirements = [p.summary]; f.body = normNodes(f.body); mod.functions.push(f);
       for (const line of substitute(p.imports || [], values)) if (!mod.imports.includes(line)) mod.imports.push(line); state.f = mod.functions.length - 1; state.target = [];
-      toast(`Added ${f.name}() to ${mod.path}`); note("function"); render(); showPanel("side-mid");
+      toast(`Added ${f.name}() to ${mod.path}`); note("function"); render(); showPanel("side-mid"); track("template_insert", { template: p.id });
       $("#side-mid").scrollIntoView({ block: "start", behavior: "smooth" });
     });
     list.appendChild(card);
@@ -1620,6 +1685,7 @@ function blueprintCard(p) {
     const clash = added.find(m => state.plan.modules.some(x => x.path === m.path));
     if (clash) { toast(`${clash.path} already exists; change the file name above.`); return; }
     for (const m of added) state.plan.modules.push(m);
+    track("blueprint_insert", { blueprint: p.id });
     normalize(state.plan);
     state.m = state.plan.modules.indexOf(added[0]); state.f = Array.isArray(added[0].entry) ? -1 : 0; state.target = []; state.inserted = null;
     render();
@@ -1678,6 +1744,67 @@ function newProject(kind) {
   if (kind === "template") setTrack("library"); else { selectTab("lesson"); showPanel("side-mid"); }
   toast("New project. Undo brings back the old one.");
 }
+
+/* ---------- render: the project as real files ---------- */
+const DOCSTRING = '"""Generated by Blockwise. Verify behavior before use."""';
+// The same text as `blockwise build`: the module docstring, then the code the Python tab shows.
+function fileText(mod) {
+  const code = genModule(mod);
+  return DOCSTRING + (/^(def |if __name__)/.test(code) ? "\n\n\n" : "\n") + code;
+}
+function renderedFiles() {
+  const files = state.plan.modules.map(m => ({ path: m.path, text: fileText(m) }));
+  const runnable = state.plan.modules.filter(m => Array.isArray(m.entry)).map(m => `  python ${m.path}`);
+  files.push({ path: "plan.json", text: JSON.stringify(state.plan, null, 2) + "\n" });
+  files.push({ path: "README.txt", text: ["Made with Blockwise Studio.", "",
+    ...(runnable.length ? ["Run it:", ...runnable, ""] : ["Use it from Python, for example:", `  python -c "from ${dotted(state.plan.modules[0].path)} import *"`, ""]),
+    "Rebuild the files from the plan:", "  pip install git+https://github.com/holeyfield33-art/Block-Wise", "  blockwise build plan.json --out my-project", ""].join("\n") });
+  return files;
+}
+let renderPick = 0;
+function openRender() {
+  const files = renderedFiles(); renderPick = Math.min(renderPick, files.length - 1);
+  $("#renderTree").innerHTML = files.map((f, i) => {
+    const cut = f.path.lastIndexOf("/");
+    return `<li><button data-i="${i}" aria-current="${i === renderPick}">${cut < 0 ? "" : `<span class="dir">${esc(f.path.slice(0, cut + 1))}</span>`}${esc(f.path.slice(cut + 1))}</button></li>`;
+  }).join("");
+  $("#renderTree").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { renderPick = Number(b.dataset.i); openRender(); }));
+  const f = files[renderPick];
+  $("#renderName").textContent = f.path;
+  $("#renderCode").innerHTML = f.path.endsWith(".py") ? highlight(f.text) : esc(f.text);
+  const py = files.filter(x => x.path.endsWith(".py")).length;
+  $("#renderNote").textContent = `${py} Python file${py === 1 ? "" : "s"}, plus plan.json and README.txt`;
+  if (!$("#renderDialog").open) { $("#renderDialog").showModal(); track("render_open", { files: py }); }
+}
+const CRC_TABLE = (() => { const table = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; table[n] = c >>> 0; } return table; })();
+function crc32(bytes) { let c = 0xFFFFFFFF; for (const b of bytes) c = CRC_TABLE[(c ^ b) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+// A minimal .zip (stored, not compressed): enough for a handful of small text files, no library needed.
+function makeZip(files) {
+  const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.path), data = enc.encode(f.text), crc = crc32(data);
+    const local = new DataView(new ArrayBuffer(30)), entry = new DataView(new ArrayBuffer(46));
+    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [12, 0x21, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, name.length, 2]]
+      .forEach(([at, value, size]) => size === 4 ? local.setUint32(at, value, true) : local.setUint16(at, value, true));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [14, 0x21, 2], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, name.length, 2], [42, offset, 4]]
+      .forEach(([at, value, size]) => size === 4 ? entry.setUint32(at, value, true) : entry.setUint16(at, value, true));
+    parts.push(local.buffer, name, data); central.push(entry.buffer, name);
+    offset += 30 + name.length + data.length;
+  }
+  const size = central.reduce((sum, part) => sum + part.byteLength, 0), end = new DataView(new ArrayBuffer(22));
+  [[0, 0x06054b50, 4], [8, files.length, 2], [10, files.length, 2], [12, size, 4], [16, offset, 4]]
+    .forEach(([at, value, bytes]) => bytes === 4 ? end.setUint32(at, value, true) : end.setUint16(at, value, true));
+  return new Blob([...parts, ...central, end.buffer], { type: "application/zip" });
+}
+function projectName() {
+  const first = state.plan.modules[0];
+  return (state.lesson ? state.lesson.id : first ? first.path.split("/").pop().replace(/\.py$/, "") : "project").replace(/[^\w-]+/g, "-");
+}
+
+/* ---------- usage events: a hook for a later phase ---------- */
+// Called at key moments (lesson start/finish, template insert, runs, downloads). It deliberately does
+// nothing yet: no data leaves the browser. A later phase can forward these events, after asking for consent.
+function track(event, detail = {}) { void event; void detail; }
 
 /* ---------- UI wiring ---------- */
 function selectTab(name) {
@@ -1753,6 +1880,19 @@ $("#redoBtn").addEventListener("click", redo);
 $("#helpBtn").addEventListener("click", () => $("#welcome").showModal());
 $("#welcomeClose").addEventListener("click", () => { closeWelcome(); newProject("blank"); });
 $("#newProject").addEventListener("click", () => $("#newDialog").showModal());
+$("#renderOpen").addEventListener("click", openRender);
+$("#renderOpen2").addEventListener("click", openRender);
+$("#renderClose").addEventListener("click", () => $("#renderDialog").close());
+$("#renderCopy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(renderedFiles()[renderPick].text); toast("Copied!"); } catch { toast("Copy is blocked here. Use Download instead."); }
+});
+$("#renderDownload").addEventListener("click", () => { const f = renderedFiles()[renderPick]; download(f.path.split("/").pop(), f.text, "text/plain"); track("download_file", { path: f.path }); });
+$("#downloadZip").addEventListener("click", () => {
+  const files = renderedFiles(), url = URL.createObjectURL(makeZip(files));
+  const a = Object.assign(document.createElement("a"), { href: url, download: projectName() + ".zip" });
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  track("download_zip", { files: files.length }); toast(`Downloaded ${projectName()}.zip`);
+});
 $("#newBlank").addEventListener("click", () => newProject("blank"));
 $("#newFromTemplate").addEventListener("click", () => newProject("template"));
 $("#newCancel").addEventListener("click", () => $("#newDialog").close());
