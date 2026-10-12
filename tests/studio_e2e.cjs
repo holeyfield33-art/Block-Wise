@@ -52,7 +52,15 @@ const { chromium } = require("playwright");
     const solved = await page.textContent("#resultBox");
     result.lessons[id] = { guided_not_yet: guided.includes("Not yet"), solution_correct: solved.includes("Correct") };
     result.generated[id] = await page.evaluate(() => Object.fromEntries(state.plan.modules.map(m => [m.path, genModule(m)])));
+    result.false_connections = (result.false_connections || []).concat(
+      await page.evaluate(id => connections().map(t => `${id}: ${t.title}`), id));
   }
+  // Known-good templates must not trigger connection tips either.
+  result.false_connections = result.false_connections.concat(await page.evaluate(() => BLOCKWISE_PRESETS.flatMap(p => {
+    const values = Object.fromEntries(Object.entries(p.params).map(([k, spec]) => [k, renderValue(spec, spec.default)]));
+    state.plan = normalize({ modules: [{ path: "m.py", imports: substitute(p.imports || [], values), functions: [substitute(p.function, values)] }] });
+    return connections().map(t => `${p.id}: ${t.title}`);
+  })));
 
   // 1b. Every template, with its default parameters, as the Studio would generate it.
   result.presets = await page.evaluate(() => Object.fromEntries(BLOCKWISE_PRESETS.map(p => {
@@ -148,6 +156,53 @@ const { chromium } = require("playwright");
   await page.screenshot({ path: path.join(out, "studio-while.png"), fullPage: true });
   await page.evaluate(() => { state.plan.modules[0].functions[0].body.unshift({ kind: "break" }); render(); });
   result.ui.stray_break_tip = (await page.textContent("#tips")).includes("outside a loop");
+
+  // 5e. Free build: New project gives a blank main() and a next-step checklist.
+  await page.click("#newProject");
+  await page.click("#newBlank");
+  result.ui.new_project_blank = (await page.textContent("#code")).trim() === "def main() -> None:\n    pass"
+    && (await page.textContent("#coach")).includes("Add blocks to main()");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: path.join(out, "studio-free-build.png") });
+
+  // 5f. Edit tools: move a block into the If above it, back out again, and duplicate it.
+  await page.locator("#palette .pal", { hasText: "If / Else" }).click();
+  await page.locator("#palette .pal", { hasText: "Set variable" }).click();
+  await page.click('#builder button[aria-label="Move into If / Else above: Set variable"]');
+  result.ui.indent = (await page.evaluate(() => genModule(state.plan.modules[0]))).includes("    if x > 0:\n        total = 0");
+  await page.click('#builder button[aria-label="Move out of this block: Set variable"]');
+  await page.click('#builder button[aria-label="Duplicate block: Set variable"]');
+  result.ui.outdent_duplicate = (await page.evaluate(() => genModule(state.plan.modules[0]))).includes("        pass\n    total = 0\n    total = 0");
+
+  // 5g. Template follow-up: insert a check template, then connect it to main() in one click.
+  await page.evaluate(() => { state.plan.modules[0].functions[0].body = []; render(); });
+  await page.click("#trackLibrary");
+  await page.click('#presetCats button[data-cat="all"]');
+  await page.locator(".preset", { hasText: "Reject zero and negative numbers" }).locator("button").click();
+  await page.click('.mobile-nav button[data-show="side-mid"]').catch(() => {});
+  result.ui.template_card = await page.isVisible(".template-card");
+  await page.screenshot({ path: path.join(out, "studio-template-card.png") });
+  await page.locator(".template-card button", { hasText: "Add a call in main()" }).click();
+  result.ui.template_connected = (await page.evaluate(() => genModule(state.plan.modules[0]))).includes("def main(amount: int) -> None:\n    require_positive(amount)");
+
+  // 5h. Connection tips across files, each fixed with one click.
+  await page.evaluate(() => {
+    state.plan = normalize({ modules: [
+      { path: "shop/checks.py", functions: [{ name: "require_positive", parameters: [{ name: "amount", type: "int" }], body: [
+        { kind: "branch", condition: "amount <= 0", body: [{ kind: "raise", expression: "ValueError('amount')" }] }] }] },
+      { path: "shop/cart.py", functions: [
+        { name: "cart_total", parameters: [{ name: "items", type: "list" }], returns: "int", body: [
+          { kind: "validate", expression: "require_positive(len(items))" }, { kind: "return", expression: "sum_prces(items)" }] },
+        { name: "sum_prices", parameters: [{ name: "items", type: "list" }], returns: "int", body: [{ kind: "return", expression: "sum(i['price'] for i in items)" }] },
+        { name: "unused_helper", parameters: [], returns: "int", body: [{ kind: "return", expression: "1" }] }] }] });
+    state.m = 1; state.f = 0; render();
+  });
+  await page.click('.tab[data-tab="advice"]');
+  result.ui.connection_titles = await page.locator("#tips .tip b").allTextContents();
+  await page.locator("#tips .tip button", { hasText: "Add the import" }).click();
+  await page.locator("#tips .tip button", { hasText: "Change to sum_prices()" }).click();
+  result.ui.connections_fixed = await page.evaluate(() => connections().map(t => t.title));
+  result.ui.connected_code = await page.evaluate(() => genModule(state.plan.modules[1]));
 
   // 6. Advisor reacts to deep nesting.
   await page.evaluate(() => {

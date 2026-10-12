@@ -94,7 +94,7 @@ select.btn { padding-right: 8px; max-width: 100%; }
 
 /* Layout */
 main.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr) minmax(0, .95fr); gap: 18px; padding: 18px 20px 40px; max-width: 1640px; margin: 0 auto; }
-.panel { background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: 4px 4px 0 var(--shadow-c); min-width: 0; align-self: start; }
+.panel { scroll-margin-top: 130px; background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius); box-shadow: 4px 4px 0 var(--shadow-c); min-width: 0; align-self: start; }
 .panel > h2, .panel-head { font: 800 1.08rem/1.2 var(--display); margin: 0; padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .panel-body { padding: 0 16px 16px; }
 .eyebrow { font: 700 .7rem/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); margin: 18px 0 8px; }
@@ -159,7 +159,7 @@ textarea#fnReqs { font-family: var(--body); }
 .block-head select.field.op { flex: 0 0 auto; width: auto; font-weight: 600; padding: 4px 6px; }
 .block-head .field[aria-label$=" target"] { flex: 0 1 110px; min-width: 70px; }
 .tools { display: flex; gap: 2px; margin-left: auto; }
-.tools button { background: transparent; border: 2px solid transparent; border-radius: 7px; width: 30px; height: 30px; color: var(--muted); font-weight: 700; }
+.tools button { background: transparent; border: 2px solid transparent; border-radius: 7px; width: 28px; height: 28px; padding: 0; color: var(--muted); font-weight: 700; }
 .tools button:hover { border-color: var(--line-soft); color: var(--text); background: var(--panel-2); }
 .add-here { justify-self: start; background: transparent; border: 2px dashed var(--line-soft); border-radius: 9px; padding: 3px 12px; color: var(--muted); font-size: .85rem; font-weight: 700; }
 .add-here:hover, .slot.is-target > .add-here { border-color: var(--focus); color: var(--text); border-style: solid; }
@@ -224,6 +224,20 @@ ul.tests small { display: block; color: var(--muted); font-family: var(--body); 
 @keyframes slide { from { transform: translateX(10px); opacity: 0; } to { transform: none; opacity: 1; } }
 .tip b { display: block; font-family: var(--display); }
 .tip p { margin: 4px 0 0; color: var(--muted); font-size: .92rem; }
+.tip .btn, .coach .btn, .template-card .btn { margin-top: 8px; margin-right: 6px; }
+.coach { border: 2px solid var(--line); border-radius: 12px; background: var(--panel-2); padding: 12px 14px; margin-top: 12px; }
+.coach h3 { font-size: 1.1rem; margin: 0 0 4px; }
+.coach ol { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
+.coach li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; color: var(--muted); }
+.coach li .mark { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--line-soft); display: grid; place-items: center; font-weight: 800; font-size: .8rem; }
+.coach li.done .mark { background: var(--good); border-color: var(--line); color: var(--chip-ink); }
+.coach li.next { color: var(--text); }
+.coach li.next .mark { border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
+.coach li small { display: block; font-size: .85rem; color: var(--muted); }
+.template-card { border: 2px solid var(--line); border-left: 8px solid var(--accent); border-radius: 12px; background: var(--panel-2); padding: 10px 12px; margin: 0 0 12px; position: relative; }
+.template-card p { margin: 4px 30px 0 0; font-size: .92rem; }
+.template-card .close { position: absolute; top: 6px; right: 6px; }
+.new-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 details.guide { border: 2px solid var(--line-soft); border-radius: 10px; padding: 8px 12px; background: var(--panel-2); margin-top: 8px; }
 details.guide summary { cursor: pointer; font-weight: 700; }
 details.guide p, details.guide li { color: var(--muted); font-size: .92rem; }
@@ -290,7 +304,7 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
   .palette { grid-template-columns: 1fr 1fr; }
   .pal code { display: none; }
   pre.code { max-height: none; }
-  .how, .tracks { grid-template-columns: 1fr; }
+  .how, .tracks, .new-options { grid-template-columns: 1fr; }
   .welcome-in { padding: 18px 16px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
@@ -321,6 +335,7 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
     </div>
     <span class="divider" aria-hidden="true"></span>
     <div class="group">
+      <button class="btn" id="newProject" title="Start a new project">New</button>
       <button class="btn icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
       <button class="btn icon" id="redoBtn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
       <button class="btn icon" id="helpBtn" title="How Blockwise works" aria-label="How Blockwise works">?</button>
@@ -431,6 +446,19 @@ dialog.welcome::backdrop { background: rgba(20, 15, 10, .55); }
       <button class="btn ghost small" id="welcomeClose">Just let me build</button></div>
   </div>
 </dialog>
+
+<dialog class="welcome" id="newDialog" aria-labelledby="newTitle">
+  <div class="welcome-in">
+    <h2 id="newTitle">Start something new</h2>
+    <p class="lede">Your current project is replaced, but Undo brings it back.</p>
+    <div class="new-options">
+      <button class="track primary" id="newBlank"><b>Blank script</b><span>main.py with an empty main() function. Build it block by block, with a checklist to guide you.</span></button>
+      <button class="track" id="newFromTemplate"><b>Start from a template</b><span>Pick a tested building block, then connect it to your own code.</span></button>
+    </div>
+    <div class="welcome-foot"><span></span><button class="btn ghost small" id="newCancel">Cancel</button></div>
+  </div>
+</dialog>
+<datalist id="nameList"></datalist>
 
 <!-- Runs inside Pyodide (in a web worker). Input: REQ (JSON). Output: RESULT (JSON). tests/test_studio.py runs it with CPython too. -->
 <script type="text/x-python" id="pyHarness">
@@ -876,6 +904,10 @@ function renderBuilder() {
   bindField($("#fnConsts", sig), v => parseConstants(v).every(c => isIdent(c.name) && c.value && balanced(c.value) && !c.value.includes(";")),
     v => { mod.constants = parseConstants(v); },
     () => "Each constant line looks like NAME = value, for example MAX_ITEMS = 10 or ROLES = ('admin', 'owner').");
+  const known = new Set([...localNames(f), ...Object.keys(importedNames(mod)), ...(mod.constants || []).map(c => c.name)]);
+  mod.functions.forEach(g => known.add(`${g.name}(${g.parameters.filter(q => !("default" in q)).map(q => q.name).join(", ")})`));
+  $("#nameList").innerHTML = [...known].map(n => `<option value="${attr(n)}">`).join("");
+  if (state.inserted) root.prepend(templateCard());
   const tree = document.createElement("div"); tree.className = "tree";
   tree.appendChild(renderSlot(f.body, [], "root"));
   root.appendChild(tree);
@@ -933,18 +965,23 @@ function renderBlock(node, path, list, index) {
     const input = document.createElement("input"); input.className = "field"; input.value = node[field]; input.spellcheck = false;
     input.setAttribute("aria-label", `${k.label} ${field}`);
     if (field === "alias") { input.placeholder = "name (optional)"; input.style.flex = "0 1 130px"; }
+    if (["expression", "condition", "iterable", "context"].includes(field)) input.setAttribute("list", "nameList");
     if (!fieldOk(field, node[field])) input.classList.add("bad");
     bindField(input, v => fieldOk(field, v), v => { node[field] = field === "label" ? v : v.trim(); }, v => whyBad(field, v));
     head.appendChild(input);
   });
   const tools = document.createElement("div"); tools.className = "tools";
-  for (const [sym, title, act] of [["↑", "Move up", -1], ["↓", "Move down", 1], ["✕", "Delete block", 0]]) {
+  const prev = list[index - 1], into = prev && CHILD[prev.kind] ? CHILD[prev.kind][0] : null;
+  const actions = [["↑", "Move up", () => { if (index > 0) [list[index - 1], list[index]] = [list[index], list[index - 1]]; }],
+    ["↓", "Move down", () => { if (index < list.length - 1) [list[index + 1], list[index]] = [list[index], list[index + 1]]; }]];
+  if (into) actions.push(["→", `Move into ${KINDS[prev.kind].label} above`, () => { list.splice(index, 1); prev[into].push(node); }]);
+  if (path.length >= 3) actions.push(["←", "Move out of this block", () => {
+    const outer = container(fn().body, path.slice(0, -3)); list.splice(index, 1); outer.splice(path[path.length - 3] + 1, 0, node);
+  }]);
+  actions.push(["⧉", "Duplicate block", () => list.splice(index + 1, 0, clone(node))], ["✕", "Delete block", () => list.splice(index, 1)]);
+  for (const [sym, title, act] of actions) {
     const b = document.createElement("button"); b.textContent = sym; b.title = title; b.setAttribute("aria-label", `${title}: ${k.label}`);
-    b.addEventListener("click", () => {
-      if (act === 0) { list.splice(index, 1); state.target = []; state.menu = null; }
-      else { const j = index + act; if (j < 0 || j >= list.length) return; [list[index], list[j]] = [list[j], list[index]]; }
-      render();
-    });
+    b.addEventListener("click", () => { act(); state.target = []; state.menu = null; render(); });
     tools.appendChild(b);
   }
   head.appendChild(tools); el.appendChild(head);
@@ -982,8 +1019,135 @@ function strayStops(nodes, inLoop) {
     || (CHILD[n.kind] || []).some(key => strayStops(n[key], ["loop", "while"].includes(n.kind) || (inLoop && key !== "finally"))));
 }
 function anyNode(nodes, test) { return nodes.some(n => test(n) || kids(n).some(k => anyNode(k, test))); }
+/* ---------- connections: how functions, files and imports fit together ---------- */
+const BUILTINS = new Set(("print len range int str float bool list dict set tuple sorted sum min max abs round isinstance issubclass "
+  + "enumerate zip map filter any all open repr type iter next reversed hash id input format getattr setattr hasattr divmod pow "
+  + "chr ord bin hex oct callable vars dir super object frozenset bytes bytearray slice staticmethod classmethod property "
+  + "Exception ValueError TypeError KeyError IndexError PermissionError NotImplementedError RuntimeError ZeroDivisionError "
+  + "FileNotFoundError OSError AttributeError StopIteration LookupError ArithmeticError AssertionError LookupError NameError").split(" "));
+const stripStrings = s => String(s).replace(/(['"])(?:\\.|(?!\1).)*\1/g, "''");
+// Plain (undotted) names called in an expression: "require_positive(x)" -> ["require_positive"]; "items.append(x)" -> [].
+function callsIn(expr) {
+  const out = [], re = /(^|[^\w.])([A-Za-z_]\w*)\s*\(/g, s = stripStrings(expr); let m;
+  while ((m = re.exec(s))) if (!KEYWORDS.has(m[2])) out.push(m[2]);
+  return out;
+}
+const wordsIn = expr => stripStrings(expr).match(/[A-Za-z_]\w*/g) || [];
+const EXPR_FIELDS = ["expression", "condition", "iterable", "context", "exception"];
+function exprsOf(f) {
+  const out = f.parameters.filter(q => "default" in q).map(q => q.default);
+  (function walk(nodes) { for (const n of nodes) { for (const k of EXPR_FIELDS) if (n[k]) out.push(n[k]); kids(n).forEach(walk); } })(f.body);
+  return out;
+}
+function localNames(f) {
+  const names = new Set(f.parameters.map(q => q.name));
+  (function walk(nodes) { for (const n of nodes) { if (n.target) names.add(n.target); if (n.alias) names.add(n.alias); kids(n).forEach(walk); } })(f.body);
+  return names;
+}
+// {name: dotted module or null} for the names an import list brings in.
+function importedNames(mod) {
+  const out = {};
+  for (const line of mod.imports) {
+    let m = line.match(/^from\s+([\w.]+)\s+import\s+(.+)$/);
+    if (m) { for (const part of m[2].replace(/[()]/g, "").split(",")) { const [name, alias] = part.trim().split(/\s+as\s+/); if (name) out[(alias || name).trim()] = { from: m[1], name: name.trim() }; } continue; }
+    m = line.match(/^import\s+(.+)$/);
+    if (m) for (const part of m[1].split(",")) { const [name, alias] = part.trim().split(/\s+as\s+/); out[(alias || name.split(".")[0]).trim()] = { from: null, name: name.trim() }; }
+  }
+  return out;
+}
+const dotted = path => path.slice(0, -3).replace(/\//g, ".");
+function distance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function closest(name, candidates) {
+  let best = null, score = 3;
+  for (const c of candidates) { const s = distance(name.toLowerCase(), c.toLowerCase()); if (s < score && c !== name) { best = c; score = s; } }
+  return name.length > 2 ? best : null;
+}
+function renameCalls(f, from, to) {
+  const re = new RegExp(`(^|[^\\w.])${from}(\\s*\\()`, "g");
+  (function walk(nodes) { for (const n of nodes) { for (const k of EXPR_FIELDS) if (n[k]) n[k] = n[k].replace(re, `$1${to}$2`); kids(n).forEach(walk); } })(f.body);
+}
+function connections() {
+  const tips = [], mods = state.plan.modules, owner = {};
+  mods.forEach(mod => mod.functions.forEach(f => { (owner[f.name] = owner[f.name] || []).push(mod); }));
+  const tip = (kind, title, text, fix) => tips.push({ kind, title, text, fix });
+  mods.forEach(mod => {
+    const imported = importedNames(mod), here = new Set([...mod.functions.map(f => f.name), ...(mod.constants || []).map(c => c.name)]);
+    for (const [name, info] of Object.entries(imported)) {
+      const source = info.from && mods.find(m => dotted(m.path) === info.from);
+      if (!source || source.functions.some(f => f.name === info.name) || (source.constants || []).some(c => c.name === info.name)) continue;
+      const guess = closest(info.name, [...source.functions.map(f => f.name), ...(source.constants || []).map(c => c.name)]);
+      tip("call", `${mod.path} imports ${info.name}, but ${source.path} has no ${info.name}`,
+        guess ? `Did you mean ${guess}? Python stops with an ImportError when it loads this file.` : `Add a function called ${info.name} to ${source.path}, or fix the import.`,
+        guess && { label: `Import ${guess} instead`, run: () => { mod.imports = mod.imports.map(l => l.startsWith(`from ${info.from} import`) ? l.replace(new RegExp(`\\b${info.name}\\b`), guess) : l); } });
+    }
+    for (const f of mod.functions) {
+      const known = new Set([...BUILTINS, ...here, ...Object.keys(imported), ...localNames(f)]);
+      for (const name of new Set(exprsOf(f).flatMap(callsIn))) {
+        if (known.has(name)) continue;
+        const elsewhere = (owner[name] || []).find(m => m !== mod);
+        if (elsewhere) {
+          const line = `from ${dotted(elsewhere.path)} import ${name}`;
+          tip("call", `${f.name}() uses ${name}() from ${elsewhere.path}`, `Each file only sees what it imports. ${mod.path} needs: ${line}`,
+            { label: "Add the import", run: () => { if (!mod.imports.includes(line)) mod.imports.push(line); } });
+          continue;
+        }
+        const guess = closest(name, [...known, ...Object.keys(owner)].filter(n => !BUILTINS.has(n) || n.length > 3));
+        tip("raise", `${f.name}(): there's no function called ${name}()`,
+          guess ? `Did you mean ${guess}()? As written, Python stops with a NameError when it reaches this line.` : `Make it with + fn, insert a template that provides it, or import it from another file.`,
+          guess && { label: `Change to ${guess}()`, run: () => renameCalls(f, name, guess) });
+      }
+    }
+  });
+  // A function that neither calls nor is called by anything else in the project is disconnected.
+  const all = mods.flatMap(mod => mod.functions.map(f => ({ mod, f })));
+  if (all.length > 1) for (const { mod, f } of all) {
+    if (f.name === "main") continue;
+    const others = all.filter(o => o.f !== f);
+    const calledBy = others.some(o => exprsOf(o.f).some(e => wordsIn(e).includes(f.name)));
+    const calls = exprsOf(f).flatMap(callsIn).some(n => others.some(o => o.f.name === n));
+    if (!calledBy && !calls) tip("function", `${f.name}() isn't connected yet`, `Nothing in your project calls it, and it doesn't call your other functions. Call it from another function (a Call, Check or Set variable block), or try it on its own.`,
+      { label: "Try it", run: () => openTry(callTemplate(f, mod)), keep: true });
+  }
+  return tips;
+}
+const SAMPLES = { int: "3", float: "2.5", str: "'text'", bool: "True", list: "[1, 2, 3]", dict: "{}", object: "None" };
+function callTemplate(f) { return `${f.name}(${f.parameters.filter(q => !("default" in q)).map(q => SAMPLES[q.type.split(/[[|]/)[0].trim()] || "None").join(", ")})`; }
+function openTry(expr) { $("#tryExpr").value = expr; selectTab("code"); showPanel("side-right"); $("#tryExpr").focus(); }
+function applyFix(t) { t.fix.run(); if (!t.fix.keep) { render(); toast("Fixed. Undo puts it back."); } }
+
+/* ---------- free-build coach: what to do next ---------- */
+function coachSteps() {
+  const f = fn(); if (!f) return [];
+  const kinds = flatten(f.body), links = connections(), call = callTemplate(f);
+  return [
+    { done: kinds.length > 0, text: `Add blocks to ${f.name}()`, hint: "Click a block on the left. Not sure where to start? A Set variable for the result, or a Check for the inputs." },
+    { done: !kinds.includes("hole"), text: "Replace every TODO with real blocks", hint: "TODO blocks stop the code with an error until you replace them." },
+    ...(f.returns === "None" ? [] : [{ done: kinds.includes("return"), text: `Give back the ${f.returns} that ${f.name}() promises`, hint: "Add a Return block, usually at the end." }]),
+    { done: !links.length, text: "Connect your functions and files", hint: `${links.length} connection tip${links.length === 1 ? "" : "s"} waiting in the Advisor.`, action: ["Show the tips", () => selectTab("advice")] },
+    { done: state.ranPlan === JSON.stringify(state.plan), text: `Run it: ${call}`, hint: "Try it runs your real code. Change the values to test other cases.", action: ["Try it", () => openTry(call)] },
+  ];
+}
+function renderCoach() {
+  const steps = coachSteps(), next = steps.find(s => !s.done);
+  const box = document.createElement("div"); box.className = "coach"; box.id = "coach";
+  box.innerHTML = `<h3>${next ? "Next step" : "It runs. What next?"}</h3>` + (next ? `<p class="muted" style="margin:0">${esc(next.hint)}</p>` :
+    `<p class="muted" style="margin:0">Ideas: add a function that calls this one, insert a template from the Templates tab, split code into files, or download your .py.</p>`)
+    + `<ol>${steps.map(s => `<li class="${s.done ? "done" : s === next ? "next" : ""}"><span class="mark">${s.done ? "✓" : ""}</span><span>${esc(s.text)}</span></li>`).join("")}</ol>`;
+  if (next && next.action) {
+    const b = Object.assign(document.createElement("button"), { className: "btn small primary", textContent: next.action[0] });
+    b.addEventListener("click", next.action[1]); box.appendChild(b);
+  }
+  return box;
+}
+
 function advise() {
-  const tips = [], mods = state.plan.modules, seen = {};
+  const tips = connections(), mods = state.plan.modules, seen = {};
   const tip = (kind, title, text) => tips.push({ kind, title, text });
   for (const mod of mods) {
     for (const f of mod.functions) {
@@ -1015,8 +1179,10 @@ function renderAdvice() {
   for (const t of tips) {
     const d = document.createElement("div"); d.className = "tip"; d.style.setProperty("--c", `var(--k-${t.kind})`);
     d.innerHTML = `<b>${esc(t.title)}</b><p>${esc(t.text)}</p>`; box.appendChild(d);
+    if (t.fix) { const b = Object.assign(document.createElement("button"), { className: "btn small", textContent: t.fix.label }); b.addEventListener("click", () => applyFix(t)); d.appendChild(b); }
   }
   $('[data-tab="advice"]').textContent = tips.length ? `Advisor (${tips.length})` : "Advisor";
+  if (!state.lesson && $("#lessonPanel")) { const old = $("#coach"); if (old) old.replaceWith(renderCoach()); }
 }
 
 /* ---------- running Python (Pyodide in a web worker, loaded on first use) ---------- */
@@ -1087,13 +1253,14 @@ async function tryRun() {
     else if (r.value !== null) html += `<span class="${r.error ? "err" : "val"}">${esc(r.error ? explainError(r.value) : r.value)}</span>`;
     else if (!r.output) html += `<span class="muted">(done, nothing to show)</span>`;
     out.innerHTML = html;
+    if (!r.load_error && !r.error) { state.ranPlan = JSON.stringify(state.plan); renderAdvice(); }
   } catch (e) { out.innerHTML = `<span class="err">${esc(e.message)}</span>`; }
   $("#tryRun").disabled = false;
 }
 function suggestTry() {
   const l = state.lesson, f = fn();
   if (l && l.tests && l.tests.length) return l.tests[0].call;
-  return f ? `${f.name}(${f.parameters.map(() => "").join(", ")})` : "";
+  return f ? callTemplate(f) : "";
 }
 
 /* ---------- lessons ---------- */
@@ -1119,7 +1286,11 @@ function renderLesson(result) {
   const rail = `<div class="rail" role="group" aria-label="Lessons"><span class="rail-label">${done.size}/${LESSONS.length} done</span>${LESSONS.map((x, i) =>
     `<button data-lesson="${x.id}" class="${done.has(x.id) ? "done" : ""}" aria-current="${!!(l && l.id === x.id)}" title="${attr(x.title)}${done.has(x.id) ? " (done)" : ""}">${i + 1}</button>`).join("")}</div>`;
   if (!l) {
-    p.innerHTML = rail + `<div class="lesson-card"><h3>Free build</h3><p>Pick a lesson number above, or build anything you like. The Python tab always shows your real code, and Try it runs it.</p></div>`;
+    p.innerHTML = rail + `<div class="lesson-card"><h3>Free build</h3><p>Build anything you like. The checklist below suggests the next step, the Advisor helps you connect functions and files, and Try it runs your code.</p>
+      <div class="code-actions"><button class="btn small" id="freeNew">New project</button><button class="btn small" id="freeTemplates">Browse templates</button></div></div>`;
+    p.appendChild(renderCoach());
+    $("#freeNew").addEventListener("click", () => $("#newDialog").showModal());
+    $("#freeTemplates").addEventListener("click", () => setTrack("library"));
   } else {
     const ticks = new Set(readJSON("blockwise-steps", {})[l.id] || []);
     p.innerHTML = rail + `<div class="lesson-card"><h3>${esc(l.title)}</h3>
@@ -1280,14 +1451,68 @@ function renderPresets() {
         if (["expression", "annotation"].includes(spec.kind) && !(v && balanced(v))) { toast(`${name}: check brackets and quotes`); return; }
         values[name] = renderValue(spec, v);
       }
-      const f = substitute(p.function, values);
+      const f = substitute(p.function, values), before = fn();
       if (mod.functions.some(x => x.name === f.name)) { toast(`${mod.path} already has ${f.name}(); change the function name.`); return; }
+      const sample = (p.examples || []).find(e => !JSON.stringify(e.args).includes("{dir}"));
+      state.inserted = { made: { path: mod.path, name: f.name }, from: before ? { path: mod.path, name: before.name } : null,
+        example: sample ? `${f.name}(${sample.args.map(pyLit).join(", ")})` : null };
       f.requirements = [p.summary]; f.body = normNodes(f.body); mod.functions.push(f);
       for (const line of substitute(p.imports || [], values)) if (!mod.imports.includes(line)) mod.imports.push(line); state.f = mod.functions.length - 1; state.target = [];
       toast(`Added ${f.name}() to ${mod.path}`); note("function"); render(); showPanel("side-mid");
+      $("#side-mid").scrollIntoView({ block: "start", behavior: "smooth" });
     });
     list.appendChild(card);
   }
+}
+
+// JSON example arguments as Python source: true -> True, null -> None.
+function pyLit(v) {
+  if (v === null) return "None";
+  if (v === true || v === false) return v ? "True" : "False";
+  if (typeof v === "string") return pyStr(v);
+  if (Array.isArray(v)) return `[${v.map(pyLit).join(", ")}]`;
+  if (typeof v === "object") return `{${Object.entries(v).map(([k, x]) => `${pyStr(k)}: ${pyLit(x)}`).join(", ")}}`;
+  return String(v);
+}
+function findFn(where) { const mod = state.plan.modules.find(m => m.path === where.path); return mod && { mod, f: mod.functions.find(g => g.name === where.name) }; }
+function templateCard() {
+  const info = state.inserted, made = findFn(info.made), from = info.from && findFn(info.from);
+  const card = document.createElement("div"); card.className = "template-card"; card.setAttribute("role", "status");
+  if (!made || !made.f) { state.inserted = null; return card; }
+  const caller = from && from.f && from.f !== made.f ? from : null;
+  card.innerHTML = `<b>Added ${esc(made.f.name)}() from the templates.</b><p>A template does nothing until something calls it.
+    ${caller ? `Connect it: call it from ${esc(caller.f.name)}()${caller.mod !== made.mod ? " (Blockwise adds the import)" : ""}, or try it on its own first.` : "Try it on its own, then call it from your own function."}</p>`;
+  const add = (label, run) => { const b = Object.assign(document.createElement("button"), { className: "btn small", textContent: label }); b.addEventListener("click", run); card.appendChild(b); };
+  if (caller) add(`Add a call in ${caller.f.name}()`, () => connectTemplate(made, caller));
+  add("Try it", () => openTry(info.example || callTemplate(made.f)));
+  const close = Object.assign(document.createElement("button"), { className: "btn ghost small close", textContent: "✕", title: "Hide" });
+  close.setAttribute("aria-label", "Hide template tips"); close.addEventListener("click", () => { state.inserted = null; renderBuilder(); }); card.appendChild(close);
+  return card;
+}
+// Add a call to the inserted template inside the function the learner was working on.
+function connectTemplate(made, caller) {
+  const g = made.f, f = caller.f, known = localNames(f), added = [];
+  for (const q of g.parameters) if (!("default" in q) && !known.has(q.name)) { f.parameters.push({ name: q.name, type: q.type }); added.push(q.name); }
+  f.parameters.sort((a, b) => ("default" in a) - ("default" in b));
+  const call = `${g.name}(${g.parameters.filter(q => !("default" in q)).map(q => q.name).join(", ")})`;
+  const guard = (g.returns || "None") === "None";
+  const node = guard ? { kind: /^(require|check|validate|ensure)_/.test(g.name) ? "validate" : "call", expression: call } : { kind: "assign", target: "result", operator: "=", expression: call };
+  if (guard) f.body.unshift(node);
+  else { const r = f.body.findIndex(n => n.kind === "return"); f.body.splice(r < 0 ? f.body.length : r, 0, node); }
+  const line = `from ${dotted(made.mod.path)} import ${g.name}`;
+  if (caller.mod !== made.mod && !caller.mod.imports.includes(line)) caller.mod.imports.push(line);
+  state.m = state.plan.modules.indexOf(caller.mod); state.f = caller.mod.functions.indexOf(f); state.target = []; state.inserted = null;
+  render();
+  toast(added.length ? `Called ${g.name}() from ${f.name}(), and gave ${f.name}() the input${added.length > 1 ? "s" : ""} ${added.join(", ")} so the call has a value.` : `Called ${g.name}() from ${f.name}().`);
+}
+function newProject(kind) {
+  $("#newDialog").close();
+  state.lesson = null; store.set("blockwise-lesson", ""); $("#lessonPick").value = ""; state.inserted = null; state.ranPlan = null;
+  state.plan = normalize({ modules: [{ path: "main.py", imports: [], functions: [{ name: "main", parameters: [], returns: "None", requirements: [], body: [] }] }] });
+  state.m = 0; state.f = 0; state.target = []; state.menu = null; state.checkResult = null; state.tests = null;
+  render(); renderLesson(); $("#tryExpr").value = suggestTry(); $("#tryOut").textContent = "";
+  if (kind === "template") setTrack("library"); else { selectTab("lesson"); showPanel("side-mid"); }
+  toast("New project. Undo brings back the old one.");
 }
 
 /* ---------- UI wiring ---------- */
@@ -1361,7 +1586,11 @@ $("#checkWork").addEventListener("click", checkWork);
 $("#undoBtn").addEventListener("click", undo);
 $("#redoBtn").addEventListener("click", redo);
 $("#helpBtn").addEventListener("click", () => $("#welcome").showModal());
-$("#welcomeClose").addEventListener("click", closeWelcome);
+$("#welcomeClose").addEventListener("click", () => { closeWelcome(); newProject("blank"); });
+$("#newProject").addEventListener("click", () => $("#newDialog").showModal());
+$("#newBlank").addEventListener("click", () => newProject("blank"));
+$("#newFromTemplate").addEventListener("click", () => newProject("template"));
+$("#newCancel").addEventListener("click", () => $("#newDialog").close());
 $("#welcome").addEventListener("close", () => store.set("blockwise-welcomed", "1"));
 $("#welcomeLearn").addEventListener("click", () => { closeWelcome(); startLesson(LESSONS[0].id, "guided"); });
 $("#welcomeLibrary").addEventListener("click", () => { closeWelcome(); setTrack("library"); });

@@ -110,6 +110,19 @@ def test_studio_runs_without_errors_and_lessons_check(e2e):
     assert ui["bad_exception_flagged"] and "needs a default" in ui["default_order_message"]
     assert ui["kinds_without_color"] == []
     assert ui["while_lesson_by_clicks"] and ui["stray_break_tip"]
+
+
+def test_studio_free_build_and_connections(e2e):
+    assert e2e["false_connections"] == [], "connection tips must not fire on known-good lessons and templates"
+    ui = e2e["ui"]
+    assert ui["new_project_blank"] and ui["indent"] and ui["outdent_duplicate"]
+    assert ui["template_card"] and ui["template_connected"]
+    titles = " | ".join(ui["connection_titles"])
+    assert "uses require_positive() from shop/checks.py" in titles
+    assert "no function called sum_prces()" in titles and "unused_helper() isn't connected yet" in titles
+    assert ui["connections_fixed"] == ["unused_helper() isn't connected yet"]
+    assert ui["connected_code"].startswith("from shop.checks import require_positive\n")
+    assert "return sum_prices(items)" in ui["connected_code"]
     assert ui["try_code"] == ("LIMIT = 10\n\n\ndef to_int(text: str, fallback: int=0) -> None:\n    try:\n        return int(text)\n"
                               "    except (ValueError, TypeError):\n        return fallback\n")
 

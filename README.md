@@ -124,6 +124,17 @@ whether a file could become a plan.
   Ctrl+Shift+Z), plain-language messages for invalid names and expressions, tickable lesson
   steps, a progress rail with a *Next lesson* button, and a **Words** glossary linked from each
   lesson's concept tags.
+- **Build your own script:** **New** starts a blank `main.py` (or starts from a template). In free
+  build, a *Next step* checklist follows your progress: add blocks, replace TODOs, return what
+  you promise, connect your functions, run it. Blocks can be moved into the block above (→), out
+  of the block they're in (←), duplicated (⧉), moved up/down or deleted, and the value boxes
+  suggest the names you've already defined.
+- **Connecting code:** the Advisor spots a call to a function in another file without an import,
+  a call to a name that doesn't exist (with "did you mean…?"), an import of a name the other file
+  doesn't have, and a function nothing is connected to. Most come with a one-click fix.
+- **Using a template:** after you insert one, a card explains how to use it: *Add a call in
+  main()* calls it from the function you were working on (adding the import and any missing
+  inputs), and *Try it* runs it with one of its tested examples.
 - **Advisor:** live tips on deep nesting, long functions, files with too many jobs, repeated
   conditions, a missing return, and when to use a folder.
 - **Templates tab:** search and filter the preset library, preview each template's code, and insert
