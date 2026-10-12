@@ -31,6 +31,8 @@ def test_blueprint_examples_run_as_real_programs(blueprint_id, tmp_path):
     script = next(iter(sources))
     assert blueprint["examples"], "blueprints need runnable examples"
     for example in blueprint["examples"]:  # examples run in order, sharing the folder (and any saved data)
+        for name, content in example.get("files", {}).items():  # input files the example needs
+            (tmp_path / name).write_text(content, encoding="utf-8", newline="")
         result = run(tmp_path, script, example["argv"])
         assert (result.stdout, result.returncode) == (example["stdout"], example["exit"]), (example["argv"], result.stderr)
 
@@ -61,8 +63,11 @@ def test_apply_writes_files_records_plan_and_checks(tmp_path):
 def test_agents_find_and_list_blueprints(capsys):
     assert find("todo list command line app")[0]["id"] == "todo_cli"
     assert main(["list", "--category", "blueprint"]) == 0
-    rows = json.loads(capsys.readouterr().out)
-    assert rows[0]["files"] == ["todo.py"]
+    rows = {row["id"]: row for row in json.loads(capsys.readouterr().out)}
+    assert rows["todo_cli"]["files"] == ["todo.py"] and set(rows) == set(BLUEPRINTS)
+    for query, expected in [("csv report group total", "csv_report"), ("key value store settings", "kv_store"),
+                            ("log file errors summary", "log_stats")]:
+        assert find(query)[0]["id"] == expected, query
     assert main(["show", "todo_cli", "--set", "file=tasks"]) == 0
     assert "# --- tasks.py ---" in capsys.readouterr().out
 

@@ -66,9 +66,9 @@ How it works:
 | Agent writes one preset-sized function itself (output) | ~42 |
 | Agent calls the preset instead (output + reply read back) | ~10 + ~20 |
 | Saved per use, counting output at 5× input price | ~137 input-equivalent |
-| Discovery, one time: `list` (all 23) / `find` (top 3) | ~1,160 / ~148 |
-| **Blueprint** (`todo_cli`, 6 functions + main block): write it vs call it | ~506 vs ~8 + ~26 |
-| Saved per blueprint use | **~2,460 input-equivalent** |
+| Discovery, one time: `list` (all 26) / `find` (top 3) | ~1,340 / ~148 |
+| **Blueprints** (4 whole programs, 5–8 functions + main block): write vs call | ~410–550 vs ~8 + ~27 |
+| Saved per blueprint use | **~2,000–2,700 input-equivalent** |
 
 So with `find`, a preset pays for itself on its first use. With `list`, it takes about 8 uses.
 Single-function presets save little, because a model writes a 3–14 line function cheaply anyway.
@@ -91,9 +91,17 @@ python tools/tasks.py add buy milk && python tools/tasks.py list
 blockwise check                                  # the files stay under the same structure check
 ```
 
+| Blueprint | What it is | Try it |
+|---|---|---|
+| `todo_cli` | to-do list saved to JSON: list, add, done | `python todo.py add buy milk` |
+| `kv_store` | key-value store saved to JSON: set, get, delete, list | `python store.py set name Ana` |
+| `csv_report` | group a CSV by one column and total another | `python report.py sales.csv region amount` |
+| `log_stats` | count log lines per level and list the top errors | `python logstats.py app.log` |
+
 Blueprints live in `blockwise/library/blueprints/`. Their `examples` are real command lines: the
 tests generate the program, run it as a subprocess with each example's arguments in order (so saved
-data carries over), and compare stdout and the exit code.
+data carries over; `files` creates input files first), and compare stdout and the exit code. They
+must also get no Advisor tips, so they stay examples of good structure.
 
 ## Python coverage registry
 
@@ -124,7 +132,7 @@ whether a file could become a plan.
 - **Run it for real:** *Try it* calls your functions, and *Run tests* runs each lesson's test
   cases. Python runs in the browser (Pyodide, downloaded from a CDN on first use, in a web worker
   with a 10-second limit so a runaway loop can't freeze the page).
-- **Lessons (11):**
+- **Lessons (12):**
   1. Your first function
   2. If / Else
   3. More than two choices: elif
@@ -136,6 +144,7 @@ whether a file could become a plan.
   9. Handle mistakes with try / except
   10. Repeat while: add up the digits
   11. Stop early with break
+  12. Make it runnable: the main block
 
   Each lesson starts *Guided* (part-built, with TODOs) or *Blank* (signatures only). *Check my
   work* gives hints rather than answers. If your version passes every test but is built
@@ -170,7 +179,7 @@ whether a file could become a plan.
 
 To add a lesson, append an entry to `studio/lessons.js`. A lesson has a goal, steps, an explanation,
 `concepts` (each needs an entry in the page's glossary), `tests` (calls with an `expect`ed value or
-the exception they `raise`), a `starter` plan and a `solution` plan. The tests check that every
+the exception they `raise`, or `run` + `argv` + expected `stdout` to run the file as a program), a `starter` plan and a `solution` plan. The tests check that every
 lesson compiles, that its solution passes its tests, and that the guided starter does not.
 
 The site is GitHub Pages serving the `main` branch; the root `index.html` forwards to `studio/`, so

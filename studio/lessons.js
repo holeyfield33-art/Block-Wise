@@ -350,5 +350,32 @@ window.BLOCKWISE_LESSONS = [
             {"kind": "assign", "target": "result", "expression": "n"},
             {"kind": "break"}], "otherwise": []}]},
         {"kind": "return", "expression": "result"}]}]}]}
+  },
+  {
+    "id": "main-block",
+    "title": "12 · Make it runnable: the main block",
+    "level": "Intermediate",
+    "minutes": 10,
+    "goal": "Turn greet.py into a program you can run from a terminal: python greet.py Ana prints Hello, Ana!",
+    "concepts": ["main block", "command-line arguments", "import"],
+    "steps": [
+      {"title": "The function is ready", "text": "greeting('Ana') already gives back 'Hello, Ana!'. But running python greet.py would do nothing yet: nothing calls greeting."},
+      {"title": "Add a main block", "text": "In the Project panel, click + main block under greet.py. It adds a Call block that runs when the file is started directly."},
+      {"title": "Read the command line", "text": "Change the Call to print(greeting(sys.argv[1])). sys.argv holds the words typed after python; sys.argv[1] is the first one. import sys is already at the top."},
+      {"title": "Run it", "text": "In the Python tab, type Ana next to Run file and press it. Then Check my work and Run tests."}
+    ],
+    "explain": "The main block is a file's front door: it runs when you start the file, but not when another file imports it, so the same file can be a program and a library. Every blueprint in the Templates tab ends with one.",
+    "tests": [
+      {"call": "greeting('Ana')", "expect": "'Hello, Ana!'"},
+      {"run": "greet.py", "argv": ["Ana"], "stdout": "Hello, Ana!\n"},
+      {"run": "greet.py", "argv": ["Sam"], "stdout": "Hello, Sam!\n"}
+    ],
+    "starter": {"format": "blockwise-plan-v1", "title": "Greeter", "modules": [{"path": "greet.py", "imports": ["import sys"], "functions": [
+      {"name": "greeting", "parameters": [{"name": "name", "type": "str"}], "returns": "str", "requirements": [], "body": [
+        {"kind": "return", "expression": "f'Hello, {name}!'"}]}]}]},
+    "solution": {"format": "blockwise-plan-v1", "title": "Greeter", "modules": [{"path": "greet.py", "imports": ["import sys"], "functions": [
+      {"name": "greeting", "parameters": [{"name": "name", "type": "str"}], "returns": "str", "requirements": [], "body": [
+        {"kind": "return", "expression": "f'Hello, {name}!'"}]}],
+      "entry": [{"kind": "call", "expression": "print(greeting(sys.argv[1]))"}]}]}
   }
 ];

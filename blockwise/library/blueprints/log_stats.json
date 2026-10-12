@@ -1,0 +1,69 @@
+{
+  "id": "log_stats",
+  "title": "Log file summary",
+  "category": "blueprint",
+  "summary": "A runnable log analyser: counts lines per level (INFO, ERROR, ...) and lists the most frequent error messages. Skips lines it can't read.",
+  "params": {
+    "file": {"kind": "identifier", "default": "logstats"},
+    "top": {"kind": "number", "default": 3}
+  },
+  "try": "python {path} app.log",
+  "plan": {
+    "modules": [{
+      "path": "{{file}}.py",
+      "imports": ["import sys"],
+      "constants": [
+        {"name": "LEVELS", "value": "('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')"},
+        {"name": "TOP", "value": "{{top}}"}],
+      "functions": [
+        {"name": "parse_line", "parameters": [{"name": "line", "type": "str"}], "returns": "dict | None",
+         "requirements": ["Expected shape: DATE TIME LEVEL message"], "body": [
+          {"kind": "assign", "target": "parts", "expression": "line.split(maxsplit=3)"},
+          {"kind": "branch", "condition": "len(parts) < 4 or parts[2] not in LEVELS", "body": [
+            {"kind": "return", "expression": "None"}]},
+          {"kind": "return", "expression": "{'level': parts[2], 'message': parts[3].strip()}"}]},
+        {"name": "summarize", "parameters": [{"name": "lines", "type": "list"}], "returns": "dict", "body": [
+          {"kind": "assign", "target": "counts", "expression": "{level: 0 for level in LEVELS}"},
+          {"kind": "assign", "target": "errors", "expression": "{}"},
+          {"kind": "assign", "target": "skipped", "expression": "0"},
+          {"kind": "loop", "target": "line", "iterable": "lines", "body": [
+            {"kind": "assign", "target": "entry", "expression": "parse_line(line)"},
+            {"kind": "branch", "condition": "entry is None", "body": [
+              {"kind": "assign", "target": "skipped", "operator": "+=", "expression": "1"},
+              {"kind": "continue"}]},
+            {"kind": "call", "expression": "counts.update({entry['level']: counts[entry['level']] + 1})"},
+            {"kind": "branch", "condition": "entry['level'] in ('ERROR', 'CRITICAL')", "body": [
+              {"kind": "call", "expression": "errors.update({entry['message']: errors.get(entry['message'], 0) + 1})"}]}]},
+          {"kind": "return", "expression": "{'counts': counts, 'errors': errors, 'skipped': skipped}"}]},
+        {"name": "format_summary", "parameters": [{"name": "summary", "type": "dict"}], "returns": "str", "body": [
+          {"kind": "assign", "target": "lines", "expression": "[f'{level}: {count}' for level, count in summary['counts'].items() if count]"},
+          {"kind": "assign", "target": "errors", "expression": "summary['errors']"},
+          {"kind": "loop", "target": "message", "iterable": "sorted(errors, key=errors.get, reverse=True)[:TOP]", "body": [
+            {"kind": "call", "expression": "lines.append(f'  {errors[message]} x {message}')"}]},
+          {"kind": "branch", "condition": "summary['skipped']", "body": [
+            {"kind": "call", "expression": "lines.append(f\"skipped {summary['skipped']} unreadable line(s)\")"}]},
+          {"kind": "return", "expression": "'\\n'.join(lines) or 'No log lines found.'"}]},
+        {"name": "main", "parameters": [{"name": "args", "type": "list"}], "returns": "int", "body": [
+          {"kind": "branch", "condition": "len(args) != 1", "body": [
+            {"kind": "call", "expression": "print('usage: {{file}}.py LOGFILE')"},
+            {"kind": "return", "expression": "2"}]},
+          {"kind": "try", "exception": "OSError", "body": [
+            {"kind": "with", "context": "open(args[0], encoding='utf-8', errors='replace')", "alias": "handle", "body": [
+              {"kind": "assign", "target": "lines", "expression": "handle.readlines()"}]}],
+           "handler": [
+            {"kind": "call", "expression": "print(f'error: cannot read {args[0]}')"},
+            {"kind": "return", "expression": "1"}]},
+          {"kind": "call", "expression": "print(format_summary(summarize(lines)))"},
+          {"kind": "return", "expression": "0"}]}
+      ],
+      "entry": [{"kind": "call", "expression": "sys.exit(main(sys.argv[1:]))"}]
+    }]
+  },
+  "examples": [
+    {"files": {"app.log": "2026-10-12 09:00:00 INFO started\n2026-10-12 09:00:01 ERROR db timeout\n2026-10-12 09:00:02 WARNING slow\ngarbage line\n2026-10-12 09:00:03 ERROR db timeout\n2026-10-12 09:00:04 CRITICAL disk full\n2026-10-12 09:00:05 ERROR bad token\n2026-10-12 09:00:06 ERROR cache miss\n"},
+     "argv": ["app.log"], "stdout": "INFO: 1\nWARNING: 1\nERROR: 4\nCRITICAL: 1\n  2 x db timeout\n  1 x disk full\n  1 x bad token\nskipped 1 unreadable line(s)\n", "exit": 0},
+    {"files": {"empty.log": ""}, "argv": ["empty.log"], "stdout": "No log lines found.\n", "exit": 0},
+    {"argv": ["nope.log"], "stdout": "error: cannot read nope.log\n", "exit": 1},
+    {"argv": [], "stdout": "usage: logstats.py LOGFILE\n", "exit": 2}
+  ]
+}
