@@ -1,0 +1,141 @@
+[
+  {
+    "id": "filter_items",
+    "title": "Keep only matching items",
+    "category": "data",
+    "summary": "Loop over a list and return a new list with the items that match a condition.",
+    "params": {
+      "function": {"kind": "identifier", "default": "active_only"},
+      "items": {"kind": "identifier", "default": "items"},
+      "condition": {"kind": "expression", "default": "item.get('active') is True", "help": "Write it in terms of `item`."}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{items}}", "type": "list"}],
+      "returns": "list",
+      "body": [
+        {"kind": "assign", "target": "result", "expression": "[]"},
+        {"kind": "loop", "target": "item", "iterable": "{{items}}", "body": [
+          {"kind": "branch", "condition": "{{condition}}", "body": [{"kind": "call", "expression": "result.append(item)"}]}
+        ]},
+        {"kind": "return", "expression": "result"}
+      ]
+    },
+    "examples": [{"args": [[{"active": true, "n": 1}, {"active": false, "n": 2}]], "returns": [{"active": true, "n": 1}]}]
+  },
+  {
+    "id": "sum_field",
+    "title": "Add up one field",
+    "category": "data",
+    "summary": "Return the total of item[field] across a list of dicts.",
+    "params": {
+      "function": {"kind": "identifier", "default": "total_price"},
+      "items": {"kind": "identifier", "default": "items"},
+      "field": {"kind": "string", "default": "price"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{items}}", "type": "list"}],
+      "returns": "int",
+      "body": [
+        {"kind": "assign", "target": "total", "expression": "0"},
+        {"kind": "loop", "target": "item", "iterable": "{{items}}", "body": [
+          {"kind": "assign", "target": "total", "expression": "total + item[{{field}}]"}
+        ]},
+        {"kind": "return", "expression": "total"}
+      ]
+    },
+    "examples": [{"args": [[{"price": 2}, {"price": 3}]], "returns": 5}, {"args": [[]], "returns": 0}]
+  },
+  {
+    "id": "count_by",
+    "title": "Count items by a field",
+    "category": "data",
+    "summary": "Return a dict like {'red': 2, 'blue': 1} counting item[field] values.",
+    "params": {
+      "function": {"kind": "identifier", "default": "count_by_status"},
+      "items": {"kind": "identifier", "default": "items"},
+      "field": {"kind": "string", "default": "status"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{items}}", "type": "list"}],
+      "returns": "dict",
+      "body": [
+        {"kind": "assign", "target": "counts", "expression": "{}"},
+        {"kind": "loop", "target": "item", "iterable": "{{items}}", "body": [
+          {"kind": "assign", "target": "key", "expression": "item[{{field}}]"},
+          {"kind": "call", "expression": "counts.update({key: counts.get(key, 0) + 1})"}
+        ]},
+        {"kind": "return", "expression": "counts"}
+      ]
+    },
+    "examples": [{"args": [[{"status": "a"}, {"status": "b"}, {"status": "a"}]], "returns": {"a": 2, "b": 1}}]
+  },
+  {
+    "id": "lookup_or_error",
+    "title": "Look up a key or fail clearly",
+    "category": "data",
+    "summary": "Return mapping[key]; raise KeyError with the key name when it is missing.",
+    "params": {
+      "function": {"kind": "identifier", "default": "get_price"},
+      "mapping": {"kind": "identifier", "default": "catalog"},
+      "key": {"kind": "identifier", "default": "sku"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{mapping}}", "type": "dict"}, {"name": "{{key}}", "type": "str"}],
+      "returns": "object",
+      "body": [
+        {"kind": "branch", "condition": "{{key}} not in {{mapping}}", "body": [{"kind": "raise", "expression": "KeyError({{key}})"}]},
+        {"kind": "return", "expression": "{{mapping}}[{{key}}]"}
+      ]
+    },
+    "examples": [{"args": [{"a": 1}, "a"], "returns": 1}, {"args": [{"a": 1}, "b"], "raises": "KeyError"}]
+  },
+  {
+    "id": "clamp",
+    "title": "Clamp a number between limits",
+    "category": "data",
+    "summary": "Return low if value is below, high if above, else value. low must not exceed high.",
+    "params": {
+      "function": {"kind": "identifier", "default": "clamp_volume"},
+      "value": {"kind": "identifier", "default": "volume"},
+      "low": {"kind": "number", "default": 0},
+      "high": {"kind": "number", "default": 10}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{value}}", "type": "int"}],
+      "returns": "int",
+      "body": [
+        {"kind": "branch", "condition": "{{value}} < {{low}}", "body": [{"kind": "return", "expression": "{{low}}"}]},
+        {"kind": "branch", "condition": "{{value}} > {{high}}", "body": [{"kind": "return", "expression": "{{high}}"}]},
+        {"kind": "return", "expression": "{{value}}"}
+      ]
+    },
+    "examples": [{"args": [-3], "returns": 0}, {"args": [4], "returns": 4}, {"args": [99], "returns": 10}]
+  },
+  {
+    "id": "safe_divide",
+    "title": "Divide without crashing on zero",
+    "category": "data",
+    "summary": "Return numerator / denominator, or the fallback when the denominator is zero.",
+    "params": {
+      "function": {"kind": "identifier", "default": "average"},
+      "numerator": {"kind": "identifier", "default": "total"},
+      "denominator": {"kind": "identifier", "default": "count"},
+      "fallback": {"kind": "number", "default": 0}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{numerator}}", "type": "float"}, {"name": "{{denominator}}", "type": "float"}],
+      "returns": "float",
+      "body": [
+        {"kind": "branch", "condition": "{{denominator}} == 0", "body": [{"kind": "return", "expression": "{{fallback}}"}]},
+        {"kind": "return", "expression": "{{numerator}} / {{denominator}}"}
+      ]
+    },
+    "examples": [{"args": [10, 4], "returns": 2.5}, {"args": [10, 0], "returns": 0}]
+  }
+]

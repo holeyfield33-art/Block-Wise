@@ -1,0 +1,132 @@
+[
+  {
+    "id": "require_positive",
+    "title": "Reject zero and negative numbers",
+    "category": "validation",
+    "summary": "Raise ValueError when a number is zero or below.",
+    "params": {
+      "function": {"kind": "identifier", "default": "require_positive"},
+      "value": {"kind": "identifier", "default": "amount"},
+      "type": {"kind": "annotation", "default": "int"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{value}}", "type": "{{type}}"}],
+      "returns": "None",
+      "body": [
+        {"kind": "branch", "condition": "{{value}} <= 0", "body": [{"kind": "raise", "expression": "ValueError('{{value}} must be positive')"}]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [{"args": [5], "returns": null}, {"args": [0], "raises": "ValueError"}, {"args": [-2], "raises": "ValueError"}]
+  },
+  {
+    "id": "require_type",
+    "title": "Reject values of the wrong type",
+    "category": "validation",
+    "summary": "Raise TypeError unless the value is an instance of the given type. Booleans are rejected when int is expected.",
+    "params": {
+      "function": {"kind": "identifier", "default": "require_int"},
+      "value": {"kind": "identifier", "default": "value"},
+      "type": {"kind": "annotation", "default": "int"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{value}}", "type": "object"}],
+      "returns": "None",
+      "body": [
+        {"kind": "branch", "condition": "not isinstance({{value}}, {{type}}) or isinstance({{value}}, bool) and {{type}} is not bool",
+         "body": [{"kind": "raise", "expression": "TypeError('{{value}} must be {{type}}')"}]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [{"args": [3], "returns": null}, {"args": [true], "raises": "TypeError"}, {"args": ["3"], "raises": "TypeError"}]
+  },
+  {
+    "id": "require_non_empty",
+    "title": "Reject empty values",
+    "category": "validation",
+    "summary": "Raise ValueError for an empty string, list, dict or None.",
+    "params": {
+      "function": {"kind": "identifier", "default": "require_non_empty"},
+      "value": {"kind": "identifier", "default": "text"},
+      "type": {"kind": "annotation", "default": "str"}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{value}}", "type": "{{type}}"}],
+      "returns": "None",
+      "body": [
+        {"kind": "branch", "condition": "not {{value}}", "body": [{"kind": "raise", "expression": "ValueError('{{value}} must not be empty')"}]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [{"args": ["hi"], "returns": null}, {"args": [""], "raises": "ValueError"}]
+  },
+  {
+    "id": "require_choice",
+    "title": "Allow only listed values",
+    "category": "validation",
+    "summary": "Raise ValueError unless the value is one of the allowed choices (exact, case-sensitive).",
+    "params": {
+      "function": {"kind": "identifier", "default": "require_status"},
+      "value": {"kind": "identifier", "default": "status"},
+      "choices": {"kind": "string_list", "default": ["open", "closed"]}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{value}}", "type": "str"}],
+      "returns": "None",
+      "body": [
+        {"kind": "branch", "condition": "{{value}} not in {{choices}}", "body": [{"kind": "raise", "expression": "ValueError('unknown {{value}}')"}]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [{"args": ["open"], "returns": null}, {"args": ["Open"], "raises": "ValueError"}]
+  },
+  {
+    "id": "require_range",
+    "title": "Keep a number inside a range",
+    "category": "validation",
+    "summary": "Raise ValueError when the value is below low or above high (both ends allowed).",
+    "params": {
+      "function": {"kind": "identifier", "default": "require_percent"},
+      "value": {"kind": "identifier", "default": "percent"},
+      "low": {"kind": "number", "default": 0},
+      "high": {"kind": "number", "default": 100}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{value}}", "type": "int"}],
+      "returns": "None",
+      "body": [
+        {"kind": "branch", "condition": "{{value}} < {{low}} or {{value}} > {{high}}", "body": [{"kind": "raise", "expression": "ValueError('{{value}} out of range')"}]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [{"args": [0], "returns": null}, {"args": [100], "returns": null}, {"args": [101], "raises": "ValueError"}, {"args": [-1], "raises": "ValueError"}]
+  },
+  {
+    "id": "require_keys",
+    "title": "Require keys in a dict (request body, config)",
+    "category": "validation",
+    "summary": "Raise KeyError naming the first required key that is missing.",
+    "params": {
+      "function": {"kind": "identifier", "default": "require_fields"},
+      "mapping": {"kind": "identifier", "default": "payload"},
+      "keys": {"kind": "string_list", "default": ["name", "email"]}
+    },
+    "function": {
+      "name": "{{function}}",
+      "parameters": [{"name": "{{mapping}}", "type": "dict"}],
+      "returns": "None",
+      "body": [
+        {"kind": "loop", "target": "key", "iterable": "{{keys}}", "body": [
+          {"kind": "branch", "condition": "key not in {{mapping}}", "body": [{"kind": "raise", "expression": "KeyError(key)"}]}
+        ]},
+        {"kind": "return", "expression": "None"}
+      ]
+    },
+    "examples": [{"args": [{"name": "a", "email": "b"}], "returns": null}, {"args": [{"name": "a"}], "raises": "KeyError"}]
+  }
+]

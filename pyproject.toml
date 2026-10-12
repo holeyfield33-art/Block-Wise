@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blockwise"
+version = "0.1.0"
+description = "Preset code blocks agents can call to save tokens, plus a block-based Python lesson studio"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2,<2"]
+dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
+
+[project.scripts]
+blockwise = "blockwise.cli:entry"
+
+[tool.setuptools.packages.find]
+include = ["blockwise*"]
+
+[tool.setuptools.package-data]
+"blockwise.library" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 130
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]
