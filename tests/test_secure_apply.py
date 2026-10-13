@@ -71,6 +71,28 @@ def test_workspace_escape_via_symlink_is_blocked(tmp_path):
     assert _py_files(outside) == []
 
 
+@pytest.mark.parametrize("into", ["../escape", "a/../../escape", "ABSOLUTE"])
+def test_workspace_escape_via_into_is_blocked(tmp_path, into):
+    root = tmp_path / "workspace"
+    root.mkdir()
+    if into == "ABSOLUTE":
+        into = str(tmp_path / "abs_escape")
+    receipt = secure_apply("csv_report", root, into)
+    assert receipt["status"] == "refused"
+    assert receipt["reason"] == "workspace_escape"
+    assert [p for p in _py_files(tmp_path) if root not in p.parents] == []
+
+
+def test_string_parameter_is_stored_as_a_literal_not_code(tmp_path):
+    payload = "'); __import__('os').system('touch pwned'); ('"
+    receipt = secure_apply("kv_store", tmp_path, ".", params={"store": payload})
+    assert receipt["status"] == "approved"
+    source = (tmp_path / receipt["outputs"][0]).read_text(encoding="utf-8")
+    # The only occurrence of the payload is inside its quoted literal.
+    assert payload not in source.replace(repr(payload), "")
+    assert not (tmp_path / "pwned").exists()
+
+
 def test_verification_failure_is_not_an_approval(tmp_path, monkeypatch):
     # Force the structural check to report nothing checked: a generation that
     # cannot be verified must never come back "approved".
