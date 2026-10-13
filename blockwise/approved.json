@@ -1,0 +1,13 @@
+{
+  "format": "blockwise-approved-v1",
+  "note": "SHA-256 of each approved blueprint's canonical JSON. Regenerate with scripts if a blueprint is re-approved.",
+  "blueprints": {
+    "csv_report": "sha256:5d813cd980fa229dae20619e37081ddb9a717fb29c890306225a6415cd9675ee",
+    "data_validator": "sha256:6d58ad9f0d14caf932b0894486afedf38958ad21fd8e5cd7a8c1d3455252e05a",
+    "fetch_json": "sha256:ddc9facae58f2867c9ba2d70d0e5ab4a5ecb6ae29371e491bc110acf8e3fe47c",
+    "file_organizer": "sha256:ba5c0f886c69bc6fd69c7bc60630e693846933d756578be781ffabc85bc2756b",
+    "kv_store": "sha256:e68c9e866214514814c34ea64248b21abc1bf1e7feabce381e7ec405fde96b0c",
+    "log_stats": "sha256:5eb10e5ab91c1fc3e2d16fe0eea9b0f3c80a580e08505da4e6e1351fcae42b98",
+    "todo_cli": "sha256:d801a31a6298739993afe9fcc52de8dbb613a2efdda9682ffd6f7ff9645ae407"
+  }
+}
