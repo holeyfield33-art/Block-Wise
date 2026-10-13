@@ -16,7 +16,7 @@ from blockwise import secure_apply as sa
 from blockwise.cli import main
 from blockwise.presets import load_blueprints
 from blockwise.probes import canonical_digest, detector_check, validate_security
-from blockwise.secure_apply import secure_apply
+from blockwise.secure_apply import load_approved, load_security_reviews, secure_apply
 
 ROOT = Path(__file__).resolve().parents[1]
 MUTANTS = Path(__file__).parent / "mutants"
@@ -111,10 +111,23 @@ def test_probe_on_a_block_without_a_security_section(tmp_path):
     assert receipt["security"] == {"status": "not-reviewed", "reason": "not_a_security_block"}
 
 
+def test_shipped_approval_and_review_match_the_current_block():
+    # Editing the block (code, threats or probes) without a fresh review must break here.
+    assert load_approved()["safe_write_text"] == VERSION
+    review = load_security_reviews()["safe_write_text"]
+    assert review["block_version"] == VERSION and review["real_block"] == "held"
+    assert review["killed"] == review["total"] == 5
+    suite = json.loads((MUTANTS / "safe_write_text.json").read_text(encoding="utf-8"))
+    assert review["mutant_suite"] == canonical_digest(suite)
+
+
 def test_cli_probe_and_review_exit_codes(tmp_path, capsys):
-    # Not approved in the shipped manifest: refused, nonzero.
-    assert main(["secure-apply", "safe_write_text", "--project", str(tmp_path), "--probe"]) == 1
-    assert json.loads(capsys.readouterr().out)["reason"] == "blueprint_not_approved"
+    # Approved in the shipped manifest: exit 0 only where the receipt says security-reviewed
+    # (a host that cannot run every probe, e.g. Windows without symlink rights, gets gaps and 1).
+    code = main(["secure-apply", "safe_write_text", "--project", str(tmp_path), "--probe"])
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt["status"] == "approved"
+    assert code == (0 if receipt["security"]["status"] == "security-reviewed" else 1)
     code = main(["security-review", "safe_write_text", "--mutants", str(MUTANTS / "safe_write_text.json")])
     result = json.loads(capsys.readouterr().out)
     assert result["record"]["block_version"] == VERSION
