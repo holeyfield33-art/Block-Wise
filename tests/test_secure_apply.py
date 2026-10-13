@@ -107,3 +107,17 @@ def test_cli_returns_zero_on_approval_and_nonzero_on_refusal(tmp_path, capsys):
     assert main(["secure-apply", "csv_report", "--project", str(tmp_path)]) == 0
     capsys.readouterr()
     assert main(["secure-apply", "does_not_exist", "--project", str(tmp_path)]) == 1
+
+
+def test_generation_uses_the_verified_copy_not_a_reload(tmp_path, monkeypatch):
+    # The blueprint whose digest was checked must be the one generated from; if
+    # generation reloaded the library, a changed file between the two loads
+    # would be written under the old approval.
+    import copy
+
+    verified = copy.deepcopy(sa.load_blueprints()["csv_report"])
+    verified["plan"]["modules"][0]["path"] = "verified_copy.py"
+    monkeypatch.setattr(sa, "load_blueprints", lambda: {"csv_report": verified})
+    receipt = secure_apply("csv_report", tmp_path, ".", approved={"csv_report": sa.canonical_digest(verified)})
+    assert receipt["status"] == "approved"
+    assert receipt["outputs"] == ["verified_copy.py"]

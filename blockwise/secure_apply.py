@@ -95,7 +95,8 @@ def secure_apply(blueprint_id, project=".", into=".", params=None, approved=None
             return {"status": "refused", "reason": "workspace_escape", "path": relative}
 
     try:
-        result = apply_blueprint(str(root), blueprint_id, into, params or {})
+        # Generate from the exact copy whose digest was checked, never a fresh reload.
+        result = apply_blueprint(str(root), blueprint_id, into, params or {}, blueprint=blueprints[blueprint_id])
     except (PresetError, ScoreError, OSError) as exc:
         return {"status": "refused", "reason": "generation_failed", "blueprint": blueprint_id, "detail": str(exc)}
     written = result["added"]
