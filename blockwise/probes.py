@@ -21,11 +21,13 @@ answer), NOT_RUN (this platform cannot set the probe up, e.g. no symlink
 rights). Only HELD counts as a pass.
 """
 
+import ast
 import copy
 import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -47,8 +49,10 @@ THREAT_CLASSES = (
     # Added for Block-Wise.
     "RESOURCE_EXHAUSTION", "INPUT_VALIDATION", "UNSAFE_DESERIALIZATION", "SECRET_EXPOSURE",
 )
-PROBE_KEYS = {"id", "threat", "args", "raises", "returns", "then_files", "absent", "setup"}
+PROBE_KEYS = {"id", "threat", "function", "args", "raises", "returns", "then_files", "absent", "setup"}
+OVER = re.compile(r"^\{over:(\w+)\}$")
 TIMEOUT = 10
+MAX_OVER = 50_000_000  # largest {over:NAME} text a probe will build
 
 # Runs in the child process: import the generated module by path, call one
 # function, and write the outcome to a result file (stdout is left to the code).
@@ -107,6 +111,8 @@ def validate_security(blueprint):
             raise ProbeError(f"Probe {probe.get('id')}: needs id and args, unknown keys {sorted(extra)}")
         if probe.get("threat") is not None and probe["threat"] not in ids:
             raise ProbeError(f"Probe {probe['id']} names undeclared threat {probe['threat']!r}")
+        if "function" in probe and not (isinstance(probe["function"], str) and probe["function"].isidentifier()):
+            raise ProbeError(f"Probe {probe['id']}: function must be a name")
         if ("raises" in probe) == ("returns" in probe):
             raise ProbeError(f"Probe {probe['id']} must declare exactly one of raises / returns")
     if not any(p.get("threat") is None and "returns" in p for p in probes):
@@ -114,10 +120,47 @@ def validate_security(blueprint):
     unprobed = set(ids) - {p.get("threat") for p in probes}
     if unprobed:
         raise ProbeError(f"Threats without a probe: {sorted(unprobed)}")
+    declared = security.get("params")
+    if not isinstance(declared, dict) or set(declared) != set(blueprint.get("params", {})):
+        raise ProbeError('security.params must declare every blueprint parameter as "free" or {min, max}')
+    for name, bound in declared.items():
+        if bound == "free":
+            continue
+        if not (isinstance(bound, dict) and set(bound) == {"min", "max"} and _number(bound["min"]) is not None
+                and _number(bound["max"]) is not None and bound["min"] <= bound["max"]):
+            raise ProbeError(f'security.params.{name} must be "free" or {{min, max}} numbers')
+        if param_violations(security, {name: blueprint["params"][name].get("default")}):
+            raise ProbeError(f"The default of {name} is outside its reviewed range")
     not_verified = security.get("not_verified")
     if not isinstance(not_verified, list) or not not_verified:
         raise ProbeError("security.not_verified must list what the probes do not cover")
     return security
+
+
+def _number(value):
+    """A parameter value as a number (CLI values arrive as text), or None."""
+    if isinstance(value, str):
+        try:
+            value = ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            return None
+    return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+
+
+def param_violations(security, values):
+    """Parameters whose value is outside the range the security review covered."""
+    problems = []
+    for name, bound in security.get("params", {}).items():
+        if bound == "free" or name not in values:
+            continue
+        number = _number(values[name])
+        if number is None or not bound["min"] <= number <= bound["max"]:
+            problems.append(f"{name}={values[name]!r} is outside the reviewed range [{bound['min']}, {bound['max']}]")
+    return problems
+
+
+def default_params(blueprint):
+    return {name: spec.get("default") for name, spec in blueprint.get("params", {}).items()}
 
 
 def _snapshot(base):
@@ -139,13 +182,20 @@ def _snapshot(base):
     return state
 
 
-def _fill(value, places):
+def _fill(value, places, params):
     if isinstance(value, str):
+        over = OVER.match(value)
+        if over:
+            # Text one character over a size parameter, e.g. {over:max_bytes}.
+            size = int(_number(params[over.group(1)])) + 1
+            if size > MAX_OVER:
+                raise ProbeError(f"{over.group(1)} is too large to probe")
+            return "x" * max(0, size)
         for name, path in places.items():
             value = value.replace("{" + name + "}", path)
         return value
     if isinstance(value, list):
-        return [_fill(item, places) for item in value]
+        return [_fill(item, places, params) for item in value]
     return value
 
 
@@ -185,8 +235,12 @@ def _verdict(probe, outcome, root, dirty):
     return "HELD", "returned as declared"
 
 
-def run_probe(source, function, probe, timeout=TIMEOUT):
-    """Run one probe against the generated module at `source`; return its result."""
+def run_probe(source, function, probe, timeout=TIMEOUT, params=None):
+    """Run one probe against the generated module at `source`; return its result.
+
+    `params` are the values the module was generated with, for {over:NAME}.
+    """
+    function = probe.get("function", function)
     result = {"id": probe["id"], "threat": probe.get("threat")}
     base = Path(tempfile.mkdtemp(prefix="bw_probe_")).resolve()
     try:
@@ -206,7 +260,8 @@ def run_probe(source, function, probe, timeout=TIMEOUT):
         before = _snapshot(base)
         scratch = Path(tempfile.mkdtemp(prefix="bw_probe_result_"))
         try:
-            outcome = _call(source, function, _fill(probe["args"], places), scratch / "result.json", root, timeout)
+            args = _fill(probe["args"], places, params or {})
+            outcome = _call(source, function, args, scratch / "result.json", root, timeout)
         finally:
             shutil.rmtree(scratch, ignore_errors=True)
         after = _snapshot(base)
@@ -217,9 +272,9 @@ def run_probe(source, function, probe, timeout=TIMEOUT):
         shutil.rmtree(base, ignore_errors=True)
 
 
-def run_probes(source, security, timeout=TIMEOUT):
+def run_probes(source, security, timeout=TIMEOUT, params=None):
     """Run every probe in a validated security section against one generated module."""
-    return [run_probe(source, security["function"], probe, timeout) for probe in security["probes"]]
+    return [run_probe(source, security["function"], probe, timeout, params) for probe in security["probes"]]
 
 
 def canonical_digest(value):
@@ -241,7 +296,7 @@ def _mutate(plan, replace):
     return validate_score(plan)
 
 
-def _probe_plan(plan, security, timeout):
+def _probe_plan(plan, security, timeout, params):
     """Compile a plan into a scratch folder and probe its first module."""
     folder = Path(tempfile.mkdtemp(prefix="bw_probe_code_"))
     try:
@@ -249,7 +304,7 @@ def _probe_plan(plan, security, timeout):
         for path, source in sources.items():
             (folder / path).parent.mkdir(parents=True, exist_ok=True)
             (folder / path).write_text(source, encoding="utf-8")
-        return run_probes(folder / next(iter(sources)), security, timeout)
+        return run_probes(folder / next(iter(sources)), security, timeout, params)
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 
@@ -264,11 +319,11 @@ def detector_check(blueprint, suite, timeout=TIMEOUT):
     security = validate_security(blueprint)
     if suite.get("block") != blueprint["id"]:
         raise ProbeError(f"Mutant suite is for {suite.get('block')!r}, not {blueprint['id']!r}")
-    plan = render_blueprint(blueprint)
-    real = _probe_plan(plan, security, timeout)
+    plan, params = render_blueprint(blueprint), default_params(blueprint)
+    real = _probe_plan(plan, security, timeout, params)
     mutants = []
     for mutant in suite["mutants"]:
-        results = _probe_plan(_mutate(plan, mutant["replace"]), security, timeout)
+        results = _probe_plan(_mutate(plan, mutant["replace"]), security, timeout, params)
         verdicts = {r["id"]: r["verdict"] for r in results}
         caught = sorted(probe for probe, verdict in verdicts.items() if verdict in ("BYPASSED", "FAILED"))
         expected_missed = sorted(p for p in mutant.get("caught_by", [])
@@ -292,6 +347,7 @@ def review_record(blueprint, suite, timeout=TIMEOUT):
     report = detector_check(blueprint, suite, timeout)
     record = {"block_version": canonical_digest(blueprint), "real_block": report["real_block"]["status"],
               "killed": report["killed"], "total": report["total"], "mutant_suite": report["suite"],
+              "params": default_params(blueprint),
               "platform": sys.platform, "python": platform.python_version(), "date": date.today().isoformat()}
     not_held = [r for r in report["real_results"] if r["verdict"] != "HELD"]
     return {"ok": report["ok"] and record["real_block"] == "held", "block": blueprint["id"], "record": record,

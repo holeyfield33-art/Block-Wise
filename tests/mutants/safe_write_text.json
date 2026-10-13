@@ -30,6 +30,13 @@
        {"kind": "call", "expression": "target.parent.mkdir(parents=True, exist_ok=True)"},
        {"kind": "call", "expression": "target.write_bytes(data)"},
        {"kind": "branch", "condition": "len(data) > max_bytes", "body": [{"kind": "raise", "expression": "ValueError('refused')"}]},
-       {"kind": "return", "expression": "None"}]}}
+       {"kind": "return", "expression": "None"}]}},
+    {"id": "M6", "weakness": "the command line ignores the configured MAX_BYTES limit", "caught_by": ["P8"],
+     "replace": {"main": [
+       {"kind": "branch", "condition": "len(args) != 3", "body": [{"kind": "return", "expression": "2"}]},
+       {"kind": "try", "exception": "ValueError", "alias": "error", "body": [
+         {"kind": "call", "expression": "safe_write_text(args[0], args[1], args[2], len(args[2].encode('utf-8')))"}],
+        "handler": [{"kind": "call", "expression": "print(error)"}, {"kind": "return", "expression": "1"}]},
+       {"kind": "return", "expression": "0"}]}}
   ]
 }

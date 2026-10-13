@@ -26,7 +26,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .compiler import compile_score
 from .presets import PresetError, load_blueprints, render_blueprint
-from .probes import ProbeError, run_probes, summarize, validate_security
+from .probes import ProbeError, param_violations, run_probes, summarize, validate_security
 from .project import apply_blueprint, check_project, plan_path
 from .schema import ScoreError
 
@@ -79,18 +79,24 @@ def load_security_reviews():
     return _manifest().get("security_reviews", {})
 
 
-def _security_receipt(blueprint, version, source, apply_receipt_id, reviews):
-    """Probe the generated module and summarize the evidence; only all-HELD plus a current review passes."""
+def _security_receipt(blueprint, version, source, apply_receipt_id, reviews, params):
+    """Probe the generated module and summarize the evidence.
+
+    Only all-HELD, a current review, and parameters inside the reviewed ranges pass.
+    """
     try:
         security = validate_security(blueprint)
     except ProbeError as exc:
         return {"status": "not-reviewed", "reason": "invalid_security_section", "detail": str(exc)}
-    results = run_probes(source, security)
+    # Out-of-range parameters are outside the review's evidence: say so without probing
+    # (a probe sized to the parameter could be arbitrarily large).
+    out_of_range = param_violations(security, params)
+    results = [] if out_of_range else run_probes(source, security, params=params)
     probe_status = summarize(results)["status"]
     review = reviews.get(blueprint["id"]) or {}
     review_current = (review.get("block_version") == version and review.get("real_block") == "held"
                       and review.get("total", 0) > 0 and review.get("killed") == review.get("total"))
-    if probe_status == "not-held":
+    if probe_status == "not-held" or out_of_range:
         status = "not-reviewed"
     elif probe_status == "held" and review_current:
         status = "security-reviewed"
@@ -98,11 +104,12 @@ def _security_receipt(blueprint, version, source, apply_receipt_id, reviews):
         status = "probed-with-gaps"
     classes = {t["id"]: t["class"] for t in security["threats"]}
     held_threats = {t for t in classes if all(r["verdict"] == "HELD" for r in results if r["threat"] == t)}
-    gaps = [f"{r['id']} not run: {r['detail']}" for r in results if r["verdict"] == "NOT_RUN"]
+    gaps = out_of_range + [f"{r['id']} not run: {r['detail']}" for r in results if r["verdict"] == "NOT_RUN"]
     if not review_current:
         gaps.append("no current detector-check review for this block version")
     receipt = {
         "status": status, "block": blueprint["id"], "block_version": version, "apply_receipt": apply_receipt_id,
+        "params": params,
         "threats": {"declared": len(classes), "held": len(held_threats)},
         "probes": [{"id": r["id"], "threat": r["threat"], "class": classes.get(r["threat"], "FUNCTIONAL"),
                     "verdict": r["verdict"], **({} if r["verdict"] == "HELD" else {"detail": r["detail"]})}
@@ -238,5 +245,6 @@ def secure_apply(blueprint_id, project=".", into=".", params=None, approved=None
         else:
             source = root / (prefix + rendered["modules"][0]["path"])
             reviews = load_security_reviews() if reviews is None else reviews
-            receipt["security"] = _security_receipt(blueprint, actual, source, receipt["receipt_id"], reviews)
+            receipt["security"] = _security_receipt(blueprint, actual, source, receipt["receipt_id"], reviews,
+                                                    receipt["params"])
     return receipt

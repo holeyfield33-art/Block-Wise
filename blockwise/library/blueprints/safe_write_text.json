@@ -52,12 +52,13 @@
   ],
   "security": {
     "function": "safe_write_text",
+    "params": {"file": "free", "max_bytes": {"min": 1, "max": 10000000}},
     "threats": [
       {"id": "T1", "class": "PATH_TRAVERSAL", "summary": "A relative path climbs out of the root with ../"},
       {"id": "T2", "class": "PATH_TRAVERSAL", "summary": "An absolute path ignores the root"},
       {"id": "T3", "class": "PATH_TRAVERSAL", "summary": "A symlink inside the root points outside it"},
       {"id": "T4", "class": "PATH_TRAVERSAL", "summary": "A sibling folder whose name starts like the root passes a string-prefix check"},
-      {"id": "T5", "class": "RESOURCE_EXHAUSTION", "summary": "Oversized text is written before (or without) the size check"},
+      {"id": "T5", "class": "RESOURCE_EXHAUSTION", "summary": "Oversized text is written before (or without) the size check, including through the command line at the configured limit"},
       {"id": "T6", "class": "INPUT_VALIDATION", "summary": "An empty path or the root itself is used as the file"}
     ],
     "probes": [
@@ -68,7 +69,9 @@
       {"id": "P4", "threat": "T4", "setup": {"dirs": ["root-evil"]}, "args": ["{root}", "../root-evil/x.txt", "x", 100], "raises": "ValueError"},
       {"id": "P5", "threat": "T5", "args": ["{root}", "big.txt", "xxxxxxxxxxx", 10], "raises": "ValueError", "absent": ["big.txt"]},
       {"id": "P6", "threat": "T6", "args": ["{root}", "", "x", 100], "raises": "ValueError"},
-      {"id": "P7", "threat": "T6", "args": ["{root}", ".", "x", 100], "raises": "ValueError"}
+      {"id": "P7", "threat": "T6", "args": ["{root}", ".", "x", 100], "raises": "ValueError"},
+      {"id": "P8", "threat": "T5", "function": "main", "args": [["{root}", "big.txt", "{over:max_bytes}"]], "returns": 1, "absent": ["big.txt"]},
+      {"id": "P9", "threat": null, "function": "main", "args": [["{root}", "ok.txt", "hi"]], "returns": 0, "then_files": {"ok.txt": "hi"}}
     ],
     "not_verified": [
       "A race between the path check and the write (a folder swapped for a symlink in between, TOCTOU)",
