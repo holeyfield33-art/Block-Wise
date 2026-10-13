@@ -25,10 +25,12 @@ import copy
 import hashlib
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 
 from .compiler import compile_score
@@ -151,7 +153,7 @@ def _call(source, function, args, result_file, cwd, timeout):
     job = json.dumps({"source": str(source), "function": function, "args": args, "result": str(result_file)})
     env = {key: os.environ[key] for key in ("SYSTEMROOT", "PATH") if key in os.environ}
     try:
-        subprocess.run([sys.executable, "-I", "-c", _CALL], input=job, cwd=cwd, env=env, text=True,
+        subprocess.run([sys.executable, "-I", "-B", "-c", _CALL], input=job, cwd=cwd, env=env, text=True,
                        capture_output=True, timeout=timeout, check=False)
     except subprocess.TimeoutExpired:
         return {"outcome": "timeout"}
@@ -278,6 +280,22 @@ def detector_check(blueprint, suite, timeout=TIMEOUT):
     return {"ok": real_summary["status"] != "not-held" and killed == len(mutants) and bool(mutants),
             "real_block": real_summary, "real_results": real, "mutants": mutants,
             "killed": killed, "total": len(mutants), "suite": canonical_digest(suite)}
+
+
+def review_record(blueprint, suite, timeout=TIMEOUT):
+    """Run the detector check and return the record a person may commit to approved.json.
+
+    Nothing here writes the manifest: approval stays a human-reviewed commit
+    (release gate G7). The record is only "ok" when every probe actually ran and
+    held, so a review from a platform that skips probes is not enough.
+    """
+    report = detector_check(blueprint, suite, timeout)
+    record = {"block_version": canonical_digest(blueprint), "real_block": report["real_block"]["status"],
+              "killed": report["killed"], "total": report["total"], "mutant_suite": report["suite"],
+              "platform": sys.platform, "python": platform.python_version(), "date": date.today().isoformat()}
+    not_held = [r for r in report["real_results"] if r["verdict"] != "HELD"]
+    return {"ok": report["ok"] and record["real_block"] == "held", "block": blueprint["id"], "record": record,
+            "mutants": report["mutants"], "not_held": not_held}
 
 
 def summarize(results):

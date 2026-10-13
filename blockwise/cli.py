@@ -9,6 +9,7 @@ from .compiler import compile_score, write_project
 from .coverage import check_source, load_coverage
 from .coverage import summary as coverage_summary
 from .presets import PresetError, find, get_preset, is_blueprint, load_all, load_blueprints, render, render_blueprint, summary
+from .probes import ProbeError, review_record
 from .project import apply_preset, check_project, function_source
 from .schema import ScoreError, load_score
 from .secure_apply import secure_apply
@@ -57,6 +58,12 @@ def main(argv=None):
     secure.add_argument("--project", default=".")
     secure.add_argument("--into", default=".", help="target folder, relative to the project")
     secure.add_argument("--set", action="append", metavar="NAME=VALUE")
+    secure.add_argument("--probe", action="store_true",
+                        help="also run a security block's probes against the written code")
+    review = commands.add_parser("security-review",
+                                 help="run a security block's probes and mutants; print a review record (writes nothing)")
+    review.add_argument("block")
+    review.add_argument("--mutants", type=Path, required=True, help="mutant suite JSON, e.g. tests/mutants/BLOCK.json")
     build = commands.add_parser("build", help="generate a project from a plan.json exported by the Studio")
     build.add_argument("plan", type=Path)
     build.add_argument("--out", type=Path, required=True)
@@ -98,9 +105,18 @@ def main(argv=None):
             emit(result, args.pretty)
             return 0 if result["ok"] else 1
         elif args.command == "secure-apply":
-            receipt = secure_apply(args.blueprint, args.project, args.into, parse_sets(args.set))
+            receipt = secure_apply(args.blueprint, args.project, args.into, parse_sets(args.set), probe=args.probe)
             emit(receipt, args.pretty)
+            if args.probe:
+                return 0 if receipt.get("security", {}).get("status") == "security-reviewed" else 1
             return 0 if receipt["status"] == "approved" else 1
+        elif args.command == "security-review":
+            blueprints = load_blueprints()
+            if args.block not in blueprints:
+                raise PresetError(f"Unknown blueprint '{args.block}'")
+            result = review_record(blueprints[args.block], json.loads(args.mutants.read_text(encoding="utf-8")))
+            emit(result, args.pretty)
+            return 0 if result["ok"] else 1
         elif args.command == "build":
             emit(write_project(load_score(args.plan), args.out, audio=args.audio), args.pretty)
         elif args.command == "export-presets":
@@ -119,7 +135,7 @@ def main(argv=None):
 
             run()
         return 0
-    except (PresetError, ScoreError, OSError, SyntaxError) as exc:
+    except (PresetError, ProbeError, ScoreError, OSError, SyntaxError, json.JSONDecodeError) as exc:
         emit({"ok": False, "error": str(exc)}, args.pretty)
         return 2
 

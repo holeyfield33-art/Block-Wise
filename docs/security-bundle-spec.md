@@ -1,7 +1,7 @@
 # Security Bundle — Phase 2 spec: Build · Probe · Receipt
 
-Status: **spec, not implemented.** Branch `spec/security-bundle`, stacked on
-`feat/secure-apply` (PR #11, unmerged). Date: 2026-10-13.
+Status: **S0–S3 built** on `feat/security-probes` (stacked on `spec/security-bundle`
+→ `feat/secure-apply`, PR #11, unmerged). Spec written and owner decisions taken 2026-10-13.
 
 Goal: reusable code with reproducible security evidence attached. A security
 block ships with its own threat model and probes; Block-Wise generates the block
@@ -253,10 +253,31 @@ Live web scanning, network scanning, `threat_to_test` live mode, SARIF export,
 JavaScript blocks, any merge. The two Agent B scanners stay in
 `agent-b-security-extract/` as a separate, authorization-gated tool.
 
-## 10. Open questions for the owner
+## 10. Owner decisions (2026-10-13)
 
-1. Approve replacing the `threat_to_test` pipeline with per-block declared probes
-   (§1.2), keeping only its taxonomy?
-2. Should mutants ship in the package (so anyone can re-run the detector check)
-   or stay in `tests/`? Spec assumes `tests/`, with the digest in the receipt.
-3. Is WSL Ubuntu an acceptable G8 environment until CI billing clears (~Oct 17)?
+1. **Approved:** replace the `threat_to_test` pipeline with per-block declared
+   probes; keep only its taxonomy names.
+2. **Mutants stay in `tests/mutants/`** for now; the review record carries the
+   suite digest.
+3. **WSL Ubuntu is the G8 environment** until CI billing clears (this week).
+
+## 11. As built (differences from the draft above)
+
+- `blockwise/probes.py`: runner, verdict table, `validate_security` (G2/G5),
+  `detector_check` (G4), `review_record`. Probe processes run with
+  `python -I -B` so probing a workspace leaves no `__pycache__` in it.
+- `secure_apply(..., probe=True)` / `blockwise secure-apply --probe` adds a
+  `security` section to the receipt. Its status is `security-reviewed` only if
+  every probe HELD on the code just written **and** `approved.json` has a current
+  `security_reviews.<block>` record (same `block_version`, `real_block: "held"`,
+  all mutants killed). Otherwise `probed-with-gaps` (with a `gaps` list) or
+  `not-reviewed`. The receipt counts threats as `declared` / `held`.
+- `blockwise security-review BLOCK --mutants tests/mutants/BLOCK.json` runs the
+  detector check and **prints** the record. Nothing writes `approved.json`
+  (G7, enforced by a test). A record is only `ok` where every probe ran, so a
+  Windows host without symlink rights cannot produce one. That's G8 in practice.
+- **Finding fixed on PR #11:** Secure Apply verified one loaded copy of a
+  blueprint and then `apply_blueprint` reloaded the library to generate. It now
+  generates from the exact verified copy.
+- `safe_write_text` is **not** in `approved.json`. Approving it (adding its
+  digest and review record) is the owner's commit.
