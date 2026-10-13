@@ -1,0 +1,61 @@
+{
+ "requests": 4,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 6122,
+   "cache_read": 50656,
+   "output_lower_bound": 16,
+   "input_total": 56780
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 445,
+   "cache_read": 56778,
+   "output_lower_bound": 5,
+   "input_total": 57225
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 2000,
+   "cache_read": 57223,
+   "output_lower_bound": 25,
+   "input_total": 59225
+  }
+ ],
+ "input_tokens_total": 223888,
+ "input_tokens_uncached": 8,
+ "cache_write_tokens": 23399,
+ "cache_read_tokens": 200481,
+ "first_request_input": 50658,
+ "context_growth_tokens": 8567,
+ "output_tokens_lower_bound": 62,
+ "generated_chars": 4349,
+ "tool_result_chars": 7051,
+ "tool_calls": 4,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 2,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 1,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r48/app/inventory.py`, and my own checks passed. I ran them once, as a single batch of 17 commands, and every output and exit code matched the spec.\n\n- **Block-Wise:** I ran `find` once. It returned only `todo_cli`, `data_validator` and `kv_store`, and none fit this task, so I wrote the code by hand and did not run `apply` or `check`.\n- **What the checks covered:** `show`, `add`, `remove` and `low`; invalid item names; bad quantities (`0` and `3.0`); a non-numeric threshold; unknown items; removing more than the stock; and wrong or unknown commands (exit code 2).\n- **Not tested:** an invalid or non-dict `inventory.json`. The code treats both as an empty inventory, as the spec says.\n\nI used 3 tool calls in total. The only other file is a scratch `inventory.json` that the checks created in `scratch/`.",
+ "agent_tool_record": {
+  "subagent_tokens": 59636,
+  "tool_uses": 4,
+  "duration_ms": 22653
+ }
+}

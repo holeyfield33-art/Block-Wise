@@ -1,0 +1,82 @@
+{
+ "requests": 7,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5840,
+   "cache_read": 50656,
+   "output_lower_bound": 16,
+   "input_total": 56498
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 625,
+   "cache_read": 56496,
+   "output_lower_bound": 31,
+   "input_total": 57123
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1136,
+   "cache_read": 57121,
+   "output_lower_bound": 3,
+   "input_total": 58259
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 524,
+   "cache_read": 58257,
+   "output_lower_bound": 16,
+   "input_total": 58783
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 596,
+   "cache_read": 58781,
+   "output_lower_bound": 3,
+   "input_total": 59379
+  },
+  {
+   "input_uncached": 4,
+   "cache_write": 618,
+   "cache_read": 59377,
+   "output_lower_bound": 24,
+   "input_total": 59999
+  }
+ ],
+ "input_tokens_total": 400699,
+ "input_tokens_uncached": 16,
+ "cache_write_tokens": 24171,
+ "cache_read_tokens": 376512,
+ "first_request_input": 50658,
+ "context_growth_tokens": 9341,
+ "output_tokens_lower_bound": 207,
+ "generated_chars": 4278,
+ "tool_result_chars": 8251,
+ "tool_calls": 6,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 4,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 2,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 2,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "Report: wrote /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r21/app/store.py (applied via `blockwise apply kv_store --into app`). Scratch data only in scratch/t/.\n\nMy behavioral checks passed after one hand fix. They covered set, get, delete, list, no arguments, missing keys (exit 1), wrong argument counts and unknown commands (usage, exit 2), a corrupt store.json, and `list extra`. They found one bug in the generated code: valid JSON that isn't an object (e.g. `[1,2]`) made `list` error and `set` crash. I edited `load()` so a non-dict is treated as an empty store, then re-checked that case and it works.\n\n`blockwise check` was clean before my edit. It now reports `body_changed` on `load`, which is expected because I edited a function Block-Wise wrote. I left it.\n\nI ran the behavioral checks in two rounds (the second only covered the fix), and `blockwise check` twice.",
+ "agent_tool_record": {
+  "subagent_tokens": 60404,
+  "tool_uses": 6,
+  "duration_ms": 33949
+ }
+}

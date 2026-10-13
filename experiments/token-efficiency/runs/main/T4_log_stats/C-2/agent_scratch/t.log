@@ -1,0 +1,14 @@
+2026-10-12 09:00:00 INFO started
+2026-10-12 09:00:01 ERROR  db timeout  
+
+bad line
+2026 x ERROR
+2026-10-12 a CRITICAL disk full
+2026-10-12 a ERROR a
+2026-10-12 a ERROR b
+2026-10-12 a ERROR b
+2026-10-12 a ERROR db timeout
+2026-10-12 a WARN x
+2026-10-12 a info x
+2026-10-12 a ERROR
+

@@ -1,0 +1,55 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 49447,
+   "cache_read": 0,
+   "output_lower_bound": 16,
+   "input_total": 49449
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5318,
+   "cache_read": 49447,
+   "output_lower_bound": 16,
+   "input_total": 54767
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 250,
+   "cache_read": 54765,
+   "output_lower_bound": 24,
+   "input_total": 55017
+  }
+ ],
+ "input_tokens_total": 159233,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 55015,
+ "cache_read_tokens": 104212,
+ "first_request_input": 49449,
+ "context_growth_tokens": 5568,
+ "output_tokens_lower_bound": 56,
+ "generated_chars": 852,
+ "tool_result_chars": 3826,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 1,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 0,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I ran the delegated command once: `blockwise apply todo_cli --into app`. It returned ok:true, so I treated the task as complete under the trust rules. I did not open, run, check or modify the generated file.\n\nFile written: /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws002/t02/app/todo.py (relative path in the response: app/todo.py)\n\nGeneration response:\n{\"ok\":true,\"added\":[\"app/todo.py\"],\"blueprint\":\"todo_cli\",\"try\":\"python app/todo.py add buy milk\"}",
+ "agent_tool_record": {
+  "subagent_tokens": 55270,
+  "tool_uses": 3,
+  "duration_ms": 9846
+ },
+ "derived_input_usd": 0.15839
+}

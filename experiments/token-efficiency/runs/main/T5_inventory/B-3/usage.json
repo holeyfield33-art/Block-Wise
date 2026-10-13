@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 9703,
+   "cache_read": 50656,
+   "output_lower_bound": 6,
+   "input_total": 60361
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 2061,
+   "cache_read": 60359,
+   "output_lower_bound": 24,
+   "input_total": 62422
+  }
+ ],
+ "input_tokens_total": 173441,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 26596,
+ "cache_read_tokens": 146839,
+ "first_request_input": 50658,
+ "context_growth_tokens": 11764,
+ "output_tokens_lower_bound": 46,
+ "generated_chars": 4763,
+ "tool_result_chars": 15446,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r39/app/inventory.py, following the plan's imports, constant, function signatures and body structure. It is the only file in app/.\n\nMy own check passed. I ran one script, once, from scratch/, covering these cases:\n- **add:** adding a new item prints the \"Added\" line.\n- **low:** `low` lists items under the default threshold of 5.\n- **remove:** removing down to 0 deletes the item, so it then shows as unknown.\n- **errors, exit code 1:** an unknown item, a quantity above stock, an invalid item name, a zero quantity, and a non-numeric threshold.\n- **usage, exit code 2:** an unrecognised command prints the usage line.\n- **show:** `show` lists the remaining items.\n\nAll outputs and exit codes matched the spec. I did not test a missing or invalid `inventory.json` separately.\n\nI used 3 tool calls in total (Read, one Bash to write the file and run the check, and this handback).",
+ "agent_tool_record": {
+  "subagent_tokens": 62835,
+  "tool_uses": 3,
+  "duration_ms": 19259
+ }
+}

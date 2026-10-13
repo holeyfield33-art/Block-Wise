@@ -1,0 +1,75 @@
+{
+ "requests": 6,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5833,
+   "cache_read": 50667,
+   "output_lower_bound": 16,
+   "input_total": 56502
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 264,
+   "cache_read": 56500,
+   "output_lower_bound": 31,
+   "input_total": 56766
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 737,
+   "cache_read": 56764,
+   "output_lower_bound": 6,
+   "input_total": 57503
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 954,
+   "cache_read": 57501,
+   "output_lower_bound": 42,
+   "input_total": 58457
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 683,
+   "cache_read": 58455,
+   "output_lower_bound": 8,
+   "input_total": 59140
+  }
+ ],
+ "input_tokens_total": 339037,
+ "input_tokens_uncached": 12,
+ "cache_write_tokens": 23314,
+ "cache_read_tokens": 315711,
+ "first_request_input": 50669,
+ "context_growth_tokens": 8471,
+ "output_tokens_lower_bound": 119,
+ "generated_chars": 3384,
+ "tool_result_chars": 7426,
+ "tool_calls": 6,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 4,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 3,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 2,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `app/todo.py` (in the r02 workspace). It passes my behavioral checks, but the final `blockwise check` run flags `main` as `body_changed`.\n\n- **Template:** I applied it with `blockwise apply todo_cli --into app`, which wrote `app/todo.py`.\n- **Checks:** I ran one batch of behavioral checks, then a second short batch after my edit, so two runs in total. In `scratch/t` I covered:\n  - list with no items and with no arguments\n  - add with extra spaces, with whitespace only, and with no text\n  - done on valid, out-of-range and zero numbers\n  - an unknown command (exit 2)\n  - a corrupt `todo.json`, which is treated as empty\n- **One edit:** the template crashed on `done x` and on `done` with no number. It printed Python exception text instead of the spec's message. I changed the `done` branch of `main` so a bad or missing number prints `error: no item X` and exits 1. That output is not stated in the spec; it is my reading of the \"no such item\" rule.\n- **Block-Wise check:** after that edit, `blockwise check` reports `{\"ok\":false, ... \"problem\":\"body_changed\"}` for `main`, because I changed its structure. The check only compares structure, not behavior. I chose the fix for the bad-number cases over a clean check.",
+ "agent_tool_record": {
+  "subagent_tokens": 59856,
+  "tool_uses": 6,
+  "duration_ms": 24890
+ }
+}

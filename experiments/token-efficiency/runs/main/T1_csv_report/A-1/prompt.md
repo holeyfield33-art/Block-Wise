@@ -1,0 +1,56 @@
+You are the coding agent for one run of a controlled benchmark.
+
+Workspace: /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r56
+- Work ONLY inside the workspace. Do not read, list or search anything outside it; other runs and
+  evaluation files exist on this machine and looking at them invalidates the run.
+- Deliverable: the program file /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r56/app/report.py. Put nothing else you write in app/ except files a
+  tool you were told to use creates there.
+- You may write and run your own checks in /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r56/scratch/.
+- Python: /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/plainvenv/bin/python . Do not install packages. No network access.
+- Budget: at most 30 tool calls. There is one attempt. Hidden acceptance tests will run
+  `python app/report.py ...` from a fresh temporary directory after you finish.
+- End with a short report: files written, whether your own checks passed, how many times you ran them.
+
+## Specification
+
+# Task: CSV group-and-total report
+
+Write a command-line program `report.py` (Python 3.11+, standard library only).
+
+## Usage
+
+    python report.py FILE GROUP_COLUMN AMOUNT_COLUMN
+
+## Behavior
+
+1. With any number of arguments other than exactly 3, print
+   `usage: report.py FILE GROUP_COLUMN AMOUNT_COLUMN` and exit with code 2.
+2. Read FILE as a UTF-8 CSV whose first row is the header. If the file cannot be opened, print
+   `error: cannot read FILE` (with the given file name) and exit with code 1.
+3. If the CSV has at least one data row and GROUP_COLUMN is not one of its header names, print
+   `error: no column GROUP_COLUMN` and exit with code 1.
+4. Group the data rows by the value in GROUP_COLUMN. A blank (empty) group value is grouped under the
+   label `(blank)`.
+5. For each row, parse the AMOUNT_COLUMN value as a number. Commas are thousands separators and are
+   removed before parsing (`"1,200"` is 1200). A blank, missing or non-numeric amount counts as 0, and
+   the row still belongs to its group.
+6. Print one line per group, `GROUP: TOTAL`, with TOTAL formatted to exactly 2 decimal places,
+   ordered by total from largest to smallest (groups with equal totals keep the order in which they
+   first appear in the file).
+7. Finally print `total: GRAND_TOTAL` (2 decimal places), the sum of all group totals. A CSV with a
+   header but no data rows prints only `total: 0.00`.
+8. Exit with code 0 after a successful report.
+
+## Example
+
+`sales.csv`:
+
+    region,amount
+    north,10
+    south,5.5
+
+`python report.py sales.csv region amount` prints:
+
+    north: 10.00
+    south: 5.50
+    total: 15.50

@@ -1,0 +1,10 @@
+{
+ "tests_passed": 37,
+ "tests_total": 37,
+ "all_passed": true,
+ "syntax_ok": true,
+ "program_bytes": 2419,
+ "program_lines": 90,
+ "failed": [],
+ "unexpected_files_in_app": []
+}

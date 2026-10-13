@@ -1,0 +1,60 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 49427,
+   "cache_read": 0,
+   "output_lower_bound": 16,
+   "input_total": 49429
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 8334,
+   "cache_read": 49427,
+   "output_lower_bound": 3,
+   "input_total": 57763
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 567,
+   "cache_read": 57761,
+   "output_lower_bound": 24,
+   "input_total": 58330
+  }
+ ],
+ "input_tokens_total": 165522,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 58328,
+ "cache_read_tokens": 107188,
+ "first_request_input": 49429,
+ "context_growth_tokens": 8901,
+ "output_tokens_lower_bound": 43,
+ "generated_chars": 1537,
+ "tool_result_chars": 11619,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 0,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "All four approved blueprints applied once each, from the workspace, with no failures. Per the trust rules I did not open, run or test the generated files, so none of them has been run or tested.\n\n- Task 1, `app/report.py`: `bwcache apply csv_report --into app` returned `{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"csv_report\",\"file\":\"app/report.py\",\"hash_verified\":true}`.\n- Task 2, `app/todo.py`: `bwcache apply todo_cli --into app` returned `{\"ok\":true,...,\"id\":\"todo_cli\",\"file\":\"app/todo.py\",\"hash_verified\":true}`.\n- Task 3, `app/store.py`: `bwcache apply kv_store --into app` returned `{\"ok\":true,...,\"id\":\"kv_store\",\"file\":\"app/store.py\",\"hash_verified\":true}`.\n- Task 4, `app/logstats.py`: `bwcache apply log_stats --into app` returned `{\"ok\":true,...,\"id\":\"log_stats\",\"file\":\"app/logstats.py\",\"hash_verified\":true}`.\n\nEach apply command exited 0. The files are in `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s06/app/`, and I put nothing else there.\n\nI used 1 tool call besides reading the task file.",
+ "agent_tool_record": {
+  "subagent_tokens": 58837,
+  "tool_uses": 3,
+  "duration_ms": 12680
+ },
+ "derived": {
+  "input_usd": 0.16727,
+  "input_usd_without_cache_discount": 0.33104,
+  "output_usd_lower_bound": 0.00043
+ },
+ "cache_state": "cold"
+}

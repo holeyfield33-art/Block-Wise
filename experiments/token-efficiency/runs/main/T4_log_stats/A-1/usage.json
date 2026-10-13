@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5060,
+   "cache_read": 50656,
+   "output_lower_bound": 8,
+   "input_total": 55718
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1667,
+   "cache_read": 55716,
+   "output_lower_bound": 26,
+   "input_total": 57385
+  }
+ ],
+ "input_tokens_total": 163761,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 21559,
+ "cache_read_tokens": 142196,
+ "first_request_input": 50658,
+ "context_growth_tokens": 6727,
+ "output_tokens_lower_bound": 148,
+ "generated_chars": 3054,
+ "tool_result_chars": 3195,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r35/app/logstats.py`, and my own checks passed. I ran them once, in a single batch of 4 invocations.\n\nThe checks covered:\n- a mixed log with blank and bad lines\n- an empty file\n- a missing file\n- no arguments\n\nCounts, top-message ordering, skipped lines and the exit codes 0, 1 and 2 all came out as the spec says. The test log is `scratch/a.log`; the empty file is `scratch/e.log`.\n\nI read two ambiguous points in the spec this way:\n- **Trailing newline:** the empty piece after the final newline is not counted as a skipped line.\n- **Other blank lines:** every other blank line is skipped, including blank lines at the very end of the file.",
+ "agent_tool_record": {
+  "subagent_tokens": 57726,
+  "tool_uses": 3,
+  "duration_ms": 17903
+ }
+}

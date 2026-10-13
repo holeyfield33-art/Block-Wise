@@ -1,0 +1,50 @@
+{
+ "seed": 20261013,
+ "launcher": "Your complete instructions are in the file {ws}/TASK_PROMPT.md. Read that file first and follow it exactly.",
+ "attempts": [
+  {
+   "run_id": "t01",
+   "task": "T3_kv_store",
+   "condition": "C3",
+   "trial": 1,
+   "blueprint": "kv_store",
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws002/t01",
+   "run_dir": "runs/pilot/T3_kv_store/C3-1",
+   "prompt_chars": 3535,
+   "prompt_sha256": "cd91f574d4fa23a5e7c5a3027c9d2193db74d75546f63cdd14ea1fb6f6691e18"
+  },
+  {
+   "run_id": "t02",
+   "task": "T2_todo_cli",
+   "condition": "C3",
+   "trial": 1,
+   "blueprint": "todo_cli",
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws002/t02",
+   "run_dir": "runs/pilot/T2_todo_cli/C3-1",
+   "prompt_chars": 3493,
+   "prompt_sha256": "73d378bae0f03fdfcf3dfc9ea3337306b53a3c6aa6457c809a13e1bb496fe0f3"
+  },
+  {
+   "run_id": "t03",
+   "task": "T1_csv_report",
+   "condition": "C3",
+   "trial": 1,
+   "blueprint": "csv_report",
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws002/t03",
+   "run_dir": "runs/pilot/T1_csv_report/C3-1",
+   "prompt_chars": 3808,
+   "prompt_sha256": "e6368dac724b0815d33a8c1e147bc5477fe03e4e4d4ec13f9d63cb475c2839c4"
+  },
+  {
+   "run_id": "t04",
+   "task": "T4_log_stats",
+   "condition": "C3",
+   "trial": 1,
+   "blueprint": "log_stats",
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws002/t04",
+   "run_dir": "runs/pilot/T4_log_stats/C3-1",
+   "prompt_chars": 3855,
+   "prompt_sha256": "f17c973a689322bdc7fa33e814b26e0edf93523638ff470b3b3ab0ad35a91e0e"
+  }
+ ]
+}

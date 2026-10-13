@@ -1,0 +1,67 @@
+{
+ "requests": 4,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 50650,
+   "cache_read": 0,
+   "output_lower_bound": 16,
+   "input_total": 50652
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 7348,
+   "cache_read": 50650,
+   "output_lower_bound": 3,
+   "input_total": 58000
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1216,
+   "cache_read": 57998,
+   "output_lower_bound": 16,
+   "input_total": 59216
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 482,
+   "cache_read": 59214,
+   "output_lower_bound": 25,
+   "input_total": 59698
+  }
+ ],
+ "input_tokens_total": 227566,
+ "input_tokens_uncached": 8,
+ "cache_write_tokens": 59696,
+ "cache_read_tokens": 167862,
+ "first_request_input": 50652,
+ "context_growth_tokens": 9046,
+ "output_tokens_lower_bound": 60,
+ "generated_chars": 1997,
+ "tool_result_chars": 11057,
+ "tool_calls": 4,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 2,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 0,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "All four programs were generated with `bwcache` blueprints. Each apply returned `\"ok\":true,\"hash_verified\":true`. As instructed, I did not open, run, test or edit any generated file, so I have no behavioral check results.\n\nMethod: I ran `bwcache get <id>` for each task, then `bwcache apply <id> --into app` once each, from the workspace.\n\n| Task | Blueprint | File written | Apply response |\n|---|---|---|---|\n| 1 | `csv_report` | `app/report.py` | `{\"ok\":true,\"id\":\"csv_report\",\"file\":\"app/report.py\",\"hash_verified\":true}` |\n| 2 | `todo_cli` | `app/todo.py` | `{\"ok\":true,\"id\":\"todo_cli\",\"file\":\"app/todo.py\",\"hash_verified\":true}` |\n| 3 | `kv_store` | `app/store.py` | `{\"ok\":true,\"id\":\"kv_store\",\"file\":\"app/store.py\",\"hash_verified\":true}` |\n| 4 | `log_stats` | `app/logstats.py` | `{\"ok\":true,\"id\":\"log_stats\",\"file\":\"app/logstats.py\",\"hash_verified\":true}` |\n\nA directory listing of `app/` showed only those four files. The directory is `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s04/app/`. I used 2 tool calls besides reading the task file.\n\nThe blueprint descriptions match the four tasks, but I did not confirm the exact output formats and exit codes against the task specs.",
+ "agent_tool_record": {
+  "subagent_tokens": 60272,
+  "tool_uses": 4,
+  "duration_ms": 16636
+ },
+ "derived": {
+  "input_usd": 0.18283,
+  "input_usd_without_cache_discount": 0.45513,
+  "output_usd_lower_bound": 0.0006
+ },
+ "cache_state": "cold"
+}

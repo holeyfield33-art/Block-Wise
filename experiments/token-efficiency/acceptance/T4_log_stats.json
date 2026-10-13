@@ -1,0 +1,127 @@
+{
+ "program": "logstats.py",
+ "scenarios": [
+  {
+   "name": "levels_top_errors_skipped",
+   "files": {
+    "app.log": "2026-10-12 09:00:00 INFO started\n2026-10-12 09:00:01 ERROR db timeout\n2026-10-12 09:00:02 WARNING slow\ngarbage line\n2026-10-12 09:00:03 ERROR db timeout\n2026-10-12 09:00:04 CRITICAL disk full\n2026-10-12 09:00:05 ERROR bad token\n2026-10-12 09:00:06 ERROR cache miss\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "app.log"
+     ],
+     "stdout": "INFO: 1\nWARNING: 1\nERROR: 4\nCRITICAL: 1\n  2 x db timeout\n  1 x disk full\n  1 x bad token\nskipped 1 unreadable line(s)\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "empty_file",
+   "files": {
+    "empty.log": ""
+   },
+   "steps": [
+    {
+     "argv": [
+      "empty.log"
+     ],
+     "stdout": "No log lines found.\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "unreadable",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "nope.log"
+     ],
+     "stdout": "error: cannot read nope.log\n",
+     "exit": 1
+    }
+   ]
+  },
+  {
+   "name": "usage",
+   "files": {},
+   "steps": [
+    {
+     "argv": [],
+     "stdout": "usage: logstats.py LOGFILE\n",
+     "exit": 2
+    },
+    {
+     "argv": [
+      "a",
+      "b"
+     ],
+     "stdout": "usage: logstats.py LOGFILE\n",
+     "exit": 2
+    }
+   ]
+  },
+  {
+   "name": "blank_lines_lowercase_and_short_lines_skipped",
+   "files": {
+    "b.log": "d t DEBUG boot\n\nd t info lower\nd t ERROR\nd t ERROR   spaced out   \n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "b.log"
+     ],
+     "stdout": "DEBUG: 1\nERROR: 1\n  1 x spaced out\nskipped 3 unreadable line(s)\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "only_garbage",
+   "files": {
+    "g.log": "x\ny\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "g.log"
+     ],
+     "stdout": "skipped 2 unreadable line(s)\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "no_errors_no_top_list",
+   "files": {
+    "i.log": "d t INFO a\nd t INFO b\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "i.log"
+     ],
+     "stdout": "INFO: 2\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "undecodable_bytes_replaced",
+   "files_b64": {
+    "bin.log": "ZCB0IElORk8gb2sKZCB0IEVSUk9SIGJhZCD/IGJ5dGUK"
+   },
+   "steps": [
+    {
+     "argv": [
+      "bin.log"
+     ],
+     "stdout": "INFO: 1\nERROR: 1\n  1 x bad \ufffd byte\n",
+     "exit": 0
+    }
+   ]
+  }
+ ]
+}

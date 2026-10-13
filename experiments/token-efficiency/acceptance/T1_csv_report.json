@@ -1,0 +1,145 @@
+{
+ "program": "report.py",
+ "scenarios": [
+  {
+   "name": "groups_sorted_with_blank_bad_and_thousands",
+   "files": {
+    "sales.csv": "region,amount\nnorth,10\nsouth,5.5\nnorth,\"1,200\"\n,3\nsouth,oops\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "sales.csv",
+      "region",
+      "amount"
+     ],
+     "stdout": "north: 1210.00\nsouth: 5.50\n(blank): 3.00\ntotal: 1218.50\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "missing_group_column",
+   "files": {
+    "sales.csv": "region,amount\nnorth,10\nsouth,5.5\nnorth,\"1,200\"\n,3\nsouth,oops\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "sales.csv",
+      "city",
+      "amount"
+     ],
+     "stdout": "error: no column city\n",
+     "exit": 1
+    }
+   ]
+  },
+  {
+   "name": "unreadable_file",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "missing.csv",
+      "region",
+      "amount"
+     ],
+     "stdout": "error: cannot read missing.csv\n",
+     "exit": 1
+    }
+   ]
+  },
+  {
+   "name": "usage_wrong_arg_count",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "sales.csv"
+     ],
+     "stdout": "usage: report.py FILE GROUP_COLUMN AMOUNT_COLUMN\n",
+     "exit": 2
+    },
+    {
+     "argv": [
+      "a",
+      "b",
+      "c",
+      "d"
+     ],
+     "stdout": "usage: report.py FILE GROUP_COLUMN AMOUNT_COLUMN\n",
+     "exit": 2
+    }
+   ]
+  },
+  {
+   "name": "header_only",
+   "files": {
+    "h.csv": "team,points\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "h.csv",
+      "team",
+      "points"
+     ],
+     "stdout": "total: 0.00\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "other_columns_and_order",
+   "files": {
+    "t.csv": "id,team,points,note\n1,red,2.25,x\n2,blue,7,y\n3,red,1,z\n4,green,,w\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "t.csv",
+      "team",
+      "points"
+     ],
+     "stdout": "blue: 7.00\nred: 3.25\ngreen: 0.00\ntotal: 10.25\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "ties_keep_first_appearance",
+   "files": {
+    "tie.csv": "k,v\nb,1\na,1\nc,2\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "tie.csv",
+      "k",
+      "v"
+     ],
+     "stdout": "c: 2.00\nb: 1.00\na: 1.00\ntotal: 4.00\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "missing_amount_column_counts_zero",
+   "files": {
+    "m.csv": "k,v\nx,1\n"
+   },
+   "steps": [
+    {
+     "argv": [
+      "m.csv",
+      "k",
+      "nope"
+     ],
+     "stdout": "x: 0.00\ntotal: 0.00\n",
+     "exit": 0
+    }
+   ]
+  }
+ ]
+}

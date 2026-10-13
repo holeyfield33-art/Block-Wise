@@ -1,0 +1,75 @@
+{
+ "requests": 6,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5948,
+   "cache_read": 50667,
+   "output_lower_bound": 16,
+   "input_total": 56617
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 470,
+   "cache_read": 56615,
+   "output_lower_bound": 25,
+   "input_total": 57087
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 274,
+   "cache_read": 57085,
+   "output_lower_bound": 33,
+   "input_total": 57361
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 955,
+   "cache_read": 57359,
+   "output_lower_bound": 4,
+   "input_total": 58316
+  },
+  {
+   "input_uncached": 4,
+   "cache_write": 623,
+   "cache_read": 58314,
+   "output_lower_bound": 24,
+   "input_total": 58941
+  }
+ ],
+ "input_tokens_total": 338991,
+ "input_tokens_uncached": 14,
+ "cache_write_tokens": 23113,
+ "cache_read_tokens": 315864,
+ "first_request_input": 50669,
+ "context_growth_tokens": 8272,
+ "output_tokens_lower_bound": 118,
+ "generated_chars": 3633,
+ "tool_result_chars": 6176,
+ "tool_calls": 6,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 4,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 3,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "Files written: /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r49/app/logstats.py. It was created by `blockwise apply log_stats --into app` and I did not edit it. `blockwise check` reported no issues.\n\nMy own checks passed, and I ran them once, as a single batch. Test files are in the workspace scratch/ directory (a.log, b.log, e.log, s.log).\n\nWhat the batch covered:\n- The spec example.\n- A mixed file with tied message counts, which kept first-appearance order.\n- Unreadable lines: blank, whitespace-only, lowercase level, three fields only, and an invalid byte in the level.\n- Empty file, which printed \"No log lines found.\"\n- A file with only unreadable lines, which printed only the skipped count.\n- Missing file, which printed the error and exited 1.\n- Zero arguments and two arguments, which printed the usage line and exited 2.\n\nAll of these matched the spec. I did not test a file that fails with something other than not found, such as a directory path.",
+ "agent_tool_record": {
+  "subagent_tokens": 59411,
+  "tool_uses": 6,
+  "duration_ms": 23591
+ }
+}

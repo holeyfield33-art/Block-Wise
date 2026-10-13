@@ -1,0 +1,346 @@
+{
+ "program": "inventory.py",
+ "scenarios": [
+  {
+   "name": "full_flow",
+   "files": {},
+   "steps": [
+    {
+     "argv": [],
+     "stdout": "No items.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "apple",
+      "3"
+     ],
+     "stdout": "Added 3 x apple (now 3).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "apple",
+      "4"
+     ],
+     "stdout": "Added 4 x apple (now 7).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "bolt-m4",
+      "20"
+     ],
+     "stdout": "Added 20 x bolt-m4 (now 20).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "show"
+     ],
+     "stdout": "apple: 7\nbolt-m4: 20\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "remove",
+      "apple",
+      "5"
+     ],
+     "stdout": "Removed 5 x apple (now 2).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low"
+     ],
+     "stdout": "apple: 2\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low",
+      "30"
+     ],
+     "stdout": "apple: 2\nbolt-m4: 20\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "remove",
+      "apple",
+      "2"
+     ],
+     "stdout": "Removed 2 x apple (now 0).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "show"
+     ],
+     "stdout": "bolt-m4: 20\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low"
+     ],
+     "stdout": "Nothing is low.\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "remove_errors_leave_stock",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "remove",
+      "pear",
+      "1"
+     ],
+     "stdout": "error: unknown item pear\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "pear",
+      "2"
+     ],
+     "stdout": "Added 2 x pear (now 2).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "remove",
+      "pear",
+      "3"
+     ],
+     "stdout": "error: only 2 of pear in stock\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "show"
+     ],
+     "stdout": "pear: 2\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "validation_order_and_rules",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "add",
+      "Apple",
+      "1"
+     ],
+     "stdout": "error: invalid item name\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "a b",
+      "1"
+     ],
+     "stdout": "error: invalid item name\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "1"
+     ],
+     "stdout": "error: invalid item name\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "BAD",
+      "0"
+     ],
+     "stdout": "error: invalid item name\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "nut",
+      "0"
+     ],
+     "stdout": "error: quantity must be a positive whole number\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "nut",
+      "-1"
+     ],
+     "stdout": "error: quantity must be a positive whole number\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "nut",
+      "3.0"
+     ],
+     "stdout": "error: quantity must be a positive whole number\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "remove",
+      "nut",
+      "x"
+     ],
+     "stdout": "error: quantity must be a positive whole number\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "1"
+     ],
+     "stdout": "Added 1 x xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (now 1).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "show"
+     ],
+     "stdout": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx: 1\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "low_threshold_rules",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "add",
+      "a",
+      "5"
+     ],
+     "stdout": "Added 5 x a (now 5).\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low"
+     ],
+     "stdout": "Nothing is low.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low",
+      "6"
+     ],
+     "stdout": "a: 5\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low",
+      "0"
+     ],
+     "stdout": "Nothing is low.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "low",
+      "-1"
+     ],
+     "stdout": "error: threshold must be a whole number\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "low",
+      "two"
+     ],
+     "stdout": "error: threshold must be a whole number\n",
+     "exit": 1
+    }
+   ]
+  },
+  {
+   "name": "usage",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "add",
+      "a"
+     ],
+     "stdout": "usage: inventory.py [add ITEM QTY | remove ITEM QTY | show | low [THRESHOLD]]\n",
+     "exit": 2
+    },
+    {
+     "argv": [
+      "sell",
+      "a",
+      "1"
+     ],
+     "stdout": "usage: inventory.py [add ITEM QTY | remove ITEM QTY | show | low [THRESHOLD]]\n",
+     "exit": 2
+    },
+    {
+     "argv": [
+      "low",
+      "1",
+      "2"
+     ],
+     "stdout": "usage: inventory.py [add ITEM QTY | remove ITEM QTY | show | low [THRESHOLD]]\n",
+     "exit": 2
+    }
+   ]
+  },
+  {
+   "name": "broken_store_is_empty",
+   "files": {
+    "inventory.json": "oops"
+   },
+   "steps": [
+    {
+     "argv": [
+      "show"
+     ],
+     "stdout": "No items.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "z",
+      "1"
+     ],
+     "stdout": "Added 1 x z (now 1).\n",
+     "exit": 0
+    },
+    {
+     "argv": [],
+     "stdout": "z: 1\n",
+     "exit": 0
+    }
+   ]
+  }
+ ]
+}

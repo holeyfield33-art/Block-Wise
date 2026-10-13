@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5234,
+   "cache_read": 50667,
+   "output_lower_bound": 4,
+   "input_total": 55903
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1947,
+   "cache_read": 55901,
+   "output_lower_bound": 25,
+   "input_total": 57850
+  }
+ ],
+ "input_tokens_total": 164422,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 22024,
+ "cache_read_tokens": 142392,
+ "first_request_input": 50669,
+ "context_growth_tokens": 7181,
+ "output_tokens_lower_bound": 45,
+ "generated_chars": 3961,
+ "tool_result_chars": 4230,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r11/app/inventory.py`, and my own checks passed. I ran them once, as a single shell loop of 14 cases using the plain venv Python.\n\nThe cases covered:\n- show on an empty inventory\n- add and remove, including the unknown-item and over-stock errors\n- an item deleted when its stock reaches 0\n- low with the default threshold and with an explicit one\n- invalid item name, invalid quantity and invalid threshold\n- two usage errors (an unknown command and a wrong argument count)\n\nOutput and exit codes (0, 1, 2) matched the spec in every case.\n\nI used 2 of the 30 tool calls, and the only other file I created is a temporary `inventory.json` in `scratch/`, which I deleted.",
+ "agent_tool_record": {
+  "subagent_tokens": 58194,
+  "tool_uses": 3,
+  "duration_ms": 18240
+ }
+}

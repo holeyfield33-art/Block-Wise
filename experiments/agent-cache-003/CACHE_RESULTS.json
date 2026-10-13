@@ -1,0 +1,791 @@
+{
+ "local": {
+  "validate": [
+   {
+    "task": "T1_csv_report",
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"csv_report\",\"file\":\"app/report.py\",\"hash_verified\":true}",
+    "exit": 0,
+    "tests": "9/9",
+    "success": true
+   },
+   {
+    "task": "T2_todo_cli",
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"todo_cli\",\"file\":\"app/todo.py\",\"hash_verified\":true}",
+    "exit": 0,
+    "tests": "18/18",
+    "success": true
+   },
+   {
+    "task": "T3_kv_store",
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"kv_store\",\"file\":\"app/store.py\",\"hash_verified\":true}",
+    "exit": 0,
+    "tests": "19/19",
+    "success": true
+   },
+   {
+    "task": "T4_log_stats",
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"log_stats\",\"file\":\"app/logstats.py\",\"hash_verified\":true}",
+    "exit": 0,
+    "tests": "9/9",
+    "success": true
+   },
+   {
+    "check": "no regeneration",
+    "response": "{\"ok\":false,\"error\":\"app/report.py already exists; not regenerating\"}",
+    "exit": 2
+   },
+   {
+    "command": "get kv_store",
+    "exit": 0,
+    "response_chars": 485,
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"kv_store\",\"does\":\"A runnable settings/notes store: set, get, delete and list keys, saved to a JSON file between runs. One small function per command.\",\"program\":\"store.py\",\"params\":\"file=\\\"store\\\", store=\\\"store.json\\\"\",\"blueprint_sha256\":\"a369afe13"
+   },
+   {
+    "command": "get made_up",
+    "exit": 3,
+    "response_chars": 93,
+    "response": "{\"ok\":false,\"error\":\"made_up is not an approved blueprint\",\"version\":\"blockwise-manifest-v1\"}"
+   },
+   {
+    "command": "verify",
+    "exit": 0,
+    "response_chars": 58,
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"changed\":[]}"
+   },
+   {
+    "command": "index",
+    "exit": 0,
+    "response_chars": 1549,
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"blueprints\":[{\"id\":\"csv_report\",\"does\":\"A runnable report tool: reads a CSV, groups rows by one column, totals another, prints the groups largest first. Tolerates blank and bad numbers.\",\"program\":\"report.py\"},{\"id\":\"data_validator\",\"does\":\"A runnable da"
+   }
+  ],
+  "version_change": [
+   {
+    "case": "verify after change",
+    "exit": 3,
+    "response": "{\"ok\":false,\"version\":\"blockwise-manifest-v1\",\"changed\":[\"log_stats\"]}"
+   },
+   {
+    "case": "apply changed blueprint",
+    "exit": 3,
+    "response": "{\"ok\":false,\"error\":\"log_stats changed since it was approved; not trusted\",\"version\":\"blockwise-manifest-v1\",\"pinned\":\"80c2fbbff44d5b05\",\"installed\":\"0c32b5c79e2cf04d\"}"
+   },
+   {
+    "case": "apply unchanged blueprint",
+    "exit": 0,
+    "response": "{\"ok\":true,\"version\":\"blockwise-manifest-v1\",\"id\":\"kv_store\",\"file\":\"app/store.py\",\"hash_verified\":true}"
+   },
+   {
+    "case": "files written for the changed blueprint",
+    "files": [
+     "store.py"
+    ]
+   },
+   {
+    "case": "re-pinned manifest v2",
+    "prefix_bytes_identical_before_change": 42,
+    "manifest_chars": 3047,
+    "note": "any byte change at position N invalidates cached content after N"
+   }
+  ],
+  "provider_cache_evidence": {
+   "runs": 67,
+   "provider_fields_present": [
+    "input_tokens",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens"
+   ],
+   "first_request_cache_read_distribution": {
+    "exp001 first-request cache_read=35824": 56,
+    "exp001 first-request cache_read=0": 7,
+    "exp002 first-request cache_read=34601": 2,
+    "exp002 first-request cache_read=0": 2
+   },
+   "share_of_input_served_from_cache": 0.8879,
+   "share_cache_write": 0.112,
+   "share_uncached": 3.6e-05,
+   "runs_where_each_request_reads_previous_prefix": 67
+  },
+  "manifest_chars": {
+   "INDEX_v1.md": 545,
+   "LIBRARY_SOURCE_v1.md": 15134,
+   "STABLE_PREFIX_v1.md": 3047
+  }
+ },
+ "pilot": {
+  "note": "Measured: provider-reported input, cache-write and cache-read tokens per request. Output tokens: lower bound only (UNMEASURED). USD: derived from Sonnet 5.5 list prices incl. cache discounts; no billing data.",
+  "price_basis_usd_per_M": {
+   "uncached": 2.0,
+   "cache_write": 2.5,
+   "cache_read": 0.2,
+   "output": 10.0
+  },
+  "by_condition": {
+   "A": {
+    "sessions": 2,
+    "tasks_passed": "8/8",
+    "mean_input": 168997,
+    "mean_requests": 3,
+    "mean_tool_calls": 3,
+    "mean_cache_read_share": 0.6333,
+    "input_usd_per_successful_task": 0.04408,
+    "input_usd_per_successful_task_without_cache_discount": 0.0845,
+    "mean_duration_s": 40.4,
+    "cache_states": [
+     "cold",
+     "cold"
+    ],
+    "mean_task_specific_input": 18898,
+    "mean_generated_chars": 9788,
+    "tasks_matching_approved_hash": 0
+   },
+   "B": {
+    "sessions": 2,
+    "tasks_passed": "8/8",
+    "mean_input": 220312,
+    "mean_requests": 3.5,
+    "mean_tool_calls": 5,
+    "mean_cache_read_share": 0.6735,
+    "input_usd_per_successful_task": 0.05135,
+    "input_usd_per_successful_task_without_cache_discount": 0.11016,
+    "mean_duration_s": 39.5,
+    "cache_states": [
+     "cold",
+     "cold"
+    ],
+    "mean_task_specific_input": 43030,
+    "mean_generated_chars": 11317,
+    "tasks_matching_approved_hash": 8
+   },
+   "C": {
+    "sessions": 2,
+    "tasks_passed": "8/8",
+    "mean_input": 167330,
+    "mean_requests": 3,
+    "mean_tool_calls": 3,
+    "mean_cache_read_share": 0.6479,
+    "input_usd_per_successful_task": 0.04224,
+    "input_usd_per_successful_task_without_cache_discount": 0.08367,
+    "mean_duration_s": 12.2,
+    "cache_states": [
+     "cold",
+     "cold"
+    ],
+    "mean_task_specific_input": 17208,
+    "mean_generated_chars": 1392,
+    "tasks_matching_approved_hash": 8
+   },
+   "D": {
+    "sessions": 2,
+    "tasks_passed": "8/8",
+    "mean_input": 227552,
+    "mean_requests": 4,
+    "mean_tool_calls": 4,
+    "mean_cache_read_share": 0.7377,
+    "input_usd_per_successful_task": 0.0457,
+    "input_usd_per_successful_task_without_cache_discount": 0.11378,
+    "mean_duration_s": 16.2,
+    "cache_states": [
+     "cold",
+     "cold"
+    ],
+    "mean_task_specific_input": 24944,
+    "mean_generated_chars": 1811,
+    "tasks_matching_approved_hash": 8
+   }
+  },
+  "sessions": [
+   {
+    "run_id": "s01",
+    "condition": "A",
+    "round": 1,
+    "order_in_round": 1,
+    "prefix_chars": 75,
+    "prompt_chars": 7191,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 0,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 3,
+    "tool_calls": 3,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 1,
+     "SubagentHandback": 1
+    },
+    "input": 167388,
+    "uncached": 6,
+    "cache_write": 61510,
+    "cache_read": 105872,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 49444,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 49446
+    },
+    "output_lower_bound": 43,
+    "generated_chars": 9933,
+    "duration_s": 41.5,
+    "input_usd": 0.17496,
+    "input_usd_without_cache_discount": 0.33478,
+    "output_usd_lower_bound": 0.00043,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 49444,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 49446
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 6984,
+      "cache_read": 49444,
+      "output_lower_bound": 3,
+      "input_total": 56430
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 5082,
+      "cache_read": 56428,
+      "output_lower_bound": 24,
+      "input_total": 61512
+     }
+    ],
+    "harness_context_per_request": 49446,
+    "task_specific_input": 19050
+   },
+   {
+    "run_id": "s02",
+    "condition": "B",
+    "round": 1,
+    "order_in_round": 2,
+    "prefix_chars": 15133,
+    "prompt_chars": 22249,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 4,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 4,
+    "tool_calls": 7,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Write": 4,
+     "Bash": 1,
+     "SubagentHandback": 1
+    },
+    "input": 255296,
+    "uncached": 8,
+    "cache_write": 70352,
+    "cache_read": 184936,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 50650,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 50652
+    },
+    "output_lower_bound": 70,
+    "generated_chars": 11178,
+    "duration_s": 39.6,
+    "input_usd": 0.21288,
+    "input_usd_without_cache_discount": 0.51059,
+    "output_usd_lower_bound": 0.0007,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 50650,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 50652
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 14095,
+      "cache_read": 50650,
+      "output_lower_bound": 4,
+      "input_total": 64747
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 4796,
+      "cache_read": 64745,
+      "output_lower_bound": 24,
+      "input_total": 69543
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 811,
+      "cache_read": 69541,
+      "output_lower_bound": 26,
+      "input_total": 70354
+     }
+    ],
+    "harness_context_per_request": 50652,
+    "task_specific_input": 52688
+   },
+   {
+    "run_id": "s03",
+    "condition": "C",
+    "round": 1,
+    "order_in_round": 3,
+    "prefix_chars": 3046,
+    "prompt_chars": 10417,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 4,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 3,
+    "tool_calls": 3,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 1,
+     "SubagentHandback": 1
+    },
+    "input": 169138,
+    "uncached": 6,
+    "cache_write": 59498,
+    "cache_read": 109634,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 50650,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 50652
+    },
+    "output_lower_bound": 43,
+    "generated_chars": 1247,
+    "duration_s": 11.8,
+    "input_usd": 0.17068,
+    "input_usd_without_cache_discount": 0.33828,
+    "output_usd_lower_bound": 0.00043,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 50650,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 50652
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 8334,
+      "cache_read": 50650,
+      "output_lower_bound": 3,
+      "input_total": 58986
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 514,
+      "cache_read": 58984,
+      "output_lower_bound": 24,
+      "input_total": 59500
+     }
+    ],
+    "harness_context_per_request": 50652,
+    "task_specific_input": 17182
+   },
+   {
+    "run_id": "s04",
+    "condition": "D",
+    "round": 1,
+    "order_in_round": 4,
+    "prefix_chars": 544,
+    "prompt_chars": 7915,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 4,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 4,
+    "tool_calls": 4,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 2,
+     "SubagentHandback": 1
+    },
+    "input": 227566,
+    "uncached": 8,
+    "cache_write": 59696,
+    "cache_read": 167862,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 50650,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 50652
+    },
+    "output_lower_bound": 60,
+    "generated_chars": 1997,
+    "duration_s": 16.6,
+    "input_usd": 0.18283,
+    "input_usd_without_cache_discount": 0.45513,
+    "output_usd_lower_bound": 0.0006,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 50650,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 50652
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 7348,
+      "cache_read": 50650,
+      "output_lower_bound": 3,
+      "input_total": 58000
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 1216,
+      "cache_read": 57998,
+      "output_lower_bound": 16,
+      "input_total": 59216
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 482,
+      "cache_read": 59214,
+      "output_lower_bound": 25,
+      "input_total": 59698
+     }
+    ],
+    "harness_context_per_request": 50652,
+    "task_specific_input": 24958
+   },
+   {
+    "run_id": "s05",
+    "condition": "D",
+    "round": 2,
+    "order_in_round": 1,
+    "prefix_chars": 544,
+    "prompt_chars": 7915,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 4,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 4,
+    "tool_calls": 4,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 2,
+     "SubagentHandback": 1
+    },
+    "input": 227539,
+    "uncached": 8,
+    "cache_write": 59671,
+    "cache_read": 167860,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 50650,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 50652
+    },
+    "output_lower_bound": 64,
+    "generated_chars": 1625,
+    "duration_s": 15.9,
+    "input_usd": 0.18277,
+    "input_usd_without_cache_discount": 0.45508,
+    "output_usd_lower_bound": 0.00064,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 50650,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 50652
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 7348,
+      "cache_read": 50650,
+      "output_lower_bound": 7,
+      "input_total": 58000
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 1214,
+      "cache_read": 57998,
+      "output_lower_bound": 16,
+      "input_total": 59214
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 459,
+      "cache_read": 59212,
+      "output_lower_bound": 25,
+      "input_total": 59673
+     }
+    ],
+    "harness_context_per_request": 50652,
+    "task_specific_input": 24931
+   },
+   {
+    "run_id": "s06",
+    "condition": "C",
+    "round": 2,
+    "order_in_round": 2,
+    "prefix_chars": 3046,
+    "prompt_chars": 10417,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 4,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 3,
+    "tool_calls": 3,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 1,
+     "SubagentHandback": 1
+    },
+    "input": 165522,
+    "uncached": 6,
+    "cache_write": 58328,
+    "cache_read": 107188,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 49427,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 49429
+    },
+    "output_lower_bound": 43,
+    "generated_chars": 1537,
+    "duration_s": 12.7,
+    "input_usd": 0.16727,
+    "input_usd_without_cache_discount": 0.33104,
+    "output_usd_lower_bound": 0.00043,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 49427,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 49429
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 8334,
+      "cache_read": 49427,
+      "output_lower_bound": 3,
+      "input_total": 57763
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 567,
+      "cache_read": 57761,
+      "output_lower_bound": 24,
+      "input_total": 58330
+     }
+    ],
+    "harness_context_per_request": 49429,
+    "task_specific_input": 17235
+   },
+   {
+    "run_id": "s07",
+    "condition": "B",
+    "round": 2,
+    "order_in_round": 3,
+    "prefix_chars": 15133,
+    "prompt_chars": 22249,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 4,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 3,
+    "tool_calls": 3,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 1,
+     "SubagentHandback": 1
+    },
+    "input": 185328,
+    "uncached": 6,
+    "cache_write": 69927,
+    "cache_read": 115395,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 50650,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 50652
+    },
+    "output_lower_bound": 46,
+    "generated_chars": 11456,
+    "duration_s": 39.4,
+    "input_usd": 0.19791,
+    "input_usd_without_cache_discount": 0.37066,
+    "output_usd_lower_bound": 0.00046,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 50650,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 50652
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 14095,
+      "cache_read": 50650,
+      "output_lower_bound": 4,
+      "input_total": 64747
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 5182,
+      "cache_read": 64745,
+      "output_lower_bound": 26,
+      "input_total": 69929
+     }
+    ],
+    "harness_context_per_request": 50652,
+    "task_specific_input": 33372
+   },
+   {
+    "run_id": "s08",
+    "condition": "A",
+    "round": 2,
+    "order_in_round": 4,
+    "prefix_chars": 75,
+    "prompt_chars": 7191,
+    "executed": true,
+    "tasks_passed": 4,
+    "tasks_matching_approved_hash": 0,
+    "per_task_tests": {
+     "T1_csv_report": "9/9",
+     "T2_todo_cli": "18/18",
+     "T3_kv_store": "19/19",
+     "T4_log_stats": "9/9"
+    },
+    "cache_state": "cold",
+    "requests": 3,
+    "tool_calls": 3,
+    "tool_calls_by_name": {
+     "Read": 1,
+     "Bash": 1,
+     "SubagentHandback": 1
+    },
+    "input": 170606,
+    "uncached": 6,
+    "cache_write": 62420,
+    "cache_read": 108180,
+    "first_request": {
+     "input_uncached": 2,
+     "cache_write": 50618,
+     "cache_read": 0,
+     "output_lower_bound": 16,
+     "input_total": 50620
+    },
+    "output_lower_bound": 43,
+    "generated_chars": 9642,
+    "duration_s": 39.3,
+    "input_usd": 0.1777,
+    "input_usd_without_cache_discount": 0.34121,
+    "output_usd_lower_bound": 0.00043,
+    "outside": 0,
+    "models": [
+     "c13e66682022f862"
+    ],
+    "per_request": [
+     {
+      "input_uncached": 2,
+      "cache_write": 50618,
+      "cache_read": 0,
+      "output_lower_bound": 16,
+      "input_total": 50620
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 6944,
+      "cache_read": 50618,
+      "output_lower_bound": 3,
+      "input_total": 57564
+     },
+     {
+      "input_uncached": 2,
+      "cache_write": 4858,
+      "cache_read": 57562,
+      "output_lower_bound": 24,
+      "input_total": 62422
+     }
+    ],
+    "harness_context_per_request": 50620,
+    "task_specific_input": 18746
+   }
+  ],
+  "cache_note": "All 8 sessions were cold on request 1 (cache_read=0): the harness context itself differed between sessions (49,429-50,652 tokens on request 1) as MCP tool lists changed, so no cross-session cache hit was possible. All cache reads are within-session."
+ }
+}

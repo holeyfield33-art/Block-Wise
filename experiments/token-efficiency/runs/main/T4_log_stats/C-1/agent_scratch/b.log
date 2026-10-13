@@ -1,0 +1,12 @@
+d t ERROR  b  
+d t CRITICAL a
+d t ERROR a
+d t ERROR b
+d t CRITICAL c
+d t ERROR d
+
+d t INFO
+d t error x
+d t WARNING w x
+d t DEBUGÿ z
+   

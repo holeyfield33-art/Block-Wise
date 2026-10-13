@@ -1,0 +1,61 @@
+{
+ "requests": 4,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 6006,
+   "cache_read": 50656,
+   "output_lower_bound": 16,
+   "input_total": 56664
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 271,
+   "cache_read": 56662,
+   "output_lower_bound": 31,
+   "input_total": 56935
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1002,
+   "cache_read": 56933,
+   "output_lower_bound": 25,
+   "input_total": 57937
+  }
+ ],
+ "input_tokens_total": 222194,
+ "input_tokens_uncached": 8,
+ "cache_write_tokens": 22111,
+ "cache_read_tokens": 200075,
+ "first_request_input": 50658,
+ "context_growth_tokens": 7279,
+ "output_tokens_lower_bound": 186,
+ "generated_chars": 2370,
+ "tool_result_chars": 5748,
+ "tool_calls": 5,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 3,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 2,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `app/report.py` by running `blockwise apply csv_report --into app`, and I did not edit the generated code.\n\nMy checks passed. I ran them once, as a single batch of 9 CLI runs plus one `blockwise check`, and `check` reported no issues.\n\nThe cases I ran:\n- **Basic report:** the spec example prints the expected output.\n- **Messy data:** thousands commas, a blank group (shown as `(blank)`), non-numeric, blank and missing amounts, and a negative amount all behaved as specified.\n- **Ordering:** groups sort by total, largest first, and ties keep file order.\n- **Header-only CSV:** prints just `total: 0.00`.\n- **Errors:** an unknown group column gives `error: no column region` with exit 1, an unreadable file gives `error: cannot read FILE` with exit 1, and a wrong argument count prints the usage line with exit 2.\n- **Amount column not in the header:** all amounts count as 0.\n\nThe generated file is `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r30/app/report.py`. My check files are in `scratch/`.",
+ "agent_tool_record": {
+  "subagent_tokens": 58392,
+  "tool_uses": 5,
+  "duration_ms": 19386
+ }
+}

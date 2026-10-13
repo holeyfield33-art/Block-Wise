@@ -1,0 +1,67 @@
+{
+ "requests": 4,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 50650,
+   "cache_read": 0,
+   "output_lower_bound": 16,
+   "input_total": 50652
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 7348,
+   "cache_read": 50650,
+   "output_lower_bound": 7,
+   "input_total": 58000
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1214,
+   "cache_read": 57998,
+   "output_lower_bound": 16,
+   "input_total": 59214
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 459,
+   "cache_read": 59212,
+   "output_lower_bound": 25,
+   "input_total": 59673
+  }
+ ],
+ "input_tokens_total": 227539,
+ "input_tokens_uncached": 8,
+ "cache_write_tokens": 59671,
+ "cache_read_tokens": 167860,
+ "first_request_input": 50652,
+ "context_growth_tokens": 9021,
+ "output_tokens_lower_bound": 64,
+ "generated_chars": 1625,
+ "tool_result_chars": 11018,
+ "tool_calls": 4,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 2,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 0,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "All four programs were generated with `bwcache` and each apply returned `\"ok\":true,\"hash_verified\":true`. As the trust rules require, I did not open, run, test or edit any generated file, so none of them has been executed.\n\n| Task | File | Blueprint | Apply response |\n|---|---|---|---|\n| 1 | app/report.py | csv_report | `{\"ok\":true,...,\"file\":\"app/report.py\",\"hash_verified\":true}` |\n| 2 | app/todo.py | todo_cli | `{\"ok\":true,...,\"file\":\"app/todo.py\",\"hash_verified\":true}` |\n| 3 | app/store.py | kv_store | `{\"ok\":true,...,\"file\":\"app/store.py\",\"hash_verified\":true}` |\n| 4 | app/logstats.py | log_stats | `{\"ok\":true,...,\"file\":\"app/logstats.py\",\"hash_verified\":true}` |\n\nThe files are in /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s05/app/. I used two tool calls: one `bwcache get` per blueprint, then one `bwcache apply` per blueprint.",
+ "agent_tool_record": {
+  "subagent_tokens": 60117,
+  "tool_uses": 4,
+  "duration_ms": 15866
+ },
+ "derived": {
+  "input_usd": 0.18277,
+  "input_usd_without_cache_discount": 0.45508,
+  "output_usd_lower_bound": 0.00064
+ },
+ "cache_state": "cold"
+}

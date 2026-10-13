@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 4859,
+   "cache_read": 50656,
+   "output_lower_bound": 6,
+   "input_total": 55517
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1394,
+   "cache_read": 55515,
+   "output_lower_bound": 24,
+   "input_total": 56911
+  }
+ ],
+ "input_tokens_total": 163086,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 21085,
+ "cache_read_tokens": 141995,
+ "first_request_input": 50658,
+ "context_growth_tokens": 6253,
+ "output_tokens_lower_bound": 144,
+ "generated_chars": 3259,
+ "tool_result_chars": 2914,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r27/app/store.py`, and my own checks passed. I ran them once, as a single manual shell sequence in the `scratch/` directory, using 2 tool calls in total.\n\nThe checks covered:\n- `list` and no arguments, including the `(empty)` output\n- `set`, `get` and `delete`, including the missing-key error with exit code 1\n- wrong argument counts and an unknown command, which print the usage line with exit code 2\n- a `store.json` containing invalid JSON, which is treated as an empty store\n\nA `store.json` that holds valid JSON but is not an object is also treated as empty. I did not run that case.",
+ "agent_tool_record": {
+  "subagent_tokens": 57219,
+  "tool_uses": 3,
+  "duration_ms": 15281
+ }
+}

@@ -1,0 +1,82 @@
+{
+ "requests": 7,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5739,
+   "cache_read": 50667,
+   "output_lower_bound": 16,
+   "input_total": 56408
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 504,
+   "cache_read": 56406,
+   "output_lower_bound": 16,
+   "input_total": 56912
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 319,
+   "cache_read": 56910,
+   "output_lower_bound": 27,
+   "input_total": 57231
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1556,
+   "cache_read": 57229,
+   "output_lower_bound": 8,
+   "input_total": 58787
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1017,
+   "cache_read": 58785,
+   "output_lower_bound": 45,
+   "input_total": 59804
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1127,
+   "cache_read": 59802,
+   "output_lower_bound": 6,
+   "input_total": 60931
+  }
+ ],
+ "input_tokens_total": 400742,
+ "input_tokens_uncached": 14,
+ "cache_write_tokens": 25105,
+ "cache_read_tokens": 375623,
+ "first_request_input": 50669,
+ "context_growth_tokens": 10262,
+ "output_tokens_lower_bound": 134,
+ "generated_chars": 4827,
+ "tool_result_chars": 10482,
+ "tool_calls": 7,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 5,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 3,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 2,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r07/app/todo.py. My behavioral checks passed, but `blockwise check` fails on the final file.\n\n**How it was built:** `blockwise find` returned the `todo_cli` blueprint, and I applied it with `apply todo_cli --into app`. The unmodified blueprint passed `blockwise check`. The only file in app/ is todo.py.\n\n**Edits I made to the blueprint:**\n- **`load_items`:** it now returns an empty list when the JSON is not a list. It also drops entries that are not dicts with a string `text`. Before this, a todo.json containing `{\"a\":1}` or `[1,\"x\"]` crashed `list` with a TypeError.\n- **`format_items`:** it reads `done` with `.get`.\n- **`done` in `main`:** a non-numeric or missing argument now prints `error: no item ...` and exits 1. Before this, it printed Python's own error text.\n\n**Checks:**\n- **Own checks:** I ran them twice by hand with shell loops in scratch/t, not a script. They covered:\n  - no arguments, `list`, and an empty list\n  - `add` with empty, blank, multi-word, and extra-spaced text\n  - `done` on valid, zero, out-of-range, non-numeric, missing and negative numbers\n  - an unknown command, which gives the usage line and exit code 2\n  - a garbage todo.json, plus a todo.json holding a non-list or non-dict entries\n  - the exit codes and output text for all of the above\n- **Result:** the second run, after the edits, covered the edited behaviour and passed. In the first run, `done abc`, `done` and the non-list and non-dict todo.json cases failed and prompted the edits. I did not rerun the full first-run list after editing, only the edited cases.\n- **`blockwise check`:** I ran it twice. It passed on the unmodified blueprint. After my edits it reports `body_changed` on `load_items`, `format_items` and `main`. I left that as is because the edits fix real crashes and the tool only checks structure.",
+ "agent_tool_record": {
+  "subagent_tokens": 61806,
+  "tool_uses": 7,
+  "duration_ms": 31402
+ }
+}
