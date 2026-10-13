@@ -63,10 +63,13 @@ def insert_imports(source, imports):
     return "".join(lines[:after]) + "".join(i + "\n" for i in missing) + "".join(lines[after:])
 
 
-def apply_blueprint(project, blueprint_id, into=".", params=None):
-    """Write a blueprint's files into folder `into` (relative to project) and record them in the plan."""
+def apply_blueprint(project, blueprint_id, into=".", params=None, blueprint=None):
+    """Write a blueprint's files into folder `into` (relative to project) and record them in the plan.
+
+    Pass `blueprint` to generate from an already-loaded (e.g. already-verified) copy.
+    """
     project = Path(project)
-    blueprint = load_blueprints()[blueprint_id]
+    blueprint = load_blueprints()[blueprint_id] if blueprint is None else blueprint
     rendered = render_blueprint(blueprint, params)
     prefix = "" if into in ("", ".") else into.strip("/") + "/"
     if prefix and len(rendered["modules"]) > 1:

@@ -11,6 +11,7 @@ from .coverage import summary as coverage_summary
 from .presets import PresetError, find, get_preset, is_blueprint, load_all, load_blueprints, render, render_blueprint, summary
 from .project import apply_preset, check_project, function_source
 from .schema import ScoreError, load_score
+from .secure_apply import secure_apply
 
 
 def parse_sets(pairs):
@@ -50,6 +51,12 @@ def main(argv=None):
     check = commands.add_parser("check", help="compare the project with its plan (structure only)")
     check.add_argument("--project", default=".")
     check.add_argument("--strict", action="store_true", help="also flag files/functions the plan does not mention")
+    secure = commands.add_parser("secure-apply",
+                                 help="apply an approved blueprint behind the trust boundary; returns a receipt")
+    secure.add_argument("blueprint")
+    secure.add_argument("--project", default=".")
+    secure.add_argument("--into", default=".", help="target folder, relative to the project")
+    secure.add_argument("--set", action="append", metavar="NAME=VALUE")
     build = commands.add_parser("build", help="generate a project from a plan.json exported by the Studio")
     build.add_argument("plan", type=Path)
     build.add_argument("--out", type=Path, required=True)
@@ -90,6 +97,10 @@ def main(argv=None):
             result = check_project(args.project, args.strict)
             emit(result, args.pretty)
             return 0 if result["ok"] else 1
+        elif args.command == "secure-apply":
+            receipt = secure_apply(args.blueprint, args.project, args.into, parse_sets(args.set))
+            emit(receipt, args.pretty)
+            return 0 if receipt["status"] == "approved" else 1
         elif args.command == "build":
             emit(write_project(load_score(args.plan), args.out, audio=args.audio), args.pretty)
         elif args.command == "export-presets":
