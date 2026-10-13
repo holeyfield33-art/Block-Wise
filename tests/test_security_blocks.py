@@ -99,7 +99,7 @@ def test_a_weakened_block_that_is_approved_still_fails_its_probes(tmp_path, monk
     weak["plan"]["modules"][0]["functions"][1]["body"] = [n for n in body if n["kind"] != "branch"]
     monkeypatch.setattr(sa, "load_blueprints", lambda: {"safe_write_text": weak})
     receipt = secure_apply("safe_write_text", tmp_path, ".", approved={"safe_write_text": canonical_digest(weak)},
-                           probe=True, reviews={})
+                           references={"safe_write_text": sa.reference_output(weak)}, probe=True, reviews={})
     assert receipt["status"] == "approved"  # identity, workspace and structure are fine...
     security = receipt["security"]
     assert security["status"] == "not-reviewed"  # ...but the security probes are not.

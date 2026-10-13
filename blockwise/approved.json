@@ -1,6 +1,6 @@
 {
   "format": "blockwise-approved-v1",
-  "note": "SHA-256 of each approved blueprint's canonical JSON. Regenerate with scripts if a blueprint is re-approved. security_reviews holds the detector-check record (from `blockwise security-review`) a person committed for each approved security block.",
+  "note": "SHA-256 of each approved blueprint's canonical JSON (blueprints), of the files it generates at default parameters (reference_outputs: pins the generator, so a compiler change is refused until re-approved), and the detector-check record a person committed for each approved security block (security_reviews, from `blockwise security-review`). Only people edit this file.",
   "blueprints": {
     "csv_report": "sha256:5d813cd980fa229dae20619e37081ddb9a717fb29c890306225a6415cd9675ee",
     "data_validator": "sha256:6d58ad9f0d14caf932b0894486afedf38958ad21fd8e5cd7a8c1d3455252e05a",
@@ -10,6 +10,16 @@
     "log_stats": "sha256:5eb10e5ab91c1fc3e2d16fe0eea9b0f3c80a580e08505da4e6e1351fcae42b98",
     "todo_cli": "sha256:d801a31a6298739993afe9fcc52de8dbb613a2efdda9682ffd6f7ff9645ae407",
     "safe_write_text": "sha256:cd69669c678c858678f8b37ebe86a18f56c19ab641072f0acb14a0ee026d6056"
+  },
+  "reference_outputs": {
+    "csv_report": "sha256:4cda39dccaa32865f859a3c0bbe6eb668c8481384e46c539886dc6af50691db1",
+    "data_validator": "sha256:be0364c92417e3330d2dd5da8560c6f60208bd7ae49e25c82f3ff5127adabc0a",
+    "fetch_json": "sha256:4a66aec181fdea56b8d221aa3e504fb3c5f639f07767c7c09fbf59ff85b38bd8",
+    "file_organizer": "sha256:c4c5d5870df41213b410690c2f059bdbae101de2ca98de6beadb2857c4963b63",
+    "kv_store": "sha256:9952962dc850260c2ecdc1e4c4dadcbddc1d5a0dfc4efe8158f0ef0359303a7c",
+    "log_stats": "sha256:809704762a52b481413406de95dc1bd324e86d1a2ad4f665f9d3ff22459808de",
+    "safe_write_text": "sha256:ca5c68560de62b253b5350850a0f29215a3d2b2bc559fcfe7f91286d9143f1c0",
+    "todo_cli": "sha256:130be2588cb62e3d0f958740eb42958834240f9bb7d60c610dc9dea60d1a1089"
   },
   "security_reviews": {
     "safe_write_text": {
