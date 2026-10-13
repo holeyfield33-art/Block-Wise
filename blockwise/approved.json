@@ -9,7 +9,7 @@
     "kv_store": "sha256:e68c9e866214514814c34ea64248b21abc1bf1e7feabce381e7ec405fde96b0c",
     "log_stats": "sha256:5eb10e5ab91c1fc3e2d16fe0eea9b0f3c80a580e08505da4e6e1351fcae42b98",
     "todo_cli": "sha256:d801a31a6298739993afe9fcc52de8dbb613a2efdda9682ffd6f7ff9645ae407",
-    "safe_write_text": "sha256:cd69669c678c858678f8b37ebe86a18f56c19ab641072f0acb14a0ee026d6056"
+    "safe_write_text": "sha256:9de786263b3e979fa181abdfdbb244cd9422ef428f6d6ca472f92fb45c606e21"
   },
   "reference_outputs": {
     "csv_report": "sha256:4cda39dccaa32865f859a3c0bbe6eb668c8481384e46c539886dc6af50691db1",
@@ -23,11 +23,15 @@
   },
   "security_reviews": {
     "safe_write_text": {
-      "block_version": "sha256:cd69669c678c858678f8b37ebe86a18f56c19ab641072f0acb14a0ee026d6056",
+      "block_version": "sha256:9de786263b3e979fa181abdfdbb244cd9422ef428f6d6ca472f92fb45c606e21",
       "real_block": "held",
-      "killed": 5,
-      "total": 5,
-      "mutant_suite": "sha256:d95b5048aa8f9350b7b2b23f108f5ffac891ef8427c3eecd7dede07cfaea884d",
+      "killed": 6,
+      "total": 6,
+      "mutant_suite": "sha256:a6c929566144b8e260e6f32dd75e2113e2cc549275c6c52a58df1759ab8f5dbf",
+      "params": {
+        "file": "safe_write",
+        "max_bytes": 1000000
+      },
       "platform": "linux",
       "python": "3.14.4",
       "date": "2026-10-13"
