@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 7595,
+   "cache_read": 50656,
+   "output_lower_bound": 4,
+   "input_total": 58253
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1224,
+   "cache_read": 58251,
+   "output_lower_bound": 24,
+   "input_total": 59477
+  }
+ ],
+ "input_tokens_total": 168388,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 23651,
+ "cache_read_tokens": 144731,
+ "first_request_input": 50658,
+ "context_growth_tokens": 8819,
+ "output_tokens_lower_bound": 142,
+ "generated_chars": 2944,
+ "tool_result_chars": 9474,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r54/app/report.py`, following the plan exactly. It has the same imports, functions, signatures, body structure and entry block.\n\nI ran my own checks once, as a single batch of 5 commands, and they all passed:\n- A normal file with a blank group, a comma-separated amount (`\"1,200\"`) and a non-numeric amount produced the correct sorted report and exit code 0.\n- A header-only file printed `total: 0.00` with exit code 0.\n- A missing group column printed `error: no column foo` with exit code 1.\n- A nonexistent file printed `error: cannot read nope.csv` with exit code 1.\n- Running with no arguments printed the usage line with exit code 2.\n\nThe check files are in `scratch/`. I didn't test equal totals, so the first-appearance tie order isn't checked.",
+ "agent_tool_record": {
+  "subagent_tokens": 59847,
+  "tool_uses": 3,
+  "duration_ms": 16741
+ }
+}

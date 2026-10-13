@@ -1,0 +1,577 @@
+{
+ "seed": 20261012,
+ "pilot": false,
+ "launcher": "Your complete instructions are in the file {ws}/TASK_PROMPT.md. Read that file first and follow it exactly.",
+ "attempts": [
+  {
+   "run_id": "r01",
+   "task": "T1_csv_report",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r01",
+   "run_dir": "runs/main/T1_csv_report/C-1",
+   "prompt_chars": 4631,
+   "prompt_sha256": "f70be2ae9379292ff894a130ac018ec78672e1607f8c6bf0b8183a3bed8309b2"
+  },
+  {
+   "run_id": "r02",
+   "task": "T2_todo_cli",
+   "condition": "C2",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r02",
+   "run_dir": "runs/main/T2_todo_cli/C2-2",
+   "prompt_chars": 4516,
+   "prompt_sha256": "37b0e1cc2b08fc0693d8b486c0c7badf77ec6631b549e0bffca2038505f0f4e4"
+  },
+  {
+   "run_id": "r03",
+   "task": "T4_log_stats",
+   "condition": "A",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r03",
+   "run_dir": "runs/main/T4_log_stats/A-3",
+   "prompt_chars": 2810,
+   "prompt_sha256": "735d1607da93a49cf687ab184139f6c87026c7efb045e150db0d7baf21e8fcce"
+  },
+  {
+   "run_id": "r04",
+   "task": "T5_inventory",
+   "condition": "C",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r04",
+   "run_dir": "runs/main/T5_inventory/C-3",
+   "prompt_chars": 5157,
+   "prompt_sha256": "8fa0d5eeb98b591ec72412eef996bd4c3623b671f15a002177a31a173b6234eb"
+  },
+  {
+   "run_id": "r05",
+   "task": "T2_todo_cli",
+   "condition": "A",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r05",
+   "run_dir": "runs/main/T2_todo_cli/A-3",
+   "prompt_chars": 2451,
+   "prompt_sha256": "5a8350d5b29039c4156584d7444b4ef3c70cf46bc13b61880b1621b277a71964"
+  },
+  {
+   "run_id": "r06",
+   "task": "T2_todo_cli",
+   "condition": "C",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r06",
+   "run_dir": "runs/main/T2_todo_cli/C-2",
+   "prompt_chars": 4322,
+   "prompt_sha256": "1b9e314f5cf4116e082ff62d4b2656ba3a265af88d9bbf779d2dcacfb1b46237"
+  },
+  {
+   "run_id": "r07",
+   "task": "T2_todo_cli",
+   "condition": "C",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r07",
+   "run_dir": "runs/main/T2_todo_cli/C-3",
+   "prompt_chars": 4322,
+   "prompt_sha256": "166718976bfb6720565c5bbf73631b41c1a2e59f650c8819d2cf7c84dc09ca9e"
+  },
+  {
+   "run_id": "r08",
+   "task": "T2_todo_cli",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r08",
+   "run_dir": "runs/main/T2_todo_cli/C-1",
+   "prompt_chars": 4322,
+   "prompt_sha256": "e166296539bbc61e0cb99df72619da8fe9384569b3ac71faf07467eeec6e45e3"
+  },
+  {
+   "run_id": "r09",
+   "task": "T3_kv_store",
+   "condition": "C2",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r09",
+   "run_dir": "runs/main/T3_kv_store/C2-2",
+   "prompt_chars": 4558,
+   "prompt_sha256": "e49b7d9da9e8596582fcb51343254baba97a84db2f31fad019daf3063f05eba0"
+  },
+  {
+   "run_id": "r10",
+   "task": "T3_kv_store",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r10",
+   "run_dir": "runs/main/T3_kv_store/B-1",
+   "prompt_chars": 9961,
+   "prompt_sha256": "10b20849a1dbd4c8c29b67bac06ff78e2af101e603105fbad436a0dab03cb232"
+  },
+  {
+   "run_id": "r11",
+   "task": "T5_inventory",
+   "condition": "A",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r11",
+   "run_dir": "runs/main/T5_inventory/A-2",
+   "prompt_chars": 3286,
+   "prompt_sha256": "485a95d39ad09b8bf46000cb8673594b8f887c19a73a626ac119d59dc87dba38"
+  },
+  {
+   "run_id": "r12",
+   "task": "T1_csv_report",
+   "condition": "A",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r12",
+   "run_dir": "runs/main/T1_csv_report/A-2",
+   "prompt_chars": 2760,
+   "prompt_sha256": "5a0b8281a1eb05c9c6c79d6f9673cef74e0b08f1674d295f92e3cf1ad6a84121"
+  },
+  {
+   "run_id": "r13",
+   "task": "T4_log_stats",
+   "condition": "B",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r13",
+   "run_dir": "runs/main/T4_log_stats/B-2",
+   "prompt_chars": 8910,
+   "prompt_sha256": "2366ebabdeb39732dffcbc2efc942105622cb07169b00e039da7ab6b594b9c69"
+  },
+  {
+   "run_id": "r14",
+   "task": "T2_todo_cli",
+   "condition": "B",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r14",
+   "run_dir": "runs/main/T2_todo_cli/B-2",
+   "prompt_chars": 9573,
+   "prompt_sha256": "f75cd49c8673348f666e56d7224d7621ae15b52c11e14533e2d4a212aee14f98"
+  },
+  {
+   "run_id": "r15",
+   "task": "T4_log_stats",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r15",
+   "run_dir": "runs/main/T4_log_stats/B-1",
+   "prompt_chars": 8910,
+   "prompt_sha256": "7568e02173c79f6c8b491bdf675f7c3dea992dbc17da9ab389f0645cdf7db3ae"
+  },
+  {
+   "run_id": "r16",
+   "task": "T3_kv_store",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r16",
+   "run_dir": "runs/main/T3_kv_store/C-1",
+   "prompt_chars": 4364,
+   "prompt_sha256": "a1332d2e5888b5ab34dca4c9f9ee0c7c2770031aa30696884fc99703f139d94f"
+  },
+  {
+   "run_id": "r17",
+   "task": "T2_todo_cli",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r17",
+   "run_dir": "runs/main/T2_todo_cli/B-1",
+   "prompt_chars": 9573,
+   "prompt_sha256": "3e8a431b3bb81e13cca4b8c3027d58ad5425f5b00743cee2aa1a0181e32eaa10"
+  },
+  {
+   "run_id": "r18",
+   "task": "T3_kv_store",
+   "condition": "B",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r18",
+   "run_dir": "runs/main/T3_kv_store/B-3",
+   "prompt_chars": 9961,
+   "prompt_sha256": "010c9e4b3b9af2e59321dd5de82f54fa9bc4a6c48834ea3026c6b6a4ce062fd3"
+  },
+  {
+   "run_id": "r19",
+   "task": "T5_inventory",
+   "condition": "C",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r19",
+   "run_dir": "runs/main/T5_inventory/C-2",
+   "prompt_chars": 5157,
+   "prompt_sha256": "ca33b158216e24c4b444e972fb44a0d52427c34cfb2ea2af3bcc6372d3f2f862"
+  },
+  {
+   "run_id": "r20",
+   "task": "T2_todo_cli",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r20",
+   "run_dir": "runs/main/T2_todo_cli/A-1",
+   "prompt_chars": 2451,
+   "prompt_sha256": "fc5c9bf11962235d1566d059762693145dc7539a631741df064ac28908e143d4"
+  },
+  {
+   "run_id": "r21",
+   "task": "T3_kv_store",
+   "condition": "C2",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r21",
+   "run_dir": "runs/main/T3_kv_store/C2-1",
+   "prompt_chars": 4558,
+   "prompt_sha256": "22891d2074e49eef051744869b78ce20e98b5e29a4b6a2b2f32110bf198ed8cb"
+  },
+  {
+   "run_id": "r22",
+   "task": "T4_log_stats",
+   "condition": "C2",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r22",
+   "run_dir": "runs/main/T4_log_stats/C2-3",
+   "prompt_chars": 4876,
+   "prompt_sha256": "74b4d2b9b0f7f1b5e9ea6e43dcf26b6ed1c5c8ea8cf360a27d466209443f6849"
+  },
+  {
+   "run_id": "r23",
+   "task": "T5_inventory",
+   "condition": "A",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r23",
+   "run_dir": "runs/main/T5_inventory/A-3",
+   "prompt_chars": 3286,
+   "prompt_sha256": "69b401a6b52d5bb178b0f11fee976bf94aeb90c163e0e52523f721c668463ffe"
+  },
+  {
+   "run_id": "r24",
+   "task": "T5_inventory",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r24",
+   "run_dir": "runs/main/T5_inventory/B-1",
+   "prompt_chars": 12872,
+   "prompt_sha256": "c82d4ea6b8df6eda9aca7acbc97775a65dd17a6f72177e2a863922312dadce1f"
+  },
+  {
+   "run_id": "r25",
+   "task": "T3_kv_store",
+   "condition": "B",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r25",
+   "run_dir": "runs/main/T3_kv_store/B-2",
+   "prompt_chars": 9961,
+   "prompt_sha256": "9ce9e80c78e7b50cdaec650b7e85cd5b15972e8a0dafeea14ca8fea23e206e7b"
+  },
+  {
+   "run_id": "r26",
+   "task": "T3_kv_store",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r26",
+   "run_dir": "runs/main/T3_kv_store/A-1",
+   "prompt_chars": 2493,
+   "prompt_sha256": "d9dac70f4ce9a85efe7860e88a11ba48164f0ce81125759ef4c7157b126a349b"
+  },
+  {
+   "run_id": "r27",
+   "task": "T3_kv_store",
+   "condition": "A",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r27",
+   "run_dir": "runs/main/T3_kv_store/A-2",
+   "prompt_chars": 2493,
+   "prompt_sha256": "e9618888e9c2b810f1f5d93c1d9035ae8c2c66ea0200e207020fb864932f22f0"
+  },
+  {
+   "run_id": "r28",
+   "task": "T4_log_stats",
+   "condition": "B",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r28",
+   "run_dir": "runs/main/T4_log_stats/B-3",
+   "prompt_chars": 8910,
+   "prompt_sha256": "73f0012ebc6527204ea4a2e961eb7e2acd48718140f8696d44fca93b09458b44"
+  },
+  {
+   "run_id": "r29",
+   "task": "T5_inventory",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r29",
+   "run_dir": "runs/main/T5_inventory/A-1",
+   "prompt_chars": 3286,
+   "prompt_sha256": "2f2cfdb9d36c3384fd245089ff2d3577d8226f405f90c58082897db08f3b3336"
+  },
+  {
+   "run_id": "r30",
+   "task": "T1_csv_report",
+   "condition": "C2",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r30",
+   "run_dir": "runs/main/T1_csv_report/C2-3",
+   "prompt_chars": 4827,
+   "prompt_sha256": "825eb0e467ec4b505a78285f012972830682d200a23fd8843c938771c36e1bf6"
+  },
+  {
+   "run_id": "r31",
+   "task": "T4_log_stats",
+   "condition": "A",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r31",
+   "run_dir": "runs/main/T4_log_stats/A-2",
+   "prompt_chars": 2810,
+   "prompt_sha256": "7ae59b8371301d72ec24b16e17c32f257fdb98a06600f9eafbf26a954ab736b0"
+  },
+  {
+   "run_id": "r32",
+   "task": "T1_csv_report",
+   "condition": "B",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r32",
+   "run_dir": "runs/main/T1_csv_report/B-3",
+   "prompt_chars": 8101,
+   "prompt_sha256": "3f2dcaa545a17c3db33bf14445a77bee78c373efaa3cb67240507e3642ee5d75"
+  },
+  {
+   "run_id": "r33",
+   "task": "T1_csv_report",
+   "condition": "C",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r33",
+   "run_dir": "runs/main/T1_csv_report/C-3",
+   "prompt_chars": 4631,
+   "prompt_sha256": "bccd0a20932be9298a7975e968a92453b9fb675967ec3bad997a2ec7d3a55202"
+  },
+  {
+   "run_id": "r34",
+   "task": "T1_csv_report",
+   "condition": "C",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r34",
+   "run_dir": "runs/main/T1_csv_report/C-2",
+   "prompt_chars": 4631,
+   "prompt_sha256": "d4cd5161d69682deede21a21de819802916427d2569af900b143bd01dbf914ea"
+  },
+  {
+   "run_id": "r35",
+   "task": "T4_log_stats",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r35",
+   "run_dir": "runs/main/T4_log_stats/A-1",
+   "prompt_chars": 2810,
+   "prompt_sha256": "70603e49972e4e4200389c07fd53aa2a9e9112f7ec822b8511c7f26951db1ac3"
+  },
+  {
+   "run_id": "r36",
+   "task": "T3_kv_store",
+   "condition": "A",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r36",
+   "run_dir": "runs/main/T3_kv_store/A-3",
+   "prompt_chars": 2493,
+   "prompt_sha256": "2a3c5caa53ef95e2533e52bd6d4d6a97520c3bbbe08b3ca2228cdd37152d4be7"
+  },
+  {
+   "run_id": "r37",
+   "task": "T4_log_stats",
+   "condition": "C",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r37",
+   "run_dir": "runs/main/T4_log_stats/C-2",
+   "prompt_chars": 4681,
+   "prompt_sha256": "3d0053e82951b0b8ac08c0ac93777579839ea896260a2313c25c276c00ad722e"
+  },
+  {
+   "run_id": "r38",
+   "task": "T1_csv_report",
+   "condition": "C2",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r38",
+   "run_dir": "runs/main/T1_csv_report/C2-2",
+   "prompt_chars": 4827,
+   "prompt_sha256": "f0ff143364628aca13fbbc58dfedcee52b97cf091149b4911c20557170b955a9"
+  },
+  {
+   "run_id": "r39",
+   "task": "T5_inventory",
+   "condition": "B",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r39",
+   "run_dir": "runs/main/T5_inventory/B-3",
+   "prompt_chars": 12872,
+   "prompt_sha256": "28351ca009844dc36ff0494a269986057b96d94bc52b142b4d666ab3685f73aa"
+  },
+  {
+   "run_id": "r40",
+   "task": "T5_inventory",
+   "condition": "B",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r40",
+   "run_dir": "runs/main/T5_inventory/B-2",
+   "prompt_chars": 12872,
+   "prompt_sha256": "f51c4a8935a516024fc8030d233b9d5644b3eaa3d33f372879e93332b0c52c5d"
+  },
+  {
+   "run_id": "r41",
+   "task": "T4_log_stats",
+   "condition": "C2",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r41",
+   "run_dir": "runs/main/T4_log_stats/C2-1",
+   "prompt_chars": 4876,
+   "prompt_sha256": "031803eacae853ae29528cd70b93ee3b32df2d0573c917aa660a18efcfb191ef"
+  },
+  {
+   "run_id": "r42",
+   "task": "T1_csv_report",
+   "condition": "C2",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r42",
+   "run_dir": "runs/main/T1_csv_report/C2-1",
+   "prompt_chars": 4827,
+   "prompt_sha256": "42e79c4eac0f1ad023ee0b136fcaffb3b5b0dcaa3c2d5731548c136a652422b7"
+  },
+  {
+   "run_id": "r43",
+   "task": "T2_todo_cli",
+   "condition": "A",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r43",
+   "run_dir": "runs/main/T2_todo_cli/A-2",
+   "prompt_chars": 2451,
+   "prompt_sha256": "e69e3f601f1d63cf40803124cecd051536593038980502fb06d061aa172aade5"
+  },
+  {
+   "run_id": "r44",
+   "task": "T3_kv_store",
+   "condition": "C2",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r44",
+   "run_dir": "runs/main/T3_kv_store/C2-3",
+   "prompt_chars": 4558,
+   "prompt_sha256": "3187d730ea8842a67d7e8cbc82a97ce972c8989c6b443df1aeede8dba58357ea"
+  },
+  {
+   "run_id": "r45",
+   "task": "T3_kv_store",
+   "condition": "C",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r45",
+   "run_dir": "runs/main/T3_kv_store/C-2",
+   "prompt_chars": 4364,
+   "prompt_sha256": "d7717fbf99e8f473168fe8246b4633d645f9ce593ffdfea79be03d7ee2050d18"
+  },
+  {
+   "run_id": "r46",
+   "task": "T2_todo_cli",
+   "condition": "B",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r46",
+   "run_dir": "runs/main/T2_todo_cli/B-3",
+   "prompt_chars": 9573,
+   "prompt_sha256": "c0da0e6bd89f2b03e38e555737ef917bcea2536933f3e5f1252dbdc31727834c"
+  },
+  {
+   "run_id": "r47",
+   "task": "T1_csv_report",
+   "condition": "B",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r47",
+   "run_dir": "runs/main/T1_csv_report/B-2",
+   "prompt_chars": 8101,
+   "prompt_sha256": "ab03923f92139a4054b7ee03fe04268e93487d075a5e533e2d3a40b77a52968d"
+  },
+  {
+   "run_id": "r48",
+   "task": "T5_inventory",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r48",
+   "run_dir": "runs/main/T5_inventory/C-1",
+   "prompt_chars": 5157,
+   "prompt_sha256": "40b53e231c1438607847521257fc719a138e2678d9d8d714330cc2b1a50ad126"
+  },
+  {
+   "run_id": "r49",
+   "task": "T4_log_stats",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r49",
+   "run_dir": "runs/main/T4_log_stats/C-1",
+   "prompt_chars": 4681,
+   "prompt_sha256": "ec7ed1d1796fa3d77cebb4dd1e9f3e22681e32aa875bcb9bbe9bc8595375dc10"
+  },
+  {
+   "run_id": "r50",
+   "task": "T2_todo_cli",
+   "condition": "C2",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r50",
+   "run_dir": "runs/main/T2_todo_cli/C2-1",
+   "prompt_chars": 4516,
+   "prompt_sha256": "51127610aee09e37930f687d49eeac27cfdc40bb008f6998665dd7cbe9485109"
+  },
+  {
+   "run_id": "r51",
+   "task": "T4_log_stats",
+   "condition": "C",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r51",
+   "run_dir": "runs/main/T4_log_stats/C-3",
+   "prompt_chars": 4681,
+   "prompt_sha256": "4f1673c6f19ffa5e3ac1d9d386046c475e0192c9545efdb45b3cd48054f9e79a"
+  },
+  {
+   "run_id": "r52",
+   "task": "T1_csv_report",
+   "condition": "A",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r52",
+   "run_dir": "runs/main/T1_csv_report/A-3",
+   "prompt_chars": 2760,
+   "prompt_sha256": "ae875c7f7a67652406715f8499aefbe3eccc2a693a83b1d6854a1bab589847f6"
+  },
+  {
+   "run_id": "r53",
+   "task": "T4_log_stats",
+   "condition": "C2",
+   "trial": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r53",
+   "run_dir": "runs/main/T4_log_stats/C2-2",
+   "prompt_chars": 4876,
+   "prompt_sha256": "67b05a7d93f9c2e2015a2e0b9a1a691a6019c221f52f65c54b40e67da6cc855b"
+  },
+  {
+   "run_id": "r54",
+   "task": "T1_csv_report",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r54",
+   "run_dir": "runs/main/T1_csv_report/B-1",
+   "prompt_chars": 8101,
+   "prompt_sha256": "2c44d9eabceb6c243bc812c894d0753da8c77b00abd00ebb0cb67a461c9da4a0"
+  },
+  {
+   "run_id": "r55",
+   "task": "T2_todo_cli",
+   "condition": "C2",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r55",
+   "run_dir": "runs/main/T2_todo_cli/C2-3",
+   "prompt_chars": 4516,
+   "prompt_sha256": "1e96632ce6d1a247bb31616a2910c8f9dd7caa55f7ddf292868d951d11affa5f"
+  },
+  {
+   "run_id": "r56",
+   "task": "T1_csv_report",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r56",
+   "run_dir": "runs/main/T1_csv_report/A-1",
+   "prompt_chars": 2760,
+   "prompt_sha256": "740385f08e4ca5deff0c70ec61242446edd3890f7c7b72bb2d145e3c4acb6ba1"
+  },
+  {
+   "run_id": "r57",
+   "task": "T3_kv_store",
+   "condition": "C",
+   "trial": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r57",
+   "run_dir": "runs/main/T3_kv_store/C-3",
+   "prompt_chars": 4364,
+   "prompt_sha256": "c345081ec4ced50b6e39401054cd463e1b3e7dd50dffb642f15a9b04a9789393"
+  }
+ ]
+}

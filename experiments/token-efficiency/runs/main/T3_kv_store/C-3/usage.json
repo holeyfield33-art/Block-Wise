@@ -1,0 +1,82 @@
+{
+ "requests": 7,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5747,
+   "cache_read": 50656,
+   "output_lower_bound": 17,
+   "input_total": 56405
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 478,
+   "cache_read": 56403,
+   "output_lower_bound": 16,
+   "input_total": 56883
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 222,
+   "cache_read": 56881,
+   "output_lower_bound": 28,
+   "input_total": 57105
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1034,
+   "cache_read": 57103,
+   "output_lower_bound": 8,
+   "input_total": 58139
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 517,
+   "cache_read": 58137,
+   "output_lower_bound": 20,
+   "input_total": 58656
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 567,
+   "cache_read": 58654,
+   "output_lower_bound": 6,
+   "input_total": 59223
+  }
+ ],
+ "input_tokens_total": 397069,
+ "input_tokens_uncached": 14,
+ "cache_write_tokens": 23397,
+ "cache_read_tokens": 373658,
+ "first_request_input": 50658,
+ "context_growth_tokens": 8565,
+ "output_tokens_lower_bound": 111,
+ "generated_chars": 3175,
+ "tool_result_chars": 7920,
+ "tool_calls": 7,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 5,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 4,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 2,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r57/app/store.py`. It passed my own behavioral checks, and `blockwise check` now flags one function that I edited.\n\n- **How it was built:** `blockwise find` returned the `kv_store` blueprint. I applied it with `file=store store=store.json` and did not read the generated code.\n- **Behavioral checks:** I ran one batch of about 25 command variants from `scratch/t`, then a re-run of the one case I fixed.\n  - Covered: `list` and no arguments, `set`, `get`, `delete`, and a missing key (`error: no key KEY`, exit 1).\n  - Covered: wrong argument counts and unknown commands (usage message, exit 2), plus a corrupt `store.json` and a non-dict JSON file.\n  - All matched the spec except one case.\n- **Bug fixed:** a `store.json` containing valid JSON that wasn't an object, such as `[1,2]`, crashed `list`. I edited `load()` so any non-dict JSON is treated as an empty store. After the fix, `list` printed `(empty)` and exited 0.\n- **Block-Wise checks:**\n  - Before my edit, `check` passed with no issues.\n  - After my edit, `check` reports `body_changed` on `load`, because I changed the generated function's body. This is a structure-only complaint, and the behavior is correct. I left it as is.\n- **Runs:** I ran my behavioral checks once as a batch, plus the one re-run after the fix. I ran `blockwise check` twice before the fix and once after.",
+ "agent_tool_record": {
+  "subagent_tokens": 59908,
+  "tool_uses": 7,
+  "duration_ms": 32586
+ }
+}

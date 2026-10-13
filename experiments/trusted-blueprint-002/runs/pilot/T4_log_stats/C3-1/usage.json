@@ -1,0 +1,55 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14842,
+   "cache_read": 34601,
+   "output_lower_bound": 16,
+   "input_total": 49445
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5521,
+   "cache_read": 49443,
+   "output_lower_bound": 8,
+   "input_total": 54966
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 388,
+   "cache_read": 54964,
+   "output_lower_bound": 24,
+   "input_total": 55354
+  }
+ ],
+ "input_tokens_total": 159765,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 20751,
+ "cache_read_tokens": 139008,
+ "first_request_input": 49445,
+ "context_growth_tokens": 5909,
+ "output_tokens_lower_bound": 48,
+ "generated_chars": 784,
+ "tool_result_chars": 4222,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 1,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 0,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "Completion record: I ran `blockwise apply log_stats --into app` once, as the task file instructed. I did not open, run or test the generated file, and I made no other changes.\n\nFile written: /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws002/t04/app/logstats.py\n\nGeneration response:\n{\"ok\":true,\"added\":[\"app/logstats.py\"],\"blueprint\":\"log_stats\",\"try\":\"python app/logstats.py app.log\"}",
+ "agent_tool_record": {
+  "subagent_tokens": 55579,
+  "tool_uses": 3,
+  "duration_ms": 11504
+ },
+ "derived_input_usd": 0.07969
+}

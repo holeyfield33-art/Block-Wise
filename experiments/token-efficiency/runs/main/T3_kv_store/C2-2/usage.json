@@ -1,0 +1,75 @@
+{
+ "requests": 6,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5840,
+   "cache_read": 50667,
+   "output_lower_bound": 16,
+   "input_total": 56509
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 275,
+   "cache_read": 56507,
+   "output_lower_bound": 31,
+   "input_total": 56784
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1065,
+   "cache_read": 56782,
+   "output_lower_bound": 42,
+   "input_total": 57849
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 362,
+   "cache_read": 57847,
+   "output_lower_bound": 21,
+   "input_total": 58211
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 418,
+   "cache_read": 58209,
+   "output_lower_bound": 25,
+   "input_total": 58629
+  }
+ ],
+ "input_tokens_total": 338651,
+ "input_tokens_uncached": 12,
+ "cache_write_tokens": 22803,
+ "cache_read_tokens": 315836,
+ "first_request_input": 50669,
+ "context_growth_tokens": 7960,
+ "output_tokens_lower_bound": 151,
+ "generated_chars": 2649,
+ "tool_result_chars": 6833,
+ "tool_calls": 6,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 4,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 2,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 2,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r09/app/store.py` by running `blockwise apply kv_store --into app`. My own checks passed.\n\n- **Fix to the generated code:** it crashed when `store.json` held valid JSON that wasn't an object, such as `[1]`. I changed `load()` so a non-dict result is treated as an empty store.\n- **Checks run:** I ran one batch of behavioral checks (about 20 commands) in `scratch/t`, then a short re-run after the fix. They covered all the commands, every usage-error case (exit 2), missing keys (exit 1), `list` with extra arguments, a corrupt `store.json`, and the `[1]` case.\n- **`blockwise check`:** I ran it twice. The first run, before my edit, reported no issues. The second, after my edit, also reported none, but it said \"No plan yet\" and checked 0 functions, so it covered nothing that time.\n- **Tool calls:** 5 of the 30 allowed, including reading the task file.",
+ "agent_tool_record": {
+  "subagent_tokens": 59095,
+  "tool_uses": 6,
+  "duration_ms": 21849
+ }
+}

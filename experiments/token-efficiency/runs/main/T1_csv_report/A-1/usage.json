@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5025,
+   "cache_read": 50656,
+   "output_lower_bound": 3,
+   "input_total": 55683
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1821,
+   "cache_read": 55681,
+   "output_lower_bound": 25,
+   "input_total": 57504
+  }
+ ],
+ "input_tokens_total": 163845,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 21678,
+ "cache_read_tokens": 142161,
+ "first_request_input": 50658,
+ "context_growth_tokens": 6846,
+ "output_tokens_lower_bound": 44,
+ "generated_chars": 3360,
+ "tool_result_chars": 3154,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r56/app/report.py`, and my own check passed on the one run I did.\n\nThat run used a few small CSVs I made in `scratch/`. It covered:\n- A normal report, including a comma amount (`\"1,200\"`), a non-numeric amount, a blank group and a short row.\n- A header-only file.\n- A missing group column.\n- An unreadable file.\n- A wrong number of arguments.\n\nEvery output and exit code matched the spec.\n\nFloats are used for the sums and 2-decimal formatting. A value like 2.675 can therefore round the way Python floats do, not the way decimals would.\n\nI also made the program treat NaN and infinity as 0, skip fully blank lines, and accept a UTF-8 BOM. The spec doesn't cover these, so they are my own choices.",
+ "agent_tool_record": {
+  "subagent_tokens": 57862,
+  "tool_uses": 3,
+  "duration_ms": 21255
+ }
+}

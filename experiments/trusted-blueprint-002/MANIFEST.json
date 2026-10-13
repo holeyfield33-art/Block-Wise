@@ -1,0 +1,42 @@
+{
+ "generator_commit": "b01d95667b3fd884f613091a4057d17075314241",
+ "approved_blueprints": {
+  "csv_report": {
+   "task": "T1_csv_report",
+   "blueprint_file": "blockwise/library/blueprints/csv_report.json",
+   "blueprint_sha256": "85f1e4539a24bd4adea3ca6e09f73b49092f4a9af20e567dc4043e7004ed85c3",
+   "program": "report.py",
+   "generated_program_sha256": "32fcf70e4e8c923cb7e1266a5ec61dbf34590c06cda1382920984cd6649c687e",
+   "configuration": "default (no --set)",
+   "apply_response": "{\"ok\":true,\"added\":[\"app/report.py\"],\"blueprint\":\"csv_report\",\"try\":\"python app/report.py sales.csv region amount\"}"
+  },
+  "todo_cli": {
+   "task": "T2_todo_cli",
+   "blueprint_file": "blockwise/library/blueprints/todo_cli.json",
+   "blueprint_sha256": "e2b1eb18ef25a78b3101c0531cdd89dac68f2443811a859e8c7b9592a8b518ea",
+   "program": "todo.py",
+   "generated_program_sha256": "9df4ce42b0c89f6a4e592aa92f11972adef7ddd8192084e2b9ed22cac22102e8",
+   "configuration": "default (no --set)",
+   "apply_response": "{\"ok\":true,\"added\":[\"app/todo.py\"],\"blueprint\":\"todo_cli\",\"try\":\"python app/todo.py add buy milk\"}"
+  },
+  "kv_store": {
+   "task": "T3_kv_store",
+   "blueprint_file": "blockwise/library/blueprints/kv_store.json",
+   "blueprint_sha256": "a369afe1360b440a73eb617a55ff27bb03125245c272cba46d12710c2c364899",
+   "program": "store.py",
+   "generated_program_sha256": "86f438deaa4c9f3df24b54a617f83f4c95ec15021c761a04eba73b4447adb44b",
+   "configuration": "default (no --set)",
+   "apply_response": "{\"ok\":true,\"added\":[\"app/store.py\"],\"blueprint\":\"kv_store\",\"try\":\"python app/store.py set name Ana\"}"
+  },
+  "log_stats": {
+   "task": "T4_log_stats",
+   "blueprint_file": "blockwise/library/blueprints/log_stats.json",
+   "blueprint_sha256": "80c2fbbff44d5b05989c34d980e1d9bca38fca3bada9397be14870f97fec31c7",
+   "program": "logstats.py",
+   "generated_program_sha256": "37a201cd9f1bb8f697076673fbdaaadfe8ec1695daae4b0c9421db33a4f05fa7",
+   "configuration": "default (no --set)",
+   "apply_response": "{\"ok\":true,\"added\":[\"app/logstats.py\"],\"blueprint\":\"log_stats\",\"try\":\"python app/logstats.py app.log\"}"
+  }
+ },
+ "trust_scope": "Only these blueprint ids, at these hashes, in the default configuration."
+}

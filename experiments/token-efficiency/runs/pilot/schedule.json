@@ -1,0 +1,77 @@
+{
+ "seed": 20261012,
+ "pilot": true,
+ "launcher": "Your complete instructions are in the file {ws}/TASK_PROMPT.md. Read that file first and follow it exactly.",
+ "attempts": [
+  {
+   "run_id": "p01",
+   "task": "T1_csv_report",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p01",
+   "run_dir": "runs/pilot/T1_csv_report/B-1",
+   "prompt_chars": 8089,
+   "prompt_sha256": "74d38df8a79a5179687ae5fd58c2968b0d29ebfe0ef64bdc1e127ffde1a5886f"
+  },
+  {
+   "run_id": "p02",
+   "task": "T1_csv_report",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p02",
+   "run_dir": "runs/pilot/T1_csv_report/C-1",
+   "prompt_chars": 4615,
+   "prompt_sha256": "ed9a82f47b2b8d74e8ccb0299d428c450a3b0467d2ddabd56bffa7271daef5d8"
+  },
+  {
+   "run_id": "p03",
+   "task": "T1_csv_report",
+   "condition": "C2",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p03",
+   "run_dir": "runs/pilot/T1_csv_report/C2-1",
+   "prompt_chars": 4811,
+   "prompt_sha256": "7e78d3ff779ccdfc02de350b47367e7361e054973addda0e91750ff2a9eaf3a3"
+  },
+  {
+   "run_id": "p04",
+   "task": "T5_inventory",
+   "condition": "B",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p04",
+   "run_dir": "runs/pilot/T5_inventory/B-1",
+   "prompt_chars": 12860,
+   "prompt_sha256": "5344717ade032920c5a6ec927650c7b9dc5f4adfeeee7ca7fa90ed4133177fc9"
+  },
+  {
+   "run_id": "p05",
+   "task": "T5_inventory",
+   "condition": "C",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p05",
+   "run_dir": "runs/pilot/T5_inventory/C-1",
+   "prompt_chars": 5141,
+   "prompt_sha256": "21e00a09ad7c2aa42c1103b678704c54cfba13ba8b0ae77894a28c14871b5984"
+  },
+  {
+   "run_id": "p06",
+   "task": "T1_csv_report",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p06",
+   "run_dir": "runs/pilot/T1_csv_report/A-1",
+   "prompt_chars": 2748,
+   "prompt_sha256": "655f7c416db6564e443c85baac49abcdcd40e09f049a3c06c1a9940e58463398"
+  },
+  {
+   "run_id": "p07",
+   "task": "T5_inventory",
+   "condition": "A",
+   "trial": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p07",
+   "run_dir": "runs/pilot/T5_inventory/A-1",
+   "prompt_chars": 3274,
+   "prompt_sha256": "ee019547c08ac6175c55506e475350974e93da5d6c8487f1217028553851a608"
+  }
+ ]
+}

@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5234,
+   "cache_read": 50656,
+   "output_lower_bound": 3,
+   "input_total": 55892
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1773,
+   "cache_read": 55890,
+   "output_lower_bound": 24,
+   "input_total": 57665
+  }
+ ],
+ "input_tokens_total": 164215,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 21839,
+ "cache_read_tokens": 142370,
+ "first_request_input": 50658,
+ "context_growth_tokens": 7007,
+ "output_tokens_lower_bound": 141,
+ "generated_chars": 3858,
+ "tool_result_chars": 3859,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r29/app/inventory.py`, and my own check passed. I ran it once, as a single batch of 12 command invocations in `scratch/`, which covered:\n- `show` with no items\n- `add`\n- `low`\n- `remove` with too much stock\n- `remove` of an unknown item\n- `remove` down to 0\n- an invalid item name\n- quantity 0\n- a bad threshold\n- an unknown command\n\nEvery output and exit code matched the spec. The script is also never run with a malformed `inventory.json`, so spec rule 7 (missing or invalid JSON treated as empty) was only exercised for the missing-file case. Total tool calls used: 3.",
+ "agent_tool_record": {
+  "subagent_tokens": 57985,
+  "tool_uses": 3,
+  "duration_ms": 18426
+ }
+}

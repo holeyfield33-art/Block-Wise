@@ -1,0 +1,107 @@
+{
+ "launcher": "Your complete instructions are in the file {ws}/TASK_PROMPT.md. Read that file first and follow it exactly.",
+ "rounds": [
+  [
+   "A",
+   "B",
+   "C",
+   "D"
+  ],
+  [
+   "D",
+   "C",
+   "B",
+   "A"
+  ]
+ ],
+ "attempts": [
+  {
+   "run_id": "s01",
+   "condition": "A",
+   "round": 1,
+   "order_in_round": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s01",
+   "run_dir": "runs/A-1",
+   "prompt_chars": 7191,
+   "prefix_chars": 75,
+   "prompt_sha256": "5cb26e6d150552de676c4600ffef148130ee185e7d4e01d17546431785667138"
+  },
+  {
+   "run_id": "s02",
+   "condition": "B",
+   "round": 1,
+   "order_in_round": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s02",
+   "run_dir": "runs/B-1",
+   "prompt_chars": 22249,
+   "prefix_chars": 15133,
+   "prompt_sha256": "1c6f2ab5abc2c0d69e278ebb14ec1c368975494b3a615ae69753b405e194f37b"
+  },
+  {
+   "run_id": "s03",
+   "condition": "C",
+   "round": 1,
+   "order_in_round": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s03",
+   "run_dir": "runs/C-1",
+   "prompt_chars": 10417,
+   "prefix_chars": 3046,
+   "prompt_sha256": "ae12daabf7b86cbee72266d3dcdd63a811f022b8bf8341b5773141419109160e"
+  },
+  {
+   "run_id": "s04",
+   "condition": "D",
+   "round": 1,
+   "order_in_round": 4,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s04",
+   "run_dir": "runs/D-1",
+   "prompt_chars": 7915,
+   "prefix_chars": 544,
+   "prompt_sha256": "e6b39a2c67c3c4618f16d3854fa4342e3d31b598416ab925337d57581066b3d3"
+  },
+  {
+   "run_id": "s05",
+   "condition": "D",
+   "round": 2,
+   "order_in_round": 1,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s05",
+   "run_dir": "runs/D-2",
+   "prompt_chars": 7915,
+   "prefix_chars": 544,
+   "prompt_sha256": "0da1a1031671f0aa4bb48b9bd647fa8c5c2120ac27b09f23deb556057ad61b84"
+  },
+  {
+   "run_id": "s06",
+   "condition": "C",
+   "round": 2,
+   "order_in_round": 2,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s06",
+   "run_dir": "runs/C-2",
+   "prompt_chars": 10417,
+   "prefix_chars": 3046,
+   "prompt_sha256": "2db7792669144468cb28379193b863a9217929b1fc10a683ee39117840eeec79"
+  },
+  {
+   "run_id": "s07",
+   "condition": "B",
+   "round": 2,
+   "order_in_round": 3,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s07",
+   "run_dir": "runs/B-2",
+   "prompt_chars": 22249,
+   "prefix_chars": 15133,
+   "prompt_sha256": "3b9ccac4d3f203cc6632d48445abe7e731b71fa8db02115abc9fa90ac095d6a0"
+  },
+  {
+   "run_id": "s08",
+   "condition": "A",
+   "round": 2,
+   "order_in_round": 4,
+   "workspace": "/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws003/s08",
+   "run_dir": "runs/A-2",
+   "prompt_chars": 7191,
+   "prefix_chars": 75,
+   "prompt_sha256": "3249a260c2829a888c4bcd9107bc54129ad2c4f63ad27890f6a461edc0287817"
+  }
+ ]
+}

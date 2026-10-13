@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5025,
+   "cache_read": 50667,
+   "output_lower_bound": 3,
+   "input_total": 55694
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1735,
+   "cache_read": 55692,
+   "output_lower_bound": 24,
+   "input_total": 57429
+  }
+ ],
+ "input_tokens_total": 163792,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 21603,
+ "cache_read_tokens": 142183,
+ "first_request_input": 50669,
+ "context_growth_tokens": 6760,
+ "output_tokens_lower_bound": 43,
+ "generated_chars": 3474,
+ "tool_result_chars": 3154,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r12/app/report.py`, and my own checks passed. I ran them once, as a single batch of 5 invocations, using test files in `scratch/`.\n\nThose runs covered:\n- the normal report, including a `\"1,200\"` amount, a blank group and a non-numeric amount;\n- a header-only file, which prints only `total: 0.00`;\n- a missing group column, which prints `error: no column q` and exits 1;\n- an unreadable file, which prints `error: cannot read nope.csv` and exits 1;\n- no arguments, which prints the usage line and exits 2.\n\nThe spec left three points open, so I made these choices:\n- **Rounding:** totals use Python floats, so 2-decimal rounding follows float behaviour rather than decimal half-up. A reference built on Decimal could differ on values like 2.675.\n- **Amount parsing:** `nan`, `inf` and amounts containing `_` count as 0.\n- **Short rows:** a row missing the group column goes under `(blank)`, and a row missing the amount column counts as 0.\n\nA UTF-8 BOM at the start of the file is stripped.",
+ "agent_tool_record": {
+  "subagent_tokens": 57899,
+  "tool_uses": 3,
+  "duration_ms": 22570
+ }
+}

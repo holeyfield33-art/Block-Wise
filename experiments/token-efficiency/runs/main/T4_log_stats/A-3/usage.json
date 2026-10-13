@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 5060,
+   "cache_read": 50667,
+   "output_lower_bound": 3,
+   "input_total": 55729
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1417,
+   "cache_read": 55727,
+   "output_lower_bound": 25,
+   "input_total": 57146
+  }
+ ],
+ "input_tokens_total": 163544,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 21320,
+ "cache_read_tokens": 142218,
+ "first_request_input": 50669,
+ "context_growth_tokens": 6477,
+ "output_tokens_lower_bound": 44,
+ "generated_chars": 2971,
+ "tool_result_chars": 3183,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `app/logstats.py` in the r03 workspace (full path: /tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r03/app/logstats.py).\n\nMy own checks passed, and I ran them once, in a single batch. They covered:\n- a mixed log (valid lines, a bad line, a blank line in the middle, trailing blank lines)\n- an empty file\n- a missing file\n- no arguments\n\nEach case printed the expected output and exit code.\n\nTwo spec gaps I had to decide:\n- Trailing blank lines at the end of the file are not counted as skipped. Only blank lines in the middle count.\n- Message counting strips surrounding whitespace, so `db timeout  ` and `db timeout` count as the same message.\n\nI also left a sample log, `t.log`, and an empty file, `e.log`, in `scratch/`.",
+ "agent_tool_record": {
+  "subagent_tokens": 57503,
+  "tool_uses": 3,
+  "duration_ms": 16440
+ }
+}

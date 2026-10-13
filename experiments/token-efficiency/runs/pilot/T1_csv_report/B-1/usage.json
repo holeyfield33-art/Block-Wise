@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 50654,
+   "cache_read": 0,
+   "output_lower_bound": 112,
+   "input_total": 50656
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 7587,
+   "cache_read": 50654,
+   "output_lower_bound": 3,
+   "input_total": 58243
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1176,
+   "cache_read": 58241,
+   "output_lower_bound": 24,
+   "input_total": 59419
+  }
+ ],
+ "input_tokens_total": 168318,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 59417,
+ "cache_read_tokens": 108895,
+ "first_request_input": 50656,
+ "context_growth_tokens": 8763,
+ "output_tokens_lower_bound": 139,
+ "generated_chars": 2715,
+ "tool_result_chars": 9470,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/ws/p01/app/report.py`, following the plan exactly: same imports, function names, typed parameters, return types and body structure, with the `__main__` entry block.\n\nMy own checks passed. I ran them once, as a single batch of 5 invocations: normal report with a blank group, comma amount and non-numeric amount; header-only file; missing group column; unreadable file; and no arguments. Exit codes and output matched the spec in every case.\n\nThe only other file I created is the check data in `scratch/` (`s.csv` and `h.csv`). I used 2 tool calls.",
+ "agent_tool_record": {
+  "subagent_tokens": 59704,
+  "tool_uses": 3,
+  "duration_ms": 16118
+ }
+}

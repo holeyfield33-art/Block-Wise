@@ -1,0 +1,166 @@
+{
+ "program": "todo.py",
+ "scenarios": [
+  {
+   "name": "full_flow",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "Nothing to do.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "buy",
+      "milk"
+     ],
+     "stdout": "Added.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "call mom"
+     ],
+     "stdout": "Added.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "done",
+      "1"
+     ],
+     "stdout": "Marked done.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "1. [x] buy milk\n2. [ ] call mom\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "done",
+      "9"
+     ],
+     "stdout": "error: no item 9\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add",
+      "   "
+     ],
+     "stdout": "error: text must not be empty\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "fly"
+     ],
+     "stdout": "usage: todo.py [list | add TEXT | done NUMBER]\n",
+     "exit": 2
+    },
+    {
+     "argv": [],
+     "stdout": "1. [x] buy milk\n2. [ ] call mom\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "strip_and_join",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "add",
+      "  water",
+      "plants  "
+     ],
+     "stdout": "Added.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "1. [ ] water plants\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "done_zero_and_empty_add",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "add",
+      "a"
+     ],
+     "stdout": "Added.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "done",
+      "0"
+     ],
+     "stdout": "error: no item 0\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "add"
+     ],
+     "stdout": "error: text must not be empty\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "1. [ ] a\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "broken_store_is_empty",
+   "files": {
+    "todo.json": "{not json"
+   },
+   "steps": [
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "Nothing to do.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "add",
+      "x"
+     ],
+     "stdout": "Added.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "1. [ ] x\n",
+     "exit": 0
+    }
+   ]
+  }
+ ]
+}

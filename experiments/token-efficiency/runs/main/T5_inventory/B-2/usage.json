@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 9703,
+   "cache_read": 50656,
+   "output_lower_bound": 6,
+   "input_total": 60361
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1978,
+   "cache_read": 60359,
+   "output_lower_bound": 24,
+   "input_total": 62339
+  }
+ ],
+ "input_tokens_total": 173358,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 26513,
+ "cache_read_tokens": 146839,
+ "first_request_input": 50658,
+ "context_growth_tokens": 11681,
+ "output_tokens_lower_bound": 46,
+ "generated_chars": 4404,
+ "tool_result_chars": 15511,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r40/app/inventory.py`, following the plan's module, constants, functions and body structure. Nothing else is in `app/`.\n\nMy checks passed. I ran them once, as a single batch of 13 commands in `scratch/`, using a throwaway `inventory.json` there. They covered:\n- `show` on an empty inventory, plus `add` and `low`.\n- `remove` down to zero, which deleted the item.\n- An unknown item and an over-stock `remove`.\n- An invalid item name, a zero quantity and a non-numeric threshold.\n- An unknown command and a wrong argument count.\n\nEvery message and exit code (0, 1 or 2) matched the spec. I did not test a corrupt `inventory.json` file.\n\nI used 3 tool calls.",
+ "agent_tool_record": {
+  "subagent_tokens": 62693,
+  "tool_uses": 3,
+  "duration_ms": 17065
+ }
+}

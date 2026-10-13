@@ -1,0 +1,6 @@
+2026-10-12 09:00:00 INFO started
+2026-10-12 09:00:01 ERROR db timeout
+
+bad
+2026-10-12 09:00:02 CRITICAL x
+2026-10-12 09:00:03 ERROR db timeout

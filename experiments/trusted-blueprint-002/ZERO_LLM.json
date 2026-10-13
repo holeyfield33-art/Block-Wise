@@ -1,0 +1,53 @@
+{
+ "note": "Deterministic generation with no model involved. Local CPU time only; not an AI coding condition.",
+ "runs": [
+  {
+   "task": "T1_csv_report",
+   "blueprint": "csv_report",
+   "apply_exit": 0,
+   "apply_seconds": 0.095,
+   "response_chars": 115,
+   "tests": "9/9",
+   "success": true,
+   "llm_tokens": 0,
+   "llm_requests": 0,
+   "generated_program_sha256": "32fcf70e4e8c923cb7e1266a5ec61dbf34590c06cda1382920984cd6649c687e"
+  },
+  {
+   "task": "T2_todo_cli",
+   "blueprint": "todo_cli",
+   "apply_exit": 0,
+   "apply_seconds": 0.075,
+   "response_chars": 98,
+   "tests": "18/18",
+   "success": true,
+   "llm_tokens": 0,
+   "llm_requests": 0,
+   "generated_program_sha256": "9df4ce42b0c89f6a4e592aa92f11972adef7ddd8192084e2b9ed22cac22102e8"
+  },
+  {
+   "task": "T3_kv_store",
+   "blueprint": "kv_store",
+   "apply_exit": 0,
+   "apply_seconds": 0.082,
+   "response_chars": 100,
+   "tests": "19/19",
+   "success": true,
+   "llm_tokens": 0,
+   "llm_requests": 0,
+   "generated_program_sha256": "86f438deaa4c9f3df24b54a617f83f4c95ec15021c761a04eba73b4447adb44b"
+  },
+  {
+   "task": "T4_log_stats",
+   "blueprint": "log_stats",
+   "apply_exit": 0,
+   "apply_seconds": 0.076,
+   "response_chars": 102,
+   "tests": "9/9",
+   "success": true,
+   "llm_tokens": 0,
+   "llm_requests": 0,
+   "generated_program_sha256": "37a201cd9f1bb8f697076673fbdaaadfe8ec1695daae4b0c9421db33a4f05fa7"
+  }
+ ]
+}

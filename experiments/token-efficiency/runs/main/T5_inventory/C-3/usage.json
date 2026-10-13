@@ -1,0 +1,61 @@
+{
+ "requests": 4,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 6122,
+   "cache_read": 50667,
+   "output_lower_bound": 17,
+   "input_total": 56791
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 490,
+   "cache_read": 56789,
+   "output_lower_bound": 8,
+   "input_total": 57281
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 2174,
+   "cache_read": 57279,
+   "output_lower_bound": 26,
+   "input_total": 59455
+  }
+ ],
+ "input_tokens_total": 224196,
+ "input_tokens_uncached": 8,
+ "cache_write_tokens": 23629,
+ "cache_read_tokens": 200559,
+ "first_request_input": 50669,
+ "context_growth_tokens": 8786,
+ "output_tokens_lower_bound": 67,
+ "generated_chars": 4595,
+ "tool_result_chars": 7239,
+ "tool_calls": 4,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 2,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 1,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r04/app/inventory.py`, and my own checks passed. I ran the check script once, in a temp directory, and every output and exit code matched the spec.\n\n- **Block-Wise:** I ran `find` once. Its three suggestions (`todo_cli`, `data_validator`, `kv_store`) did not match an inventory tracker, so I wrote the code by hand. I did not run `apply` or `check`.\n- **What the checks covered:**\n  - `show` and `low`, including a threshold of 0 and non-numeric or negative thresholds.\n  - `add` and `remove`, including deleting an item when its stock reaches 0.\n  - Unknown item and over-stock errors.\n  - Bad item names and bad quantities (`0`, `3.0`).\n  - Usage errors with exit code 2, including wrong argument counts.\n  - Invalid JSON in `inventory.json`, treated as empty.\n- **Files:** `inventory.py` is the only file in `app/`. The check script is `scratch/t.sh`.\n- **Tool calls:** I used 3 of the 30.",
+ "agent_tool_record": {
+  "subagent_tokens": 59917,
+  "tool_uses": 4,
+  "duration_ms": 21587
+ }
+}

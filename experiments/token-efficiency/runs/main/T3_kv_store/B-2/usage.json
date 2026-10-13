@@ -1,0 +1,55 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 114,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 8328,
+   "cache_read": 50656,
+   "output_lower_bound": 17,
+   "input_total": 58986
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1415,
+   "cache_read": 58984,
+   "output_lower_bound": 24,
+   "input_total": 60401
+  }
+ ],
+ "input_tokens_total": 170045,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 24575,
+ "cache_read_tokens": 145464,
+ "first_request_input": 50658,
+ "context_growth_tokens": 9743,
+ "output_tokens_lower_bound": 155,
+ "generated_chars": 3308,
+ "tool_result_chars": 12012,
+ "tool_calls": 4,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Write": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r25/app/store.py`, following the plan exactly. My own check passed. I ran it once, as a single batch of 10 commands from `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r25/scratch/t`. The check covered:\n- `list` on an empty store\n- `set`, `get` and `delete` on existing keys\n- `get` and `delete` on a missing key, which print the error and exit 1\n- `list` after the changes\n- the wrong-argument-count and unknown-command cases, which print the usage line and exit 2\n\nAll outputs and exit codes matched the spec. I did not test a corrupt `store.json`; that case relies on `load` catching `ValueError`. I used 3 tool calls in total.",
+ "agent_tool_record": {
+  "subagent_tokens": 60774,
+  "tool_uses": 4,
+  "duration_ms": 15718
+ }
+}

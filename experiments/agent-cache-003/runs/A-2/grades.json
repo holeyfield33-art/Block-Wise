@@ -1,0 +1,43 @@
+{
+ "T1_csv_report": {
+  "tests_passed": 9,
+  "tests_total": 9,
+  "all_passed": true,
+  "syntax_ok": true,
+  "program_bytes": 1489,
+  "program_lines": 56,
+  "failed": [],
+  "matches_approved_hash": false
+ },
+ "T2_todo_cli": {
+  "tests_passed": 18,
+  "tests_total": 18,
+  "all_passed": true,
+  "syntax_ok": true,
+  "program_bytes": 1778,
+  "program_lines": 70,
+  "failed": [],
+  "matches_approved_hash": false
+ },
+ "T3_kv_store": {
+  "tests_passed": 19,
+  "tests_total": 19,
+  "all_passed": true,
+  "syntax_ok": true,
+  "program_bytes": 1244,
+  "program_lines": 56,
+  "failed": [],
+  "matches_approved_hash": false
+ },
+ "T4_log_stats": {
+  "tests_passed": 9,
+  "tests_total": 9,
+  "all_passed": true,
+  "syntax_ok": true,
+  "program_bytes": 1265,
+  "program_lines": 44,
+  "failed": [],
+  "matches_approved_hash": false
+ },
+ "_unexpected_files": []
+}

@@ -1,0 +1,82 @@
+{
+ "requests": 7,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 6006,
+   "cache_read": 50656,
+   "output_lower_bound": 16,
+   "input_total": 56664
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 271,
+   "cache_read": 56662,
+   "output_lower_bound": 32,
+   "input_total": 56935
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 859,
+   "cache_read": 56933,
+   "output_lower_bound": 4,
+   "input_total": 57794
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 449,
+   "cache_read": 57792,
+   "output_lower_bound": 8,
+   "input_total": 58243
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 493,
+   "cache_read": 58241,
+   "output_lower_bound": 16,
+   "input_total": 58736
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 482,
+   "cache_read": 58734,
+   "output_lower_bound": 26,
+   "input_total": 59218
+  }
+ ],
+ "input_tokens_total": 398248,
+ "input_tokens_uncached": 14,
+ "cache_write_tokens": 23392,
+ "cache_read_tokens": 374842,
+ "first_request_input": 50658,
+ "context_growth_tokens": 8560,
+ "output_tokens_lower_bound": 118,
+ "generated_chars": 3488,
+ "tool_result_chars": 6871,
+ "tool_calls": 7,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 5,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 3,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 3,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r38/app/report.py`, and my own checks passed. I ran them 3 times (about 10 cases in the first run, 2 more cases after the edit, plus a re-run of the earlier cases).\n\n**How it was built:** I applied the `csv_report` template with `blockwise apply csv_report --into app`. I then made two edits to the generated code:\n- It now reads the file as `utf-8-sig`, so a UTF-8 byte-order mark doesn't break the header lookup. With plain `utf-8`, a BOM file reported \"no column g\".\n- `nan` and `inf` amounts now count as 0 instead of being parsed as numbers.\n\n**What I checked, all as expected:**\n- The example from the spec.\n- Thousands separators, blank and non-numeric amounts, and a `(blank)` group.\n- Equal totals keeping first-seen order, and a negative amount.\n- A header-only file and an empty file, which print only `total: 0.00`.\n- A missing group column (exit 1), a missing file (exit 1), and the wrong number of arguments (exit 2).\n- An amount column that doesn't exist, which counts every amount as 0.\n\n`blockwise check` reported ok with no issues, though it only checks structure.",
+ "agent_tool_record": {
+  "subagent_tokens": 59724,
+  "tool_uses": 7,
+  "duration_ms": 29574
+ }
+}

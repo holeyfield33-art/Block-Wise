@@ -1,0 +1,56 @@
+{
+ "version": "blockwise-manifest-v1",
+ "generator_commit": "b01d95667b3fd884f613091a4057d17075314241",
+ "blueprints": {
+  "csv_report": {
+   "does": "A runnable report tool: reads a CSV, groups rows by one column, totals another, prints the groups largest first. Tolerates blank and bad numbers.",
+   "program": "report.py",
+   "params": "file=\"report\"",
+   "blueprint_sha256": "85f1e4539a24bd4adea3ca6e09f73b49092f4a9af20e567dc4043e7004ed85c3",
+   "program_sha256": "32fcf70e4e8c923cb7e1266a5ec61dbf34590c06cda1382920984cd6649c687e"
+  },
+  "data_validator": {
+   "does": "A runnable data checker: reads a CSV with name, email and age columns and reports every missing value, invalid email and impossible age, by line number. Exit code 1 when anything is wrong.",
+   "program": "validate.py",
+   "params": "file=\"validate\"",
+   "blueprint_sha256": "e458de27351641a84f6368e269ad0f7aa3630b307d44a46b00af16ed3e96aaef",
+   "program_sha256": "1b890e7005b8dee08ca3730f9ea15e9e4dfde219cb1a345ce38c52fab69d6696"
+  },
+  "fetch_json": {
+   "does": "A runnable fetcher: downloads JSON from an http(s) URL and prints all of it, or one value picked by a dotted path like address.city or tags.0. Clear errors for bad URLs, failed requests and missing keys.",
+   "program": "fetch_json.py",
+   "params": "file=\"fetch_json\", timeout=10",
+   "blueprint_sha256": "78000dcab0c0874e488f6aa7f9f35e82960af2cd18f7ff950c762ea08647c263",
+   "program_sha256": "0b2accaedfc82c8e4bfaea491ccd73ddf920a9853aa4c799592cf4d86f1b2723"
+  },
+  "file_organizer": {
+   "does": "A runnable tidy-up tool: sorts a folder's files (say, Downloads) into images/, documents/, data/ and so on by file type. Shows the plan first (a dry run) and only moves files with --apply; never overwrites.",
+   "program": "organize.py",
+   "params": "file=\"organize\"",
+   "blueprint_sha256": "87a6848a5095b047a26d7f07d42b27b735fbf39e0748be94558ca7deba5cf559",
+   "program_sha256": "ac3690efd298f05b6eb60bcc9a02071bc5478dfee763748bed85f0e7cea3ac48"
+  },
+  "kv_store": {
+   "does": "A runnable settings/notes store: set, get, delete and list keys, saved to a JSON file between runs. One small function per command.",
+   "program": "store.py",
+   "params": "file=\"store\", store=\"store.json\"",
+   "blueprint_sha256": "a369afe1360b440a73eb617a55ff27bb03125245c272cba46d12710c2c364899",
+   "program_sha256": "86f438deaa4c9f3df24b54a617f83f4c95ec15021c761a04eba73b4447adb44b"
+  },
+  "log_stats": {
+   "does": "A runnable log analyser: counts lines per level (INFO, ERROR, ...) and lists the most frequent error messages. Skips lines it can't read.",
+   "program": "logstats.py",
+   "params": "file=\"logstats\", top=3",
+   "blueprint_sha256": "80c2fbbff44d5b05989c34d980e1d9bca38fca3bada9397be14870f97fec31c7",
+   "program_sha256": "37a201cd9f1bb8f697076673fbdaaadfe8ec1695daae4b0c9421db33a4f05fa7"
+  },
+  "todo_cli": {
+   "does": "A runnable to-do app: list, add and done commands, saved to a JSON file. Six functions plus a main block.",
+   "program": "todo.py",
+   "params": "file=\"todo\", store=\"todo.json\"",
+   "blueprint_sha256": "e2b1eb18ef25a78b3101c0531cdd89dac68f2443811a859e8c7b9592a8b518ea",
+   "program_sha256": "9df4ce42b0c89f6a4e592aa92f11972adef7ddd8192084e2b9ed22cac22102e8"
+  }
+ },
+ "excluded": {}
+}

@@ -1,0 +1,182 @@
+{
+ "program": "store.py",
+ "scenarios": [
+  {
+   "name": "full_flow",
+   "files": {},
+   "steps": [
+    {
+     "argv": [],
+     "stdout": "(empty)\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "set",
+      "name",
+      "Ana"
+     ],
+     "stdout": "name saved.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "set",
+      "city",
+      "Lisbon"
+     ],
+     "stdout": "city saved.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "get",
+      "name"
+     ],
+     "stdout": "Ana\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "city = Lisbon\nname = Ana\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "delete",
+      "city"
+     ],
+     "stdout": "city deleted.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "get",
+      "city"
+     ],
+     "stdout": "error: no key city\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "set",
+      "x"
+     ],
+     "stdout": "usage: store.py [set KEY VALUE | get KEY | delete KEY | list]\n",
+     "exit": 2
+    }
+   ]
+  },
+  {
+   "name": "overwrite_and_sort",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "set",
+      "b",
+      "1"
+     ],
+     "stdout": "b saved.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "set",
+      "a",
+      "2"
+     ],
+     "stdout": "a saved.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "set",
+      "b",
+      "3"
+     ],
+     "stdout": "b saved.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "a = 2\nb = 3\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "delete_missing_and_usage",
+   "files": {},
+   "steps": [
+    {
+     "argv": [
+      "delete",
+      "zz"
+     ],
+     "stdout": "error: no key zz\n",
+     "exit": 1
+    },
+    {
+     "argv": [
+      "get"
+     ],
+     "stdout": "usage: store.py [set KEY VALUE | get KEY | delete KEY | list]\n",
+     "exit": 2
+    },
+    {
+     "argv": [
+      "frobnicate",
+      "a"
+     ],
+     "stdout": "usage: store.py [set KEY VALUE | get KEY | delete KEY | list]\n",
+     "exit": 2
+    },
+    {
+     "argv": [
+      "list",
+      "extra"
+     ],
+     "stdout": "(empty)\n",
+     "exit": 0
+    }
+   ]
+  },
+  {
+   "name": "broken_store_is_empty",
+   "files": {
+    "store.json": "[[[["
+   },
+   "steps": [
+    {
+     "argv": [
+      "list"
+     ],
+     "stdout": "(empty)\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "set",
+      "k",
+      "v"
+     ],
+     "stdout": "k saved.\n",
+     "exit": 0
+    },
+    {
+     "argv": [
+      "get",
+      "k"
+     ],
+     "stdout": "v\n",
+     "exit": 0
+    }
+   ]
+  }
+ ]
+}

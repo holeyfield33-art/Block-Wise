@@ -1,0 +1,12 @@
+{
+ "exp001_freeze_verified": true,
+ "PROTOCOL.md": "618146ba5df45dce2f3b9c3262ebcbd033d23eef91bd9e2f76e86ee862ca123e",
+ "run002.py": "add62d155173f3e62aaea74163e0ce023d320d23fff792ec28cb8fc540475644",
+ "MANIFEST.json": "b0b011c1e77a50d24084c14c94783a52669875974dfc1eeb1aecd4979d3b1de8",
+ "prompts": {
+  "t01": "cd91f574d4fa23a5e7c5a3027c9d2193db74d75546f63cdd14ea1fb6f6691e18",
+  "t02": "73d378bae0f03fdfcf3dfc9ea3337306b53a3c6aa6457c809a13e1bb496fe0f3",
+  "t03": "e6368dac724b0815d33a8c1e147bc5477fe03e4e4d4ec13f9d63cb475c2839c4",
+  "t04": "f17c973a689322bdc7fa33e814b26e0edf93523638ff470b3b3ab0ad35a91e0e"
+ }
+}

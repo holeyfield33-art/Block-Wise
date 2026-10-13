@@ -1,0 +1,54 @@
+{
+ "requests": 3,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14843,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50669
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 8328,
+   "cache_read": 50667,
+   "output_lower_bound": 5,
+   "input_total": 58997
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1413,
+   "cache_read": 58995,
+   "output_lower_bound": 24,
+   "input_total": 60410
+  }
+ ],
+ "input_tokens_total": 170076,
+ "input_tokens_uncached": 6,
+ "cache_write_tokens": 24584,
+ "cache_read_tokens": 145486,
+ "first_request_input": 50669,
+ "context_growth_tokens": 9741,
+ "output_tokens_lower_bound": 45,
+ "generated_chars": 3338,
+ "tool_result_chars": 11792,
+ "tool_calls": 3,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 1,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 0,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r10/app/store.py`, following the plan's imports, constant, functions and body structure. My own checks passed, and I ran them once (a single shell script, 1 of the 30 tool calls allowed).\n\nThe checks ran in `scratch/` and covered:\n- empty `list`\n- `set` and sorted `list`\n- `get` on an existing and a missing key (exit 1)\n- `delete` on an existing and a missing key (exit 1)\n- a wrong argument count (usage message, exit 2)\n- an unknown command (usage message, exit 2)\n- a corrupt `store.json` (treated as empty)\n\nNothing else is in `app/`.",
+ "agent_tool_record": {
+  "subagent_tokens": 60727,
+  "tool_uses": 3,
+  "duration_ms": 15458
+ }
+}

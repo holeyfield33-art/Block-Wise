@@ -1,0 +1,61 @@
+{
+ "requests": 4,
+ "per_request": [
+  {
+   "input_uncached": 2,
+   "cache_write": 14832,
+   "cache_read": 35824,
+   "output_lower_bound": 16,
+   "input_total": 50658
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 6122,
+   "cache_read": 50656,
+   "output_lower_bound": 17,
+   "input_total": 56780
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 472,
+   "cache_read": 56778,
+   "output_lower_bound": 9,
+   "input_total": 57252
+  },
+  {
+   "input_uncached": 2,
+   "cache_write": 1981,
+   "cache_read": 57250,
+   "output_lower_bound": 25,
+   "input_total": 59233
+  }
+ ],
+ "input_tokens_total": 223923,
+ "input_tokens_uncached": 8,
+ "cache_write_tokens": 23407,
+ "cache_read_tokens": 200508,
+ "first_request_input": 50658,
+ "context_growth_tokens": 8575,
+ "output_tokens_lower_bound": 67,
+ "generated_chars": 4312,
+ "tool_result_chars": 7096,
+ "tool_calls": 4,
+ "tool_calls_by_name": {
+  "Read": 1,
+  "Bash": 2,
+  "SubagentHandback": 1
+ },
+ "blockwise_calls": 1,
+ "blockwise_show_calls": 0,
+ "self_check_runs": 1,
+ "model_sha256": [
+  "c13e66682022f862"
+ ],
+ "outside_workspace_paths": [],
+ "final_report": "I wrote `/tmp/claude-0/-home-user/fe51d682-0577-53e5-8f5b-f05cb53542c4/scratchpad/wsmain/r19/app/inventory.py`, and my own checks passed. I ran them once, as a single batch of 16 commands from a fresh temp directory.\n\n- **Block-Wise:** I ran `find` once. The only matches were `todo_cli`, `fetch_json` and `kv_store`, and none fit an inventory tracker. I applied nothing and wrote the code by hand, so I did not run `blockwise check`.\n- **What the checks covered:** the add, remove, show and low commands, the unknown-item and over-stock errors, the invalid item, quantity and threshold errors, the usage errors with exit code 2, and a corrupt `inventory.json` being treated as empty. Output and exit codes matched the spec in every case.\n- **Not tested:** a quantity of `007`, which the program accepts as 7, and a non-dict JSON file, which it treats as empty.\n- **Tool calls used:** 3 of the 30.",
+ "agent_tool_record": {
+  "subagent_tokens": 59643,
+  "tool_uses": 4,
+  "duration_ms": 21263
+ }
+}
