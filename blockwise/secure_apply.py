@@ -20,7 +20,7 @@ generation is not, by itself, an approval.
 import hashlib
 import json
 from importlib import resources
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .presets import PresetError, load_blueprints, render_blueprint
 from .project import apply_blueprint, check_project
@@ -88,6 +88,12 @@ def secure_apply(blueprint_id, project=".", into=".", params=None, approved=None
     root = Path(project).resolve()
     if not root.is_dir():
         return {"status": "refused", "reason": "workspace_not_found", "project": str(project)}
+    # `into` is relative to the workspace. An absolute or drive-qualified path is
+    # refused on every platform rather than reinterpreted (stripping a leading "/"
+    # would silently turn "/tmp/x" into "tmp/x" inside the root).
+    windows = PureWindowsPath(into)
+    if PurePosixPath(into).is_absolute() or windows.drive or windows.root:
+        return {"status": "refused", "reason": "workspace_escape", "path": into}
     prefix = "" if into in ("", ".") else into.strip("/") + "/"
     for module in rendered["modules"]:
         relative = prefix + module["path"]

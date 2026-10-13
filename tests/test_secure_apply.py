@@ -71,7 +71,7 @@ def test_workspace_escape_via_symlink_is_blocked(tmp_path):
     assert _py_files(outside) == []
 
 
-@pytest.mark.parametrize("into", ["../escape", "a/../../escape", "ABSOLUTE"])
+@pytest.mark.parametrize("into", ["../escape", "a/../../escape", "ABSOLUTE", "/abs", r"\abs", "C:/abs", "C:abs"])
 def test_workspace_escape_via_into_is_blocked(tmp_path, into):
     root = tmp_path / "workspace"
     root.mkdir()
