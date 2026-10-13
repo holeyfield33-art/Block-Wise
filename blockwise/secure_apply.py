@@ -19,10 +19,13 @@ generation is not, by itself, an approval.
 
 import hashlib
 import json
+import platform
+import sys
 from importlib import resources
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .presets import PresetError, load_blueprints, render_blueprint
+from .probes import ProbeError, run_probes, summarize, validate_security
 from .project import apply_blueprint, check_project
 from .schema import ScoreError
 
@@ -41,10 +44,56 @@ def canonical_digest(blueprint):
     return "sha256:" + hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
+def _manifest():
+    return json.loads(resources.files(APPROVED_PACKAGE).joinpath(APPROVED_NAME).read_text(encoding="utf-8"))
+
+
 def load_approved():
     """Return {blueprint_id: approved_digest} from the shipped approved.json."""
-    data = resources.files(APPROVED_PACKAGE).joinpath(APPROVED_NAME).read_text(encoding="utf-8")
-    return json.loads(data).get("blueprints", {})
+    return _manifest().get("blueprints", {})
+
+
+def load_security_reviews():
+    """Return {block_id: review record} - detector-check results a person committed to approved.json."""
+    return _manifest().get("security_reviews", {})
+
+
+def _security_receipt(blueprint, version, source, apply_receipt_id, reviews):
+    """Probe the generated module and summarize the evidence; only all-HELD plus a current review passes."""
+    try:
+        security = validate_security(blueprint)
+    except ProbeError as exc:
+        return {"status": "not-reviewed", "reason": "invalid_security_section", "detail": str(exc)}
+    results = run_probes(source, security)
+    probe_status = summarize(results)["status"]
+    review = reviews.get(blueprint["id"]) or {}
+    review_current = (review.get("block_version") == version and review.get("real_block") == "held"
+                      and review.get("total", 0) > 0 and review.get("killed") == review.get("total"))
+    if probe_status == "not-held":
+        status = "not-reviewed"
+    elif probe_status == "held" and review_current:
+        status = "security-reviewed"
+    else:
+        status = "probed-with-gaps"
+    classes = {t["id"]: t["class"] for t in security["threats"]}
+    held_threats = {t for t in classes if all(r["verdict"] == "HELD" for r in results if r["threat"] == t)}
+    gaps = [f"{r['id']} not run: {r['detail']}" for r in results if r["verdict"] == "NOT_RUN"]
+    if not review_current:
+        gaps.append("no current detector-check review for this block version")
+    receipt = {
+        "status": status, "block": blueprint["id"], "block_version": version, "apply_receipt": apply_receipt_id,
+        "threats": {"declared": len(classes), "held": len(held_threats)},
+        "probes": [{"id": r["id"], "threat": r["threat"], "class": classes.get(r["threat"], "FUNCTIONAL"),
+                    "verdict": r["verdict"], **({} if r["verdict"] == "HELD" else {"detail": r["detail"]})}
+                   for r in results],
+        "detector_check": ({k: review[k] for k in ("killed", "total", "mutant_suite", "platform", "date")}
+                           if review_current else None),
+        "gaps": gaps,
+        "not_verified": security["not_verified"],
+        "environment": {"python": platform.python_version(), "platform": sys.platform},
+    }
+    receipt["receipt_id"] = canonical_digest(receipt)
+    return receipt
 
 
 def _file_digest(path):
@@ -56,13 +105,18 @@ def _within(root, destination):
     return root == destination or root in destination.parents
 
 
-def secure_apply(blueprint_id, project=".", into=".", params=None, approved=None):
+def secure_apply(blueprint_id, project=".", into=".", params=None, approved=None, probe=False, reviews=None):
     """Generate an approved blueprint behind the trust boundary; return a receipt.
 
     A receipt with ``status == "approved"`` means the blueprint matched its
     approved digest, every output stayed inside the authorized workspace, and
     the structural check verified at least one function with no issues. Any
     other status means nothing should be trusted; refusals write no files.
+
+    With ``probe=True`` an approved security block's probes are then run
+    against the module just written, and the receipt gains a ``security``
+    section; its status is "security-reviewed" only if every probe HELD and a
+    person has committed a current detector-check review for this version.
     """
     approved = load_approved() if approved is None else approved
     blueprints = load_blueprints()
@@ -121,4 +175,12 @@ def secure_apply(blueprint_id, project=".", into=".", params=None, approved=None
                "checks": f"passed ({checked} function{'' if checked == 1 else 's'})"}
     receipt["receipt_id"] = "sha256:" + hashlib.sha256(
         json.dumps(receipt, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    if probe:
+        blueprint = blueprints[blueprint_id]
+        if "security" not in blueprint:
+            receipt["security"] = {"status": "not-reviewed", "reason": "not_a_security_block"}
+        else:
+            source = root / (prefix + rendered["modules"][0]["path"])
+            reviews = load_security_reviews() if reviews is None else reviews
+            receipt["security"] = _security_receipt(blueprint, actual, source, receipt["receipt_id"], reviews)
     return receipt

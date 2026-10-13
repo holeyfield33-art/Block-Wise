@@ -1,0 +1,35 @@
+{
+  "block": "safe_write_text",
+  "note": "Deliberately weakened copies of the block, one control removed or done wrong in each. The probes must catch every one; a survivor means the probes have a blind spot.",
+  "mutants": [
+    {"id": "M1", "weakness": "no containment check at all", "caught_by": ["P1", "P2"],
+     "replace": {"resolve_inside": [
+       {"kind": "return", "expression": "(Path(root) / relative).resolve()"}]}},
+    {"id": "M2", "weakness": "containment by string prefix on the unresolved path", "caught_by": ["P1", "P3"],
+     "replace": {"resolve_inside": [
+       {"kind": "assign", "target": "target", "expression": "Path(root) / relative"},
+       {"kind": "branch", "condition": "not str(target).startswith(str(Path(root)))", "body": [{"kind": "raise", "expression": "ValueError('refused')"}]},
+       {"kind": "return", "expression": "target"}]}},
+    {"id": "M3", "weakness": "resolved paths, but a string prefix check without a separator", "caught_by": ["P4"],
+     "replace": {"resolve_inside": [
+       {"kind": "branch", "condition": "not relative.strip()", "body": [{"kind": "raise", "expression": "ValueError('refused')"}]},
+       {"kind": "assign", "target": "base", "expression": "Path(root).resolve()"},
+       {"kind": "assign", "target": "target", "expression": "(base / relative).resolve()"},
+       {"kind": "branch", "condition": "not str(target).startswith(str(base))", "body": [{"kind": "raise", "expression": "ValueError('refused')"}]},
+       {"kind": "return", "expression": "target"}]}},
+    {"id": "M4", "weakness": "no size limit", "caught_by": ["P5"],
+     "replace": {"safe_write_text": [
+       {"kind": "assign", "target": "target", "expression": "resolve_inside(root, relative)"},
+       {"kind": "call", "expression": "target.parent.mkdir(parents=True, exist_ok=True)"},
+       {"kind": "call", "expression": "target.write_bytes(text.encode('utf-8'))"},
+       {"kind": "return", "expression": "None"}]}},
+    {"id": "M5", "weakness": "size checked only after writing", "caught_by": ["P5"],
+     "replace": {"safe_write_text": [
+       {"kind": "assign", "target": "data", "expression": "text.encode('utf-8')"},
+       {"kind": "assign", "target": "target", "expression": "resolve_inside(root, relative)"},
+       {"kind": "call", "expression": "target.parent.mkdir(parents=True, exist_ok=True)"},
+       {"kind": "call", "expression": "target.write_bytes(data)"},
+       {"kind": "branch", "condition": "len(data) > max_bytes", "body": [{"kind": "raise", "expression": "ValueError('refused')"}]},
+       {"kind": "return", "expression": "None"}]}}
+  ]
+}

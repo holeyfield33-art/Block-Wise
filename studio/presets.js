@@ -3822,6 +3822,409 @@ window.BLOCKWISE_PRESETS = [
   }
  },
  {
+  "id": "safe_write_text",
+  "title": "Write a text file only inside an allowed folder",
+  "category": "blueprint",
+  "summary": "A security block: saves text to a file under a root folder, and refuses (before writing anything) a path that leaves the root by ../, an absolute path, a symlink or a look-alike sibling folder, or text over a size limit. Ships with probes that test each of those.",
+  "params": {
+   "file": {
+    "kind": "identifier",
+    "default": "safe_write"
+   },
+   "max_bytes": {
+    "kind": "number",
+    "default": 1000000
+   }
+  },
+  "try": "python {path} notes todo.txt \"buy milk\"",
+  "plan": {
+   "modules": [
+    {
+     "path": "{{file}}.py",
+     "imports": [
+      "import sys",
+      "from pathlib import Path"
+     ],
+     "constants": [
+      {
+       "name": "MAX_BYTES",
+       "value": "{{max_bytes}}"
+      }
+     ],
+     "functions": [
+      {
+       "name": "resolve_inside",
+       "parameters": [
+        {
+         "name": "root",
+         "type": "str"
+        },
+        {
+         "name": "relative",
+         "type": "str"
+        }
+       ],
+       "returns": "Path",
+       "requirements": [
+        "Resolve symlinks and .. first, then require the target to sit strictly inside the resolved root (compare path parts, not string prefixes)."
+       ],
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "not relative.strip()",
+         "body": [
+          {
+           "kind": "raise",
+           "expression": "ValueError('refused: the path is empty')"
+          }
+         ]
+        },
+        {
+         "kind": "assign",
+         "target": "base",
+         "expression": "Path(root).resolve()"
+        },
+        {
+         "kind": "assign",
+         "target": "target",
+         "expression": "(base / relative).resolve()"
+        },
+        {
+         "kind": "branch",
+         "condition": "base not in target.parents",
+         "body": [
+          {
+           "kind": "raise",
+           "expression": "ValueError(f'refused: {relative} is not inside {root}')"
+          }
+         ]
+        },
+        {
+         "kind": "return",
+         "expression": "target"
+        }
+       ]
+      },
+      {
+       "name": "safe_write_text",
+       "parameters": [
+        {
+         "name": "root",
+         "type": "str"
+        },
+        {
+         "name": "relative",
+         "type": "str"
+        },
+        {
+         "name": "text",
+         "type": "str"
+        },
+        {
+         "name": "max_bytes",
+         "type": "int"
+        }
+       ],
+       "returns": "None",
+       "requirements": [
+        "Every check happens before anything is written."
+       ],
+       "body": [
+        {
+         "kind": "assign",
+         "target": "data",
+         "expression": "text.encode('utf-8')"
+        },
+        {
+         "kind": "branch",
+         "condition": "len(data) > max_bytes",
+         "body": [
+          {
+           "kind": "raise",
+           "expression": "ValueError(f'refused: {len(data)} bytes is over the {max_bytes}-byte limit')"
+          }
+         ]
+        },
+        {
+         "kind": "assign",
+         "target": "target",
+         "expression": "resolve_inside(root, relative)"
+        },
+        {
+         "kind": "call",
+         "expression": "target.parent.mkdir(parents=True, exist_ok=True)"
+        },
+        {
+         "kind": "call",
+         "expression": "target.write_bytes(data)"
+        },
+        {
+         "kind": "return",
+         "expression": "None"
+        }
+       ]
+      },
+      {
+       "name": "main",
+       "parameters": [
+        {
+         "name": "args",
+         "type": "list"
+        }
+       ],
+       "returns": "int",
+       "requirements": [
+        "Usage: ROOT PATH TEXT. Prints 'saved PATH' or the refusal."
+       ],
+       "body": [
+        {
+         "kind": "branch",
+         "condition": "len(args) != 3",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "print('usage: {{file}}.py ROOT PATH TEXT')"
+          },
+          {
+           "kind": "return",
+           "expression": "2"
+          }
+         ]
+        },
+        {
+         "kind": "try",
+         "exception": "ValueError",
+         "alias": "error",
+         "body": [
+          {
+           "kind": "call",
+           "expression": "safe_write_text(args[0], args[1], args[2], MAX_BYTES)"
+          }
+         ],
+         "handler": [
+          {
+           "kind": "call",
+           "expression": "print(error)"
+          },
+          {
+           "kind": "return",
+           "expression": "1"
+          }
+         ]
+        },
+        {
+         "kind": "call",
+         "expression": "print(f'saved {args[1]}')"
+        },
+        {
+         "kind": "return",
+         "expression": "0"
+        }
+       ]
+      }
+     ],
+     "entry": [
+      {
+       "kind": "call",
+       "expression": "sys.exit(main(sys.argv[1:]))"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "files": {
+     "notes/.keep": ""
+    },
+    "argv": [
+     "notes",
+     "todo.txt",
+     "buy milk"
+    ],
+    "stdout": "saved todo.txt\n",
+    "exit": 0
+   },
+   {
+    "argv": [
+     "notes",
+     "../escape.txt",
+     "x"
+    ],
+    "stdout": "refused: ../escape.txt is not inside notes\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "notes",
+     "",
+     "x"
+    ],
+    "stdout": "refused: the path is empty\n",
+    "exit": 1
+   },
+   {
+    "argv": [
+     "notes"
+    ],
+    "stdout": "usage: safe_write.py ROOT PATH TEXT\n",
+    "exit": 2
+   }
+  ],
+  "security": {
+   "function": "safe_write_text",
+   "threats": [
+    {
+     "id": "T1",
+     "class": "PATH_TRAVERSAL",
+     "summary": "A relative path climbs out of the root with ../"
+    },
+    {
+     "id": "T2",
+     "class": "PATH_TRAVERSAL",
+     "summary": "An absolute path ignores the root"
+    },
+    {
+     "id": "T3",
+     "class": "PATH_TRAVERSAL",
+     "summary": "A symlink inside the root points outside it"
+    },
+    {
+     "id": "T4",
+     "class": "PATH_TRAVERSAL",
+     "summary": "A sibling folder whose name starts like the root passes a string-prefix check"
+    },
+    {
+     "id": "T5",
+     "class": "RESOURCE_EXHAUSTION",
+     "summary": "Oversized text is written before (or without) the size check"
+    },
+    {
+     "id": "T6",
+     "class": "INPUT_VALIDATION",
+     "summary": "An empty path or the root itself is used as the file"
+    }
+   ],
+   "probes": [
+    {
+     "id": "P0",
+     "threat": null,
+     "args": [
+      "{root}",
+      "notes/a.txt",
+      "hi",
+      100
+     ],
+     "returns": null,
+     "then_files": {
+      "notes/a.txt": "hi"
+     }
+    },
+    {
+     "id": "P1",
+     "threat": "T1",
+     "args": [
+      "{root}",
+      "../escape.txt",
+      "x",
+      100
+     ],
+     "raises": "ValueError"
+    },
+    {
+     "id": "P2",
+     "threat": "T2",
+     "args": [
+      "{root}",
+      "{outside}/x.txt",
+      "x",
+      100
+     ],
+     "raises": "ValueError"
+    },
+    {
+     "id": "P3",
+     "threat": "T3",
+     "setup": {
+      "symlinks": {
+       "root/link": "outside"
+      }
+     },
+     "args": [
+      "{root}",
+      "link/x.txt",
+      "x",
+      100
+     ],
+     "raises": "ValueError"
+    },
+    {
+     "id": "P4",
+     "threat": "T4",
+     "setup": {
+      "dirs": [
+       "root-evil"
+      ]
+     },
+     "args": [
+      "{root}",
+      "../root-evil/x.txt",
+      "x",
+      100
+     ],
+     "raises": "ValueError"
+    },
+    {
+     "id": "P5",
+     "threat": "T5",
+     "args": [
+      "{root}",
+      "big.txt",
+      "xxxxxxxxxxx",
+      10
+     ],
+     "raises": "ValueError",
+     "absent": [
+      "big.txt"
+     ]
+    },
+    {
+     "id": "P6",
+     "threat": "T6",
+     "args": [
+      "{root}",
+      "",
+      "x",
+      100
+     ],
+     "raises": "ValueError"
+    },
+    {
+     "id": "P7",
+     "threat": "T6",
+     "args": [
+      "{root}",
+      ".",
+      "x",
+      100
+     ],
+     "raises": "ValueError"
+    }
+   ],
+   "not_verified": [
+    "A race between the path check and the write (a folder swapped for a symlink in between, TOCTOU)",
+    "Windows junctions and other reparse points that are not symlinks",
+    "Disk-full and partial-write behaviour",
+    "Concurrent writers to the same file",
+    "Hard links that already exist inside the root and point at a file elsewhere"
+   ]
+  },
+  "kind": "blueprint",
+  "preview": {
+   "safe_write.py": "\"\"\"Generated by Blockwise. Verify behavior before use.\"\"\"\nimport sys\nfrom pathlib import Path\nMAX_BYTES = 1000000\n\n\ndef resolve_inside(root: str, relative: str) -> Path:\n    \"\"\"Requirements:\nResolve symlinks and .. first, then require the target to sit strictly inside the resolved root (compare path parts, not string prefixes).\"\"\"\n    if not relative.strip():\n        raise ValueError('refused: the path is empty')\n    base = Path(root).resolve()\n    target = (base / relative).resolve()\n    if base not in target.parents:\n        raise ValueError(f'refused: {relative} is not inside {root}')\n    return target\n\n\ndef safe_write_text(root: str, relative: str, text: str, max_bytes: int) -> None:\n    \"\"\"Requirements:\nEvery check happens before anything is written.\"\"\"\n    data = text.encode('utf-8')\n    if len(data) > max_bytes:\n        raise ValueError(f'refused: {len(data)} bytes is over the {max_bytes}-byte limit')\n    target = resolve_inside(root, relative)\n    target.parent.mkdir(parents=True, exist_ok=True)\n    target.write_bytes(data)\n    return None\n\n\ndef main(args: list) -> int:\n    \"\"\"Requirements:\nUsage: ROOT PATH TEXT. Prints 'saved PATH' or the refusal.\"\"\"\n    if len(args) != 3:\n        print('usage: safe_write.py ROOT PATH TEXT')\n        return 2\n    try:\n        safe_write_text(args[0], args[1], args[2], MAX_BYTES)\n    except ValueError as error:\n        print(error)\n        return 1\n    print(f'saved {args[1]}')\n    return 0\n\n\nif __name__ == '__main__':\n    sys.exit(main(sys.argv[1:]))\n"
+  }
+ },
+ {
   "id": "todo_cli",
   "title": "Command-line to-do list",
   "category": "blueprint",
