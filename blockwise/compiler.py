@@ -1,6 +1,7 @@
 """Generate Python from a validated plan without importing or running generated code."""
 
 import ast
+import copy
 import json
 from pathlib import Path
 
@@ -60,12 +61,91 @@ def compile_nodes(nodes):
     return statements
 
 
+# f-strings are rendered here rather than by ast.unparse: CPython 3.12.0-3.12.8 and
+# 3.13.0-3.13.2 reuse the outer quote inside {...} (f'{d['k']}'), which is a syntax
+# error on Python 3.11, so generated code depended on the exact interpreter. These
+# rules follow Python 3.11's unparser, which later releases match again.
+_QUOTES = ("'", '"', '"""', "'''")
+
+
+def _literal(text, quotes, escape_whitespace):
+    """Escape one f-string part and narrow the quote styles that can enclose it."""
+    def escape(char):
+        if not escape_whitespace and char in "\n\t":
+            return char
+        if char == "\\" or not char.isprintable():
+            return char.encode("unicode_escape").decode("ascii")
+        return char
+
+    escaped = "".join(map(escape, text))
+    possible = [q for q in quotes if len(q) == 3] if "\n" in escaped else list(quotes)
+    possible = [q for q in possible if q not in escaped]
+    if not possible:
+        if not escape_whitespace:
+            raise ScoreError("An f-string uses every kind of quote; move part of it into a variable")
+        literal = repr(text)
+        return literal[1:-1], [next((q for q in quotes if literal[0] in q), literal[0])]
+    if escaped:
+        possible.sort(key=lambda q: q[0] == escaped[-1])
+        if possible[0][0] == escaped[-1]:
+            escaped = escaped[:-1] + "\\" + escaped[-1]
+    return escaped, possible
+
+
+def _field(value):
+    """One {expression!conversion:spec} replacement field."""
+    source = unparse(value.value)
+    if "\\" in source:
+        raise ScoreError("Backslashes are not allowed inside f-string {...}; move that part into a variable")
+    text = "{" + (" " if source.startswith("{") else "") + source
+    if value.conversion != -1:
+        text += "!" + chr(value.conversion)
+    if value.format_spec is not None:
+        text += ":" + "".join(_part(spec) for spec in value.format_spec.values)
+    return text + "}"
+
+
+def _part(value):
+    if isinstance(value, ast.Constant):
+        return value.value.replace("{", "{{").replace("}", "}}")
+    return _field(value)
+
+
+def _fstring(node):
+    quotes, parts = _QUOTES, []
+    for value in node.values:
+        text, quotes = _literal(_part(value), quotes, isinstance(value, ast.Constant))
+        parts.append(text)
+    return f"f{quotes[0]}{''.join(parts)}{quotes[0]}"
+
+
+class _Placeholders(ast.NodeTransformer):
+    """Swap each outermost f-string for a unique name; nested ones are rendered by _fstring."""
+
+    def __init__(self):
+        self.rendered = {}
+
+    def visit_JoinedStr(self, node):
+        name = f"__blockwise_fstring_{len(self.rendered)}__"
+        self.rendered[name] = _fstring(node)
+        return ast.copy_location(ast.Name(id=name, ctx=ast.Load()), node)
+
+
+def unparse(node):
+    """ast.unparse with interpreter-independent f-strings (see _QUOTES)."""
+    placeholders = _Placeholders()
+    text = ast.unparse(placeholders.visit(copy.deepcopy(node)))
+    for name, rendered in placeholders.rendered.items():
+        text = text.replace(name, rendered)
+    return text
+
+
 def pep8_join(statements):
     """Unparse top-level statements with two blank lines before each function (PEP 8)."""
     source = ""
     for index, statement in enumerate(statements):
         # Unparsing the first statement inside a Module keeps a docstring as """...""".
-        text = ast.unparse(ast.Module(body=[statement], type_ignores=[]) if index == 0 else statement)
+        text = unparse(ast.Module(body=[statement], type_ignores=[]) if index == 0 else statement)
         if source:
             source += "\n\n\n" if isinstance(statement, (ast.FunctionDef, ast.If)) else "\n"
         source += text

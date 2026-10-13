@@ -12,14 +12,21 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is the minimum supported; 3.12.3 has the f-string unparser that
+        # reuses quotes (generated code must not depend on it); 3.12 is current.
+        python: ["3.11", "3.12.3", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
       - run: pip install -e ".[dev]"
       - run: ruff check blockwise tests
       - name: Install Playwright for the Studio browser test
+        if: matrix.python == '3.12'
         run: |
           npm install -g playwright@1.58.2
           npx -y playwright@1.58.2 install --with-deps chromium
