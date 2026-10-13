@@ -21,6 +21,7 @@ answer), NOT_RUN (this platform cannot set the probe up, e.g. no symlink
 rights). Only HELD counts as a pass.
 """
 
+import copy
 import hashlib
 import json
 import os
@@ -29,6 +30,10 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+from .compiler import compile_score
+from .presets import render_blueprint
+from .schema import validate_score
 
 VERDICTS = ("HELD", "BYPASSED", "FAILED", "ERROR", "NOT_RUN")
 THREAT_CLASSES = (
@@ -213,6 +218,66 @@ def run_probe(source, function, probe, timeout=TIMEOUT):
 def run_probes(source, security, timeout=TIMEOUT):
     """Run every probe in a validated security section against one generated module."""
     return [run_probe(source, security["function"], probe, timeout) for probe in security["probes"]]
+
+
+def canonical_digest(value):
+    body = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return "sha256:" + hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
+def _mutate(plan, replace):
+    """Return a copy of a rendered plan with the named functions' bodies swapped."""
+    plan = copy.deepcopy(plan)
+    found = set()
+    for module in plan["modules"]:
+        for function in module.get("functions", []):
+            if function["name"] in replace:
+                function["body"] = replace[function["name"]]
+                found.add(function["name"])
+    if found != set(replace):
+        raise ProbeError(f"Mutant names unknown functions: {sorted(set(replace) - found)}")
+    return validate_score(plan)
+
+
+def _probe_plan(plan, security, timeout):
+    """Compile a plan into a scratch folder and probe its first module."""
+    folder = Path(tempfile.mkdtemp(prefix="bw_probe_code_"))
+    try:
+        sources = compile_score(plan)
+        for path, source in sources.items():
+            (folder / path).parent.mkdir(parents=True, exist_ok=True)
+            (folder / path).write_text(source, encoding="utf-8")
+        return run_probes(folder / next(iter(sources)), security, timeout)
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+
+
+def detector_check(blueprint, suite, timeout=TIMEOUT):
+    """Release gate G4: the probes must pass the real block and catch every mutant.
+
+    A mutant is killed when at least one probe that ran says BYPASSED or FAILED
+    (ERROR and NOT_RUN do not count as detection), and every probe it lists in
+    ``caught_by`` that ran on this platform caught it.
+    """
+    security = validate_security(blueprint)
+    if suite.get("block") != blueprint["id"]:
+        raise ProbeError(f"Mutant suite is for {suite.get('block')!r}, not {blueprint['id']!r}")
+    plan = render_blueprint(blueprint)
+    real = _probe_plan(plan, security, timeout)
+    mutants = []
+    for mutant in suite["mutants"]:
+        results = _probe_plan(_mutate(plan, mutant["replace"]), security, timeout)
+        verdicts = {r["id"]: r["verdict"] for r in results}
+        caught = sorted(probe for probe, verdict in verdicts.items() if verdict in ("BYPASSED", "FAILED"))
+        expected_missed = sorted(p for p in mutant.get("caught_by", [])
+                                 if verdicts.get(p) not in ("BYPASSED", "FAILED", "NOT_RUN"))
+        mutants.append({"id": mutant["id"], "weakness": mutant["weakness"], "killed": bool(caught) and not expected_missed,
+                        "caught_by": caught, "expected_but_missed": expected_missed})
+    killed = sum(m["killed"] for m in mutants)
+    real_summary = summarize(real)
+    return {"ok": real_summary["status"] != "not-held" and killed == len(mutants) and bool(mutants),
+            "real_block": real_summary, "real_results": real, "mutants": mutants,
+            "killed": killed, "total": len(mutants), "suite": canonical_digest(suite)}
 
 
 def summarize(results):
