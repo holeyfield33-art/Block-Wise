@@ -4073,6 +4073,13 @@ window.BLOCKWISE_PRESETS = [
   ],
   "security": {
    "function": "safe_write_text",
+   "params": {
+    "file": "free",
+    "max_bytes": {
+     "min": 1,
+     "max": 10000000
+    }
+   },
    "threats": [
     {
      "id": "T1",
@@ -4097,7 +4104,7 @@ window.BLOCKWISE_PRESETS = [
     {
      "id": "T5",
      "class": "RESOURCE_EXHAUSTION",
-     "summary": "Oversized text is written before (or without) the size check"
+     "summary": "Oversized text is written before (or without) the size check, including through the command line at the configured limit"
     },
     {
      "id": "T6",
@@ -4209,6 +4216,38 @@ window.BLOCKWISE_PRESETS = [
       100
      ],
      "raises": "ValueError"
+    },
+    {
+     "id": "P8",
+     "threat": "T5",
+     "function": "main",
+     "args": [
+      [
+       "{root}",
+       "big.txt",
+       "{over:max_bytes}"
+      ]
+     ],
+     "returns": 1,
+     "absent": [
+      "big.txt"
+     ]
+    },
+    {
+     "id": "P9",
+     "threat": null,
+     "function": "main",
+     "args": [
+      [
+       "{root}",
+       "ok.txt",
+       "hi"
+      ]
+     ],
+     "returns": 0,
+     "then_files": {
+      "ok.txt": "hi"
+     }
     }
    ],
    "not_verified": [
