@@ -120,6 +120,7 @@ def test_parameters_outside_the_reviewed_range_are_never_security_reviewed(tmp_p
     assert receipt["params"]["max_bytes"] == max_bytes
     assert security["status"] == "not-reviewed"
     assert any("max_bytes" in gap for gap in security["gaps"])
+    assert security["probes"] == [] and security["threats"]["held"] == 0  # nothing claimed without probing
 
 
 def test_the_command_line_limit_is_probed_at_the_configured_value(tmp_path):

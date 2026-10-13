@@ -103,7 +103,9 @@ def _security_receipt(blueprint, version, source, apply_receipt_id, reviews, par
     else:
         status = "probed-with-gaps"
     classes = {t["id"]: t["class"] for t in security["threats"]}
-    held_threats = {t for t in classes if all(r["verdict"] == "HELD" for r in results if r["threat"] == t)}
+    # A threat counts as held only if it was probed here and every probe for it held.
+    held_threats = {t for t in classes if any(r["threat"] == t for r in results)
+                    and all(r["verdict"] == "HELD" for r in results if r["threat"] == t)}
     gaps = out_of_range + [f"{r['id']} not run: {r['detail']}" for r in results if r["verdict"] == "NOT_RUN"]
     if not review_current:
         gaps.append("no current detector-check review for this block version")
