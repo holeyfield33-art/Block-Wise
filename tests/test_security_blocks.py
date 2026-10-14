@@ -135,13 +135,16 @@ def test_probe_on_a_block_without_a_security_section(tmp_path):
     assert receipt["security"] == {"status": "not-reviewed", "reason": "not_a_security_block"}
 
 
-def test_shipped_approval_and_review_match_the_current_block():
-    # Editing the block (code, threats or probes) without a fresh review must break here.
-    assert load_approved()["safe_write_text"] == VERSION
-    review = load_security_reviews()["safe_write_text"]
-    assert review["block_version"] == VERSION and review["real_block"] == "held"
-    assert review["killed"] == review["total"] == 6
-    suite = json.loads((MUTANTS / "safe_write_text.json").read_text(encoding="utf-8"))
+@pytest.mark.parametrize("block_id", SECURITY_BLOCKS)
+def test_shipped_approval_and_review_match_the_current_block(block_id):
+    # Every security block ships approved with a current review: editing the block (code,
+    # threats or probes) or its mutants without a fresh review must break here.
+    blueprint = load_blueprints()[block_id]
+    suite = json.loads((MUTANTS / f"{block_id}.json").read_text(encoding="utf-8"))
+    assert load_approved()[block_id] == canonical_digest(blueprint)
+    review = load_security_reviews()[block_id]
+    assert review["block_version"] == canonical_digest(blueprint) and review["real_block"] == "held"
+    assert review["killed"] == review["total"] == len(suite["mutants"])
     assert review["mutant_suite"] == canonical_digest(suite)
 
 
