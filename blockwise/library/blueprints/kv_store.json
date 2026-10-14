@@ -2,7 +2,7 @@
  "id": "kv_store",
  "title": "Key-value store in a JSON file",
  "category": "blueprint",
- "summary": "A runnable settings/notes store: set, get, delete and list keys, saved to a JSON file between runs. One small function per command.",
+ "summary": "A runnable settings/notes store: set, get, delete and list keys, saved to a JSON file between runs (a damaged file is reported, never overwritten). One small function per command.",
  "params": {
   "file": {
    "kind": "identifier",
@@ -39,12 +39,12 @@
       ],
       "returns": "dict",
       "requirements": [
-       "A missing or broken file means an empty store."
+       "A missing file means an empty store. A file that is not a JSON object of text values is an error, and is never overwritten."
       ],
       "body": [
        {
         "kind": "try",
-        "exception": "(OSError, ValueError)",
+        "exception": "FileNotFoundError",
         "body": [
          {
           "kind": "with",
@@ -52,8 +52,9 @@
           "alias": "handle",
           "body": [
            {
-            "kind": "return",
-            "expression": "json.load(handle)"
+            "kind": "assign",
+            "target": "text",
+            "expression": "handle.read()"
            }
           ]
          }
@@ -64,6 +65,37 @@
           "expression": "{}"
          }
         ]
+       },
+       {
+        "kind": "try",
+        "exception": "ValueError",
+        "body": [
+         {
+          "kind": "assign",
+          "target": "data",
+          "expression": "json.loads(text)"
+         }
+        ],
+        "handler": [
+         {
+          "kind": "raise",
+          "expression": "ValueError(f'{path} is not valid JSON; fix or remove it')"
+         }
+        ]
+       },
+       {
+        "kind": "branch",
+        "condition": "not isinstance(data, dict) or not all((isinstance(value, str) for value in data.values()))",
+        "body": [
+         {
+          "kind": "raise",
+          "expression": "ValueError(f'{path} is not a key-value store; fix or remove it')"
+         }
+        ]
+       },
+       {
+        "kind": "return",
+        "expression": "data"
        }
       ]
      },
@@ -260,15 +292,15 @@
       ],
       "body": [
        {
-        "kind": "assign",
-        "target": "data",
-        "expression": "load(STORE)"
-       },
-       {
         "kind": "try",
-        "exception": "LookupError",
+        "exception": "(LookupError, OSError, ValueError)",
         "alias": "error",
         "body": [
+         {
+          "kind": "assign",
+          "target": "data",
+          "expression": "load(STORE)"
+         },
          {
           "kind": "branch",
           "condition": "not args or args[0] == 'list'",
@@ -415,6 +447,48 @@
    ],
    "stdout": "usage: store.py [set KEY VALUE | get KEY | delete KEY | list]\n",
    "exit": 2
+  },
+  {
+   "files": {
+    "store.json": "[1, 2]"
+   },
+   "argv": [
+    "get",
+    "a"
+   ],
+   "stdout": "error: store.json is not a key-value store; fix or remove it\n",
+   "exit": 1
+  },
+  {
+   "files": {
+    "store.json": "\"text\""
+   },
+   "argv": [
+    "set",
+    "a",
+    "b"
+   ],
+   "stdout": "error: store.json is not a key-value store; fix or remove it\n",
+   "exit": 1
+  },
+  {
+   "files": {
+    "store.json": "not json"
+   },
+   "argv": [
+    "set",
+    "a",
+    "b"
+   ],
+   "stdout": "error: store.json is not valid JSON; fix or remove it\n",
+   "exit": 1
+  },
+  {
+   "argv": [
+    "list"
+   ],
+   "stdout": "error: store.json is not valid JSON; fix or remove it\n",
+   "exit": 1
   }
  ]
 }

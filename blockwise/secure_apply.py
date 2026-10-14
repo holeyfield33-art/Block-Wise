@@ -25,7 +25,7 @@ from importlib import resources
 from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from .compiler import compile_score
-from .presets import PresetError, load_blueprints, render_blueprint
+from .presets import PresetError, load_blueprints, param_value, render_blueprint
 from .probes import ProbeError, param_violations, run_probes, summarize, validate_security
 from .project import apply_blueprint, check_project, plan_path
 from .schema import ScoreError
@@ -71,7 +71,8 @@ def reference_output(blueprint):
 
 def effective_params(blueprint, params):
     """Every parameter's value for this generation: what was set, else the default."""
-    return {name: (params or {}).get(name, spec.get("default")) for name, spec in blueprint["params"].items()}
+    return {name: param_value(spec, (params or {}).get(name, spec.get("default")))
+            for name, spec in blueprint["params"].items()}
 
 
 def load_security_reviews():

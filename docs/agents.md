@@ -150,4 +150,6 @@ Measure your own sessions before making claims about a whole workflow.
   | `data_validator` | check a CSV of people |
   | `file_organizer` | sort files into folders, dry run first |
   | `fetch_json` | JSON from a URL |
+  | `safe_write_text` | security block: write only inside a folder (`secure-apply --probe`) |
+  | `url_allowlist` | security block: SSRF-safe URL allowlist check (`secure-apply --probe`) |
 - Adding your own presets and blueprints: see "Adding presets" in the README.

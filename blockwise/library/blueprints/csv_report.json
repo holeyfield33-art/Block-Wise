@@ -10,16 +10,17 @@
   "plan": {
     "modules": [{
       "path": "{{file}}.py",
-      "imports": ["import csv", "import sys"],
+      "imports": ["import csv", "import math", "import sys"],
       "functions": [
         {"name": "read_rows", "parameters": [{"name": "path", "type": "str"}], "returns": "list", "body": [
           {"kind": "with", "context": "open(path, newline='', encoding='utf-8')", "alias": "handle", "body": [
             {"kind": "return", "expression": "list(csv.DictReader(handle))"}]}]},
         {"name": "parse_amount", "parameters": [{"name": "text", "type": "str"}], "returns": "float",
-         "requirements": ["Commas are thousands separators; anything that isn't a number counts as 0."], "body": [
+         "requirements": ["Commas are thousands separators; anything that isn't a finite number (including nan and inf) counts as 0."], "body": [
           {"kind": "try", "exception": "ValueError", "body": [
-            {"kind": "return", "expression": "float(text.replace(',', ''))"}],
-           "handler": [{"kind": "return", "expression": "0.0"}]}]},
+            {"kind": "assign", "target": "value", "expression": "float(text.replace(',', ''))"}],
+           "handler": [{"kind": "return", "expression": "0.0"}]},
+          {"kind": "return", "expression": "value if math.isfinite(value) else 0.0"}]},
         {"name": "totals_by", "parameters": [{"name": "rows", "type": "list"}, {"name": "group", "type": "str"}, {"name": "amount", "type": "str"}],
          "returns": "dict", "body": [
           {"kind": "assign", "target": "totals", "expression": "{}"},
@@ -53,7 +54,7 @@
     }]
   },
   "examples": [
-    {"files": {"sales.csv": "region,amount\nnorth,10\nsouth,5.5\nnorth,\"1,200\"\n,3\nsouth,oops\n"},
+    {"files": {"sales.csv": "region,amount\nnorth,10\nsouth,5.5\nnorth,\"1,200\"\n,3\nsouth,oops\nnorth,nan\nsouth,inf\nsouth,-Infinity\n"},
      "argv": ["sales.csv", "region", "amount"], "stdout": "north: 1210.00\nsouth: 5.50\n(blank): 3.00\ntotal: 1218.50\n", "exit": 0},
     {"argv": ["sales.csv", "city", "amount"], "stdout": "error: no column city\n", "exit": 1},
     {"argv": ["missing.csv", "region", "amount"], "stdout": "error: cannot read missing.csv\n", "exit": 1},

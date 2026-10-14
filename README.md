@@ -103,6 +103,13 @@ blockwise check                                  # the files stay under the same
 | `data_validator` | report missing values, bad emails and impossible ages in a CSV | `python validate.py people.csv` |
 | `file_organizer` | sort a folder's files into subfolders by type (dry run first, `--apply` to move) | `python organize.py Downloads` |
 | `fetch_json` | fetch JSON from an http(s) URL, optionally one value by path | `python fetch_json.py URL address.city` |
+| `safe_write_text` | **security block:** write text only inside a root folder, with a size limit | `python safe_write.py notes todo.txt "buy milk"` |
+| `url_allowlist` | **security block:** allow a URL only if its host is on your allowlist and not internal (SSRF guard) | `python url_check.py https://api.example.com/v1` |
+
+Security blocks also ship threats, probes and deliberately broken copies (mutants).
+`blockwise secure-apply BLOCK --probe` generates the block behind Secure Apply and returns a receipt
+saying which threats were probed and held, and what is not verified; see
+[docs/security-bundle-spec.md](docs/security-bundle-spec.md).
 
 Blueprints live in `blockwise/library/blueprints/`. Their `examples` are real command lines: the
 tests generate the program, run it as a subprocess with each example's arguments in order (so saved

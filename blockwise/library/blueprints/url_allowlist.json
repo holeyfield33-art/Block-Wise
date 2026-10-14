@@ -1,0 +1,115 @@
+{
+  "id": "url_allowlist",
+  "title": "Check a URL against an allowlist before fetching it (SSRF guard)",
+  "category": "blueprint",
+  "summary": "A security block: allows an http(s) URL only if its host is exactly on your allowlist, and always refuses internal targets (127.0.0.1, 169.254.169.254, ::1, 127.1, localhost, *.internal), credentials in the URL, other schemes, bad ports, backslashes and control characters. It never makes a request. Ships with probes for each of those.",
+  "params": {
+    "file": {"kind": "identifier", "default": "url_check"},
+    "allowed_hosts": {"kind": "string_list", "default": ["example.com", "api.example.com"]}
+  },
+  "try": "python {path} https://api.example.com/v1/items",
+  "plan": {
+    "modules": [
+      {"path": "{{file}}.py", "imports": ["import ipaddress", "import sys", "from urllib.parse import urlsplit"],
+       "constants": [{"name": "ALLOWED", "value": "{{allowed_hosts}}"}],
+       "functions": [
+        {"name": "is_ip_literal", "parameters": [{"name": "host", "type": "str"}], "returns": "bool",
+         "body": [
+          {"kind": "try", "exception": "ValueError", "body": [{"kind": "call", "expression": "ipaddress.ip_address(host)"}],
+           "handler": [{"kind": "return", "expression": "False"}]},
+          {"kind": "return", "expression": "True"}]},
+        {"name": "is_internal_host", "parameters": [{"name": "host", "type": "str"}], "returns": "bool",
+         "requirements": ["IP literals, numeric shorthands like 127.1 or 0x7f.1, localhost and internal-only names are never allowed, even if allowlisted."],
+         "body": [
+          {"kind": "branch", "condition": "is_ip_literal(host)", "body": [{"kind": "return", "expression": "True"}]},
+          {"kind": "branch", "condition": "all((label.isdigit() or label.startswith('0x') for label in host.split('.')))", "body": [{"kind": "return", "expression": "True"}]},
+          {"kind": "return", "expression": "host == 'localhost' or host.endswith(('.localhost', '.local', '.internal', '.localdomain', '.home.arpa'))"}]},
+        {"name": "url_host", "parameters": [{"name": "url", "type": "str"}], "returns": "str",
+         "requirements": ["Return the lower-case host of a well-formed http(s) URL without credentials, or raise ValueError."],
+         "body": [
+          {"kind": "branch", "condition": "not url.isprintable() or ' ' in url or '\\\\' in url", "body": [
+            {"kind": "raise", "expression": "ValueError('refused: the URL contains spaces, backslashes or control characters')"}]},
+          {"kind": "assign", "target": "parts", "expression": "urlsplit(url)"},
+          {"kind": "branch", "condition": "parts.scheme not in ('http', 'https')", "body": [
+            {"kind": "raise", "expression": "ValueError('refused: only http and https URLs are allowed')"}]},
+          {"kind": "branch", "condition": "parts.username is not None or parts.password is not None", "body": [
+            {"kind": "raise", "expression": "ValueError('refused: the URL contains credentials')"}]},
+          {"kind": "assign", "target": "host", "expression": "(parts.hostname or '').rstrip('.')"},
+          {"kind": "branch", "condition": "not host", "body": [
+            {"kind": "raise", "expression": "ValueError('refused: the URL has no host')"}]},
+          {"kind": "try", "exception": "ValueError", "body": [{"kind": "assign", "target": "port", "expression": "parts.port"}],
+           "handler": [{"kind": "raise", "expression": "ValueError('refused: the port is not valid')"}]},
+          {"kind": "return", "expression": "host"}]},
+        {"name": "check_url", "parameters": [{"name": "url", "type": "str"}, {"name": "allowed_hosts", "type": "list"}], "returns": "str",
+         "requirements": ["Return the URL unchanged only if every check passes; otherwise raise ValueError. Hosts must match the allowlist exactly (no substring, prefix or suffix matching). Never resolves names or makes a request."],
+         "body": [
+          {"kind": "assign", "target": "host", "expression": "url_host(url)"},
+          {"kind": "branch", "condition": "is_internal_host(host)", "body": [
+            {"kind": "raise", "expression": "ValueError(f'refused: {host} is an internal or numeric address')"}]},
+          {"kind": "branch", "condition": "host not in [name.lower().rstrip('.') for name in allowed_hosts]", "body": [
+            {"kind": "raise", "expression": "ValueError(f'refused: {host} is not on the allowlist')"}]},
+          {"kind": "return", "expression": "url"}]},
+        {"name": "main", "parameters": [{"name": "args", "type": "list"}], "returns": "int",
+         "requirements": ["Usage: URL. Prints 'allowed: URL' or the refusal; checks against ALLOWED."],
+         "body": [
+          {"kind": "branch", "condition": "len(args) != 1", "body": [
+            {"kind": "call", "expression": "print('usage: {{file}}.py URL')"},
+            {"kind": "return", "expression": "2"}]},
+          {"kind": "try", "exception": "ValueError", "alias": "error", "body": [
+            {"kind": "call", "expression": "check_url(args[0], list(ALLOWED))"}],
+           "handler": [{"kind": "call", "expression": "print(error)"}, {"kind": "return", "expression": "1"}]},
+          {"kind": "call", "expression": "print(f'allowed: {args[0]}')"},
+          {"kind": "return", "expression": "0"}]}],
+       "entry": [{"kind": "call", "expression": "sys.exit(main(sys.argv[1:]))"}]}
+    ]
+  },
+  "examples": [
+    {"argv": ["https://api.example.com/v1/items?q=1"], "stdout": "allowed: https://api.example.com/v1/items?q=1\n", "exit": 0},
+    {"argv": ["http://169.254.169.254/latest/meta-data/"], "stdout": "refused: 169.254.169.254 is an internal or numeric address\n", "exit": 1},
+    {"argv": ["https://example.com@evil.test/"], "stdout": "refused: the URL contains credentials\n", "exit": 1},
+    {"argv": ["https://example.com.evil.test/"], "stdout": "refused: example.com.evil.test is not on the allowlist\n", "exit": 1},
+    {"argv": ["file:///etc/passwd"], "stdout": "refused: only http and https URLs are allowed\n", "exit": 1},
+    {"argv": [], "stdout": "usage: url_check.py URL\n", "exit": 2}
+  ],
+  "security": {
+    "function": "check_url",
+    "params": {"file": "free", "allowed_hosts": "free"},
+    "threats": [
+      {"id": "T1", "class": "SERVER_SIDE_REQUEST_FORGERY", "summary": "An internal target (loopback, link-local metadata, IPv6 loopback, numeric shorthand, localhost, *.internal) is reached, even when someone allowlists it"},
+      {"id": "T2", "class": "SERVER_SIDE_REQUEST_FORGERY", "summary": "A look-alike host passes a substring, prefix or suffix allowlist check"},
+      {"id": "T3", "class": "SERVER_SIDE_REQUEST_FORGERY", "summary": "Credentials (user@host) confuse which host is requested, or leak"},
+      {"id": "T4", "class": "SERVER_SIDE_REQUEST_FORGERY", "summary": "A backslash makes this parser and the HTTP client disagree about the host"},
+      {"id": "T5", "class": "SERVER_SIDE_REQUEST_FORGERY", "summary": "A non-http scheme (file, gopher) is fetched"},
+      {"id": "T6", "class": "INPUT_VALIDATION", "summary": "Control characters (CRLF header injection) or an invalid port slip through because the parser silently drops or ignores them"}
+    ],
+    "probes": [
+      {"id": "P0", "threat": null, "args": ["https://api.example.com/v1/items?q=1", ["example.com", "api.example.com"]], "returns": "https://api.example.com/v1/items?q=1"},
+      {"id": "P1", "threat": null, "args": ["HTTP://Example.COM./path", ["example.com"]], "returns": "HTTP://Example.COM./path"},
+      {"id": "P2", "threat": "T1", "args": ["http://127.0.0.1/admin", ["example.com", "127.0.0.1"]], "raises": "ValueError"},
+      {"id": "P3", "threat": "T1", "args": ["http://169.254.169.254/latest/meta-data/", ["169.254.169.254"]], "raises": "ValueError"},
+      {"id": "P4", "threat": "T1", "args": ["http://[::1]/", ["::1"]], "raises": "ValueError"},
+      {"id": "P5", "threat": "T1", "args": ["http://127.1/", ["127.1"]], "raises": "ValueError"},
+      {"id": "P6", "threat": "T1", "args": ["http://localhost:8080/", ["localhost"]], "raises": "ValueError"},
+      {"id": "P7", "threat": "T1", "args": ["http://metadata.google.internal/", ["metadata.google.internal"]], "raises": "ValueError"},
+      {"id": "P8", "threat": "T2", "args": ["https://example.com.evil.test/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P9", "threat": "T2", "args": ["https://evilexample.com/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P10", "threat": "T2", "args": ["https://evil.test/?next=example.com", ["example.com"]], "raises": "ValueError"},
+      {"id": "P11", "threat": "T3", "args": ["https://example.com@evil.test/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P12", "threat": "T3", "args": ["https://attacker@example.com/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P13", "threat": "T4", "args": ["https://evil.test\\@example.com/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P14", "threat": "T5", "args": ["file:///etc/passwd", ["example.com"]], "raises": "ValueError"},
+      {"id": "P15", "threat": "T5", "args": ["gopher://example.com/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P16", "threat": "T6", "args": ["https://example.com/\r\nX-Injected: 1", ["example.com"]], "raises": "ValueError"},
+      {"id": "P17", "threat": "T6", "args": ["https://example.com:99999/", ["example.com"]], "raises": "ValueError"},
+      {"id": "P18", "threat": "T1", "function": "main", "args": [["http://169.254.169.254/latest/meta-data/"]], "returns": 1},
+      {"id": "P19", "threat": null, "function": "main", "args": [["https://{first:allowed_hosts}/"]], "returns": 0}
+    ],
+    "not_verified": [
+      "DNS: an allowlisted name that resolves, or is rebound, to an internal address (this check never resolves names)",
+      "Redirects: the HTTP client must not follow redirects, or must re-check every hop with this function",
+      "Internationalised look-alike hosts (IDN homographs) are compared as given, not normalised",
+      "Ports are not restricted on allowlisted hosts",
+      "Parser differences between urllib.parse and a particular HTTP client beyond backslashes, credentials and control characters"
+    ]
+  }
+}

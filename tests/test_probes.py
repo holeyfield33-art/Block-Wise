@@ -102,7 +102,7 @@ def test_unserializable_return_value_is_compared_by_repr_and_fails(source):
 def test_symlink_setup_that_the_platform_refuses_is_not_run(source, monkeypatch):
     def refuse(*args, **kwargs):
         raise OSError("symlinks not permitted")
-    monkeypatch.setattr(probes.os, "symlink", refuse)
+    monkeypatch.setattr(probes, "_link", refuse)
     result = verdict(source, "careful", args=["{root}", "link/x"], raises="ValueError",
                      setup={"symlinks": {"root/link": "outside"}})
     assert result["verdict"] == "NOT_RUN"
@@ -157,3 +157,17 @@ def test_parameter_bounds_are_checked_for_text_and_numbers():
 def test_over_placeholder_is_one_character_past_the_generated_limit(source):
     probe = {"id": "P", "threat": "T", "args": ["{root}", "{over:limit}"], "raises": "ValueError"}
     assert probes._fill(probe["args"], {"root": "/r"}, {"limit": "3"}) == ["/r", "xxxx"]
+
+
+def test_link_setup_works_on_this_platform(tmp_path):
+    # A symlink, or on Windows without the privilege a directory junction: either way the
+    # link must redirect into the target folder, or the escape probes would be NOT_RUN.
+    (tmp_path / "target").mkdir()
+    (tmp_path / "target" / "f.txt").write_text("x", encoding="utf-8")
+    probes._link(tmp_path / "target", tmp_path / "link")
+    assert (tmp_path / "link" / "f.txt").read_text(encoding="utf-8") == "x"
+    assert (tmp_path / "link" / "f.txt").resolve().parent == (tmp_path / "target").resolve()
+
+
+def test_first_placeholder_uses_the_generated_list():
+    assert probes._fill(["https://{first:hosts}/x"], {}, {"hosts": ["a.test", "b.test"]}) == ["https://a.test/x"]
