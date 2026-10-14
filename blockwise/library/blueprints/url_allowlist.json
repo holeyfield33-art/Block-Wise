@@ -37,7 +37,8 @@
           {"kind": "assign", "target": "host", "expression": "(parts.hostname or '').rstrip('.')"},
           {"kind": "branch", "condition": "not host", "body": [
             {"kind": "raise", "expression": "ValueError('refused: the URL has no host')"}]},
-          {"kind": "assign", "target": "port", "expression": "parts.port"},
+          {"kind": "try", "exception": "ValueError", "body": [{"kind": "assign", "target": "port", "expression": "parts.port"}],
+           "handler": [{"kind": "raise", "expression": "ValueError('refused: the port is not valid')"}]},
           {"kind": "return", "expression": "host"}]},
         {"name": "check_url", "parameters": [{"name": "url", "type": "str"}, {"name": "allowed_hosts", "type": "list"}], "returns": "str",
          "requirements": ["Return the URL unchanged only if every check passes; otherwise raise ValueError. Hosts must match the allowlist exactly (no substring, prefix or suffix matching). Never resolves names or makes a request."],
@@ -100,7 +101,8 @@
       {"id": "P15", "threat": "T5", "args": ["gopher://example.com/", ["example.com"]], "raises": "ValueError"},
       {"id": "P16", "threat": "T6", "args": ["https://example.com/\r\nX-Injected: 1", ["example.com"]], "raises": "ValueError"},
       {"id": "P17", "threat": "T6", "args": ["https://example.com:99999/", ["example.com"]], "raises": "ValueError"},
-      {"id": "P18", "threat": "T1", "function": "main", "args": [["http://169.254.169.254/latest/meta-data/"]], "returns": 1}
+      {"id": "P18", "threat": "T1", "function": "main", "args": [["http://169.254.169.254/latest/meta-data/"]], "returns": 1},
+      {"id": "P19", "threat": null, "function": "main", "args": [["https://{first:allowed_hosts}/"]], "returns": 0}
     ],
     "not_verified": [
       "DNS: an allowlisted name that resolves, or is rebound, to an internal address (this check never resolves names)",

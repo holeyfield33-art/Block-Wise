@@ -76,3 +76,19 @@ def test_bad_parameters_are_refused(preset_id, params):
 def test_string_parameters_cannot_break_out_of_their_literal():
     count = build("count_by", {"field": "x') or __import__('os"})
     assert count([{"x') or __import__('os": "a"}]) == {"a": 1}
+
+
+@pytest.mark.parametrize("value", [["a.test", "b.test"], "a.test,b.test", " a.test , b.test ", '["a.test", "b.test"]'])
+def test_string_list_accepts_lists_json_and_commas(value):
+    from blockwise.presets import render_value
+
+    assert render_value("hosts", {"kind": "string_list"}, value) == "('a.test', 'b.test')"
+
+
+@pytest.mark.parametrize("value", ['["a.test", "b.test"', '["a.test", 5]', '"a.test"', "[]", "", 'a"b', "a]b"])
+def test_string_list_refuses_half_parsed_or_odd_items(value):
+    # Session 1 found '["a", "b"]' rendered as ('["a"', '"b"]'): an allowlist that refused every host.
+    from blockwise.presets import render_value
+
+    with pytest.raises(PresetError):
+        render_value("hosts", {"kind": "string_list"}, value)

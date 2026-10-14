@@ -59,7 +59,8 @@ def main(argv=None):
     secure.add_argument("--into", default=".", help="target folder, relative to the project")
     secure.add_argument("--set", action="append", metavar="NAME=VALUE")
     secure.add_argument("--probe", action="store_true",
-                        help="also run a security block's probes against the written code")
+                        help="also run a security block's probes against the written code "
+                             "(exit 0 security-reviewed, 3 approved but probed with gaps, 1 otherwise)")
     review = commands.add_parser("security-review",
                                  help="run a security block's probes and mutants; print a review record (writes nothing)")
     review.add_argument("block")
@@ -108,7 +109,8 @@ def main(argv=None):
             receipt = secure_apply(args.blueprint, args.project, args.into, parse_sets(args.set), probe=args.probe)
             emit(receipt, args.pretty)
             if args.probe:
-                return 0 if receipt.get("security", {}).get("status") == "security-reviewed" else 1
+                status = receipt.get("security", {}).get("status")
+                return {"security-reviewed": 0, "probed-with-gaps": 3}.get(status, 1)
             return 0 if receipt["status"] == "approved" else 1
         elif args.command == "security-review":
             blueprints = load_blueprints()

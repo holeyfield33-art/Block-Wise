@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from blockwise import probes
 from blockwise import secure_apply as sa
 from blockwise.cli import main
 from blockwise.presets import load_blueprints
@@ -130,6 +131,19 @@ def test_the_command_line_limit_is_probed_at_the_configured_value(tmp_path):
     assert verdicts["P8"] == verdicts["P9"] == "HELD"
 
 
+def test_receipt_params_are_typed_values(tmp_path):
+    receipt = secure_apply("safe_write_text", tmp_path, ".", params={"max_bytes": "65536"})
+    assert receipt["params"]["max_bytes"] == 65536
+
+
+@pytest.mark.parametrize("hosts", ['["docs.example.com", "example.com"]', "docs.example.com,example.com"])
+def test_url_allowlist_configured_hosts_pass_through_main(tmp_path, hosts):
+    receipt = secure_apply("url_allowlist", tmp_path, ".", params={"allowed_hosts": hosts}, probe=True)
+    assert receipt["params"]["allowed_hosts"] == ["docs.example.com", "example.com"]
+    verdicts = {p["id"]: p["verdict"] for p in receipt["security"]["probes"]}
+    assert verdicts["P19"] == "HELD"
+
+
 def test_probe_on_a_block_without_a_security_section(tmp_path):
     receipt = secure_apply("csv_report", tmp_path, ".", probe=True)
     assert receipt["security"] == {"status": "not-reviewed", "reason": "not_a_security_block"}
@@ -148,13 +162,20 @@ def test_shipped_approval_and_review_match_the_current_block(block_id):
     assert review["mutant_suite"] == canonical_digest(suite)
 
 
-def test_cli_probe_and_review_exit_codes(tmp_path, capsys):
-    # Approved in the shipped manifest: exit 0 only where the receipt says security-reviewed
-    # (a host that cannot run every probe, e.g. Windows without symlink rights, gets gaps and 1).
-    code = main(["secure-apply", "safe_write_text", "--project", str(tmp_path), "--probe"])
+def test_cli_probe_and_review_exit_codes(tmp_path, capsys, monkeypatch):
+    # Exit 0 security-reviewed, 3 approved but probed with gaps, 1 otherwise.
+    (tmp_path / "a").mkdir()
+    code = main(["secure-apply", "safe_write_text", "--project", str(tmp_path / "a"), "--probe"])
     receipt = json.loads(capsys.readouterr().out)
     assert receipt["status"] == "approved"
-    assert code == (0 if receipt["security"]["status"] == "security-reviewed" else 1)
+    assert code == {"security-reviewed": 0, "probed-with-gaps": 3}[receipt["security"]["status"]]
+
+    def refuse(*args, **kwargs):
+        raise OSError("no links here")
+    monkeypatch.setattr(probes, "_link", refuse)
+    (tmp_path / "b").mkdir()
+    assert main(["secure-apply", "safe_write_text", "--project", str(tmp_path / "b"), "--probe"]) == 3
+    assert json.loads(capsys.readouterr().out)["security"]["status"] == "probed-with-gaps"
     code = main(["security-review", "safe_write_text", "--mutants", str(MUTANTS / "safe_write_text.json")])
     result = json.loads(capsys.readouterr().out)
     assert result["record"]["block_version"] == VERSION

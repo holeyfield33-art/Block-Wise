@@ -169,9 +169,21 @@
       ]
      },
      {
-      "kind": "assign",
-      "target": "port",
-      "expression": "parts.port"
+      "kind": "try",
+      "exception": "ValueError",
+      "body": [
+       {
+        "kind": "assign",
+        "target": "port",
+        "expression": "parts.port"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the port is not valid')"
+       }
+      ]
      },
      {
       "kind": "return",
@@ -229,9 +241,21 @@
       ]
      },
      {
-      "kind": "assign",
-      "target": "port",
-      "expression": "parts.port"
+      "kind": "try",
+      "exception": "ValueError",
+      "body": [
+       {
+        "kind": "assign",
+        "target": "port",
+        "expression": "parts.port"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the port is not valid')"
+       }
+      ]
      },
      {
       "kind": "return",
@@ -289,9 +313,21 @@
       ]
      },
      {
-      "kind": "assign",
-      "target": "port",
-      "expression": "parts.port"
+      "kind": "try",
+      "exception": "ValueError",
+      "body": [
+       {
+        "kind": "assign",
+        "target": "port",
+        "expression": "parts.port"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the port is not valid')"
+       }
+      ]
      },
      {
       "kind": "return",
@@ -376,6 +412,42 @@
      {
       "kind": "call",
       "expression": "print(f'allowed: {args[0]}')"
+     },
+     {
+      "kind": "return",
+      "expression": "0"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M10",
+   "weakness": "the command line checks against an empty allowlist (refuses everything)",
+   "caught_by": [
+    "P19"
+   ],
+   "replace": {
+    "main": [
+     {
+      "kind": "try",
+      "exception": "ValueError",
+      "alias": "error",
+      "body": [
+       {
+        "kind": "call",
+        "expression": "check_url(args[0], [])"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "call",
+        "expression": "print(error)"
+       },
+       {
+        "kind": "return",
+        "expression": "1"
+       }
+      ]
      },
      {
       "kind": "return",

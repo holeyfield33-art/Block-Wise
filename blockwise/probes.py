@@ -51,6 +51,7 @@ THREAT_CLASSES = (
 )
 PROBE_KEYS = {"id", "threat", "function", "args", "raises", "returns", "then_files", "absent", "setup"}
 OVER = re.compile(r"^\{over:(\w+)\}$")
+FIRST = re.compile(r"\{first:(\w+)\}")
 TIMEOUT = 10
 MAX_OVER = 50_000_000  # largest {over:NAME} text a probe will build
 
@@ -163,6 +164,22 @@ def default_params(blueprint):
     return {name: spec.get("default") for name, spec in blueprint.get("params", {}).items()}
 
 
+def _link(target, link):
+    """A symlink; on Windows without the symlink privilege, a directory junction instead.
+
+    Junctions need no privilege and redirect a folder the same way, so the escape
+    being probed is the same.
+    """
+    try:
+        os.symlink(target, link, target_is_directory=target.is_dir())
+    except OSError:
+        if os.name != "nt" or not target.is_dir():
+            raise
+        import _winapi
+
+        _winapi.CreateJunction(str(target), str(link))
+
+
 def _snapshot(base):
     """Map every path under base, except the root/ workspace, to its content digest."""
     state = {}
@@ -191,6 +208,8 @@ def _fill(value, places, params):
             if size > MAX_OVER:
                 raise ProbeError(f"{over.group(1)} is too large to probe")
             return "x" * max(0, size)
+        # The first item of a list parameter, e.g. "https://{first:allowed_hosts}/".
+        value = FIRST.sub(lambda m: str(list(params[m.group(1)])[0]), value)
         for name, path in places.items():
             value = value.replace("{" + name + "}", path)
         return value
@@ -253,7 +272,7 @@ def run_probe(source, function, probe, timeout=TIMEOUT, params=None):
             (base / folder).mkdir(parents=True, exist_ok=True)
         for link, target in setup.get("symlinks", {}).items():
             try:
-                os.symlink(base / target, base / link, target_is_directory=(base / target).is_dir())
+                _link(base / target, base / link)
             except (OSError, NotImplementedError) as exc:
                 return {**result, "verdict": "NOT_RUN", "detail": f"cannot create symlink here: {exc}"}
         places = {"root": str(root), "outside": str(outside), "base": str(base)}
