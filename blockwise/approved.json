@@ -10,7 +10,7 @@
     "log_stats": "sha256:5eb10e5ab91c1fc3e2d16fe0eea9b0f3c80a580e08505da4e6e1351fcae42b98",
     "safe_write_text": "sha256:9de786263b3e979fa181abdfdbb244cd9422ef428f6d6ca472f92fb45c606e21",
     "todo_cli": "sha256:4b6963836e82e8a5383b600bd57614773efbb8de716bf00d64ca4840cd1596f2",
-    "url_allowlist": "sha256:4f938e12188fe66df6bb451b201c2b2646b35656f67f651647435fed13448ccf"
+    "url_allowlist": "sha256:79bd402b085712a31b46345f5c678fcb04992f35ef078e4a7c1d102dbbaf1781"
   },
   "reference_outputs": {
     "csv_report": "sha256:b568deb77f30085912d63ef0ab82dd9384ece65c068961494da9d2d254c80137",
@@ -21,7 +21,7 @@
     "log_stats": "sha256:809704762a52b481413406de95dc1bd324e86d1a2ad4f665f9d3ff22459808de",
     "safe_write_text": "sha256:ca5c68560de62b253b5350850a0f29215a3d2b2bc559fcfe7f91286d9143f1c0",
     "todo_cli": "sha256:2295e21e59c5402069117076ba92f946f9f7de0f401f94e7e5bf1bb29a0d5044",
-    "url_allowlist": "sha256:32981c845f78e73e0d4dca1159b8fdf6d000fd666655022bf8f2fbaeb3cff448"
+    "url_allowlist": "sha256:6ba2ad9946903c06e4e00f9519159e0d5c8c7ffc55f7b6834b953ef9e9559203"
   },
   "security_reviews": {
     "safe_write_text": {
@@ -39,11 +39,11 @@
       "date": "2026-10-13"
     },
     "url_allowlist": {
-      "block_version": "sha256:4f938e12188fe66df6bb451b201c2b2646b35656f67f651647435fed13448ccf",
+      "block_version": "sha256:79bd402b085712a31b46345f5c678fcb04992f35ef078e4a7c1d102dbbaf1781",
       "real_block": "held",
-      "killed": 9,
-      "total": 9,
-      "mutant_suite": "sha256:fa943e240965eb6559fc962d977c4e3e1f9ff6ee3e172a9def3f2fb760e882e7",
+      "killed": 10,
+      "total": 10,
+      "mutant_suite": "sha256:5490ea7b9218606f74f4f796c17fd88b987a3a821b40d8ec3a72101b50fed127",
       "params": {
         "file": "url_check",
         "allowed_hosts": [
