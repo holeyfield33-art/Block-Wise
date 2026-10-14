@@ -140,3 +140,23 @@ def test_mcp_show_and_apply_blueprint(tmp_path):
     assert "# --- todo.py ---" in mcp_server.show_preset("todo_cli")
     assert mcp_server.apply_preset("todo_cli", ".", {"file": "tasks"}, str(tmp_path))["added"] == ["tasks.py"]
     assert mcp_server.check_project(str(tmp_path))["ok"] is True
+
+
+def test_every_blueprint_fits_in_one_project(tmp_path):
+    # Experiment 003 hit "Score exceeds 256 body elements" on the 7th blueprint: the cap
+    # was per plan. It is per module now, so a project can hold all of them.
+    from blockwise.project import apply_blueprint
+
+    for blueprint_id in sorted(BLUEPRINTS):
+        assert apply_blueprint(tmp_path, blueprint_id)["ok"], blueprint_id
+    assert check_project(tmp_path)["ok"]
+
+
+def test_one_module_is_still_capped():
+    from blockwise.schema import MAX_NODES, ScoreError, validate_score
+
+    calls = [{"kind": "call", "expression": "print(1)"}] * (MAX_NODES + 1)
+    plan = {"format": "blockwise-plan-v1", "modules": [{"path": "m.py", "functions": [
+        {"name": "f", "parameters": [], "returns": "None", "body": calls}]}]}
+    with pytest.raises(ScoreError):
+        validate_score(plan)
