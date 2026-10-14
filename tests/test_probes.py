@@ -122,7 +122,7 @@ def _section(**changes):
                "threats": [{"id": "T1", "class": "PATH_TRAVERSAL", "summary": "s"}],
                "probes": [{"id": "P0", "threat": None, "args": [], "returns": None},
                           {"id": "P1", "threat": "T1", "args": [], "raises": "ValueError"}],
-               "not_verified": ["races"]}
+               "params": {}, "not_verified": ["races"]}
     return {"security": {**section, **changes}}
 
 
@@ -139,7 +139,21 @@ def test_validate_security_accepts_a_complete_section():
     {"probes": [{"id": "P0", "threat": None, "args": [], "returns": None, "code": "rm -rf /"},
                 {"id": "P1", "threat": "T1", "args": [], "raises": "ValueError"}]},  # probes carry data only
     {"not_verified": []},
+    {"params": {"undeclared": "free"}},  # must declare exactly the blueprint's parameters
 ])
 def test_validate_security_rejects_incomplete_sections(changes):
     with pytest.raises(ProbeError):
         validate_security(_section(**changes))
+
+
+def test_parameter_bounds_are_checked_for_text_and_numbers():
+    security = {"params": {"name": "free", "limit": {"min": 1, "max": 10}}}
+    assert probes.param_violations(security, {"name": "anything", "limit": 5}) == []
+    assert probes.param_violations(security, {"limit": "7"}) == []  # CLI values arrive as text
+    for bad in (0, 11, -5, "lots", None, True):
+        assert len(probes.param_violations(security, {"limit": bad})) == 1, bad
+
+
+def test_over_placeholder_is_one_character_past_the_generated_limit(source):
+    probe = {"id": "P", "threat": "T", "args": ["{root}", "{over:limit}"], "raises": "ValueError"}
+    assert probes._fill(probe["args"], {"root": "/r"}, {"limit": "3"}) == ["/r", "xxxx"]

@@ -281,3 +281,24 @@ JavaScript blocks, any merge. The two Agent B scanners stay in
   generates from the exact verified copy.
 - `safe_write_text` is **not** in `approved.json`. Approving it (adding its
   digest and review record) is the owner's commit.
+
+## 12. Review fixes (2026-10-13, after an independent review of #11/#12)
+
+- **Interpreter-independent output.** CPython 3.12.0–3.12.8 and 3.13.0–3.13.2
+  unparse `f'{d["k"]}'` as `f'{d['k']}'` (a syntax error on 3.11). The compiler
+  now renders f-strings itself by 3.11's rules. Output is byte-identical on
+  3.11–3.14, and CI tests 3.11, 3.12.3 and 3.12.
+- **Generator pin.** `approved.json` → `reference_outputs`: digest of each
+  approved blueprint's generated files at default parameters. A changed
+  generator is refused (`generator_changed`) until re-approved.
+- **Rollback.** An unverified or failed generation removes the files it
+  created and restores the plan.
+- **Parameters are part of the evidence.** Receipts record effective `params`.
+  Security blocks declare every parameter in `security.params` as `"free"` or
+  `{min, max}` (the reviewed range). A value outside it makes the security
+  status `not-reviewed` without probing. Probes may target another function
+  (`"function": "main"`), and `{over:NAME}` builds text one character over the
+  generated limit. `safe_write_text` adds P8/P9 through `main()` and mutant M6
+  (the command line ignores `MAX_BYTES`), which only P8 catches.
+- Not changed: the review's `mutant_suite` digest is pinned by a test in CI, not
+  re-checked at apply time, because mutants stay in `tests/` (owner decision 2).

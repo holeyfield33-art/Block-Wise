@@ -118,6 +118,48 @@ def test_generation_uses_the_verified_copy_not_a_reload(tmp_path, monkeypatch):
     verified = copy.deepcopy(sa.load_blueprints()["csv_report"])
     verified["plan"]["modules"][0]["path"] = "verified_copy.py"
     monkeypatch.setattr(sa, "load_blueprints", lambda: {"csv_report": verified})
-    receipt = secure_apply("csv_report", tmp_path, ".", approved={"csv_report": sa.canonical_digest(verified)})
+    receipt = secure_apply("csv_report", tmp_path, ".", approved={"csv_report": sa.canonical_digest(verified)},
+                           references={"csv_report": sa.reference_output(verified)})
     assert receipt["status"] == "approved"
     assert receipt["outputs"] == ["verified_copy.py"]
+
+
+def test_every_approved_blueprint_has_a_current_reference_output():
+    # The drift alarm: if the compiler changes what an approved blueprint generates,
+    # this fails until a person re-approves the new output.
+    blueprints = sa.load_blueprints()
+    references = sa.load_reference_outputs()
+    for blueprint_id in load_approved():
+        assert references.get(blueprint_id) == sa.reference_output(blueprints[blueprint_id]), blueprint_id
+
+
+@pytest.mark.parametrize("references, reason", [({"csv_report": "sha256:" + "1" * 64}, "generator_changed"),
+                                                ({}, "no_reference_output")])
+def test_changed_or_missing_generator_output_is_refused(tmp_path, references, reason):
+    receipt = secure_apply("csv_report", tmp_path, ".", references=references)
+    assert receipt["status"] == "refused"
+    assert receipt["reason"] == reason
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_unverified_generation_is_rolled_back(tmp_path, monkeypatch):
+    monkeypatch.setattr(sa, "check_project", lambda *a, **k: {"ok": False, "checked_functions": 1, "issues": ["x"]})
+    receipt = secure_apply("csv_report", tmp_path, "tools/reports")
+    assert receipt["status"] == "unverified"
+    assert receipt["rolled_back"] == ["tools/reports/report.py"]
+    assert list(tmp_path.iterdir()) == []  # no files, no plan, no folders left behind
+
+
+def test_rollback_restores_an_existing_plan_and_keeps_existing_files(tmp_path, monkeypatch):
+    assert secure_apply("kv_store", tmp_path, ".")["status"] == "approved"
+    plan = (tmp_path / ".blockwise" / "plan.json").read_bytes()
+    monkeypatch.setattr(sa, "check_project", lambda *a, **k: {"ok": False, "checked_functions": 0, "issues": []})
+    assert secure_apply("csv_report", tmp_path, ".")["status"] == "unverified"
+    assert (tmp_path / ".blockwise" / "plan.json").read_bytes() == plan
+    assert sorted(p.name for p in tmp_path.glob("*.py")) == ["store.py"]
+
+
+def test_receipt_records_the_parameters_used(tmp_path):
+    receipt = secure_apply("kv_store", tmp_path, ".", params={"store": "notes.json"})
+    assert receipt["params"] == {"file": "store", "store": "notes.json"}
+    assert receipt["approved_output"] == sa.load_reference_outputs()["kv_store"]

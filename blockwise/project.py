@@ -9,7 +9,7 @@ import ast
 import json
 from pathlib import Path
 
-from .compiler import compile_score
+from .compiler import compile_score, unparse
 from .conformance import compare_score
 from .presets import PresetError, get_preset, load_blueprints, render, render_blueprint
 from .schema import FORMAT, module_path, validate_score
@@ -42,7 +42,7 @@ def function_source(function, imports):
     plan = validate_score({"format": FORMAT, "modules": [{"path": "m.py", "imports": imports, "functions": [function]}]})
     tree = ast.parse(compile_score(plan)["m.py"])
     node = next(n for n in tree.body if isinstance(n, ast.FunctionDef))
-    return ast.unparse(node) + "\n", [ast.unparse(ast.parse(i).body[0]) for i in plan["modules"][0]["imports"]]
+    return unparse(node) + "\n", [unparse(ast.parse(i).body[0]) for i in plan["modules"][0]["imports"]]
 
 
 def insert_imports(source, imports):

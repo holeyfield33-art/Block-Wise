@@ -60,7 +60,7 @@ APPROVED = {"safe_write_text": VERSION}
 
 
 def _review(**changes):
-    return {"safe_write_text": {"block_version": VERSION, "real_block": "held", "killed": 5, "total": 5,
+    return {"safe_write_text": {"block_version": VERSION, "real_block": "held", "killed": 6, "total": 6,
                                 "mutant_suite": "sha256:x", "platform": "linux", "date": "2026-10-13", **changes}}
 
 
@@ -75,7 +75,8 @@ def test_probe_receipt_with_a_current_review(tmp_path):
     # Only a platform that ran every probe may say security-reviewed (symlinks need rights on Windows).
     expected = "probed-with-gaps" if "NOT_RUN" in verdicts.values() else "security-reviewed"
     assert security["status"] == expected
-    assert security["detector_check"]["killed"] == 5
+    assert security["detector_check"]["killed"] == 6
+    assert security["params"] == {"file": "safe_write", "max_bytes": 1000000}
     assert security["not_verified"]
     assert security["receipt_id"].startswith("sha256:")
     # Probing imports the written module without leaving bytecode caches in the workspace.
@@ -99,11 +100,34 @@ def test_a_weakened_block_that_is_approved_still_fails_its_probes(tmp_path, monk
     weak["plan"]["modules"][0]["functions"][1]["body"] = [n for n in body if n["kind"] != "branch"]
     monkeypatch.setattr(sa, "load_blueprints", lambda: {"safe_write_text": weak})
     receipt = secure_apply("safe_write_text", tmp_path, ".", approved={"safe_write_text": canonical_digest(weak)},
-                           probe=True, reviews={})
+                           references={"safe_write_text": sa.reference_output(weak)}, probe=True, reviews={})
     assert receipt["status"] == "approved"  # identity, workspace and structure are fine...
     security = receipt["security"]
     assert security["status"] == "not-reviewed"  # ...but the security probes are not.
     assert {p["id"]: p["verdict"] for p in security["probes"]}["P5"] == "BYPASSED"
+
+
+@pytest.mark.parametrize("max_bytes", [-5, 0, 999999999999, "not a number"])
+def test_parameters_outside_the_reviewed_range_are_never_security_reviewed(tmp_path, max_bytes):
+    # The review covered max_bytes in [1, 10000000]; any other value is generated
+    # (it is a valid program) but must not claim the review's evidence.
+    receipt = secure_apply("safe_write_text", tmp_path, ".", params={"max_bytes": max_bytes},
+                           approved=APPROVED, probe=True, reviews=_review())
+    if receipt["status"] == "refused":  # a non-number is refused before anything is written
+        assert receipt["reason"] == "invalid_parameters"
+        return
+    security = receipt["security"]
+    assert receipt["params"]["max_bytes"] == max_bytes
+    assert security["status"] == "not-reviewed"
+    assert any("max_bytes" in gap for gap in security["gaps"])
+    assert security["probes"] == [] and security["threats"]["held"] == 0  # nothing claimed without probing
+
+
+def test_the_command_line_limit_is_probed_at_the_configured_value(tmp_path):
+    receipt = secure_apply("safe_write_text", tmp_path, ".", params={"max_bytes": 50},
+                           approved=APPROVED, probe=True, reviews=_review())
+    verdicts = {p["id"]: p["verdict"] for p in receipt["security"]["probes"]}
+    assert verdicts["P8"] == verdicts["P9"] == "HELD"
 
 
 def test_probe_on_a_block_without_a_security_section(tmp_path):
@@ -116,7 +140,7 @@ def test_shipped_approval_and_review_match_the_current_block():
     assert load_approved()["safe_write_text"] == VERSION
     review = load_security_reviews()["safe_write_text"]
     assert review["block_version"] == VERSION and review["real_block"] == "held"
-    assert review["killed"] == review["total"] == 5
+    assert review["killed"] == review["total"] == 6
     suite = json.loads((MUTANTS / "safe_write_text.json").read_text(encoding="utf-8"))
     assert review["mutant_suite"] == canonical_digest(suite)
 
@@ -131,5 +155,5 @@ def test_cli_probe_and_review_exit_codes(tmp_path, capsys):
     code = main(["security-review", "safe_write_text", "--mutants", str(MUTANTS / "safe_write_text.json")])
     result = json.loads(capsys.readouterr().out)
     assert result["record"]["block_version"] == VERSION
-    assert result["record"]["killed"] == result["record"]["total"] == 5
+    assert result["record"]["killed"] == result["record"]["total"] == 6
     assert code == (0 if result["record"]["real_block"] == "held" else 1)
