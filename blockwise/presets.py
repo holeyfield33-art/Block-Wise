@@ -65,6 +65,38 @@ def get_preset(preset_id):
     return presets[preset_id]
 
 
+def string_list_value(value, label="Parameter"):
+    """A string_list parameter as a list: a list, a JSON list ('["a", "b"]') or comma-separated text.
+
+    Items may not contain quotes, brackets or commas, so a half-parsed JSON list
+    can never become a value like '["a"'.
+    """
+    if isinstance(value, str) and value.strip().startswith("["):
+        try:
+            value = json.loads(value)
+        except ValueError:
+            raise PresetError(f"{label} looks like a JSON list but is not valid JSON") from None
+    items = value.split(",") if isinstance(value, str) else value
+    if not isinstance(items, list) or not items or not all(isinstance(i, str) and i.strip() for i in items):
+        raise PresetError(f"{label} must be a non-empty list of text values")
+    items = [i.strip() for i in items]
+    if any(set(i) & set("\"'[],") for i in items):
+        raise PresetError(f"{label}: items may not contain quotes, brackets or commas")
+    return items
+
+
+def param_value(spec, value):
+    """A parameter's value as data (numbers as numbers, string lists as lists), for receipts."""
+    if spec["kind"] == "string_list":
+        return string_list_value(value)
+    if spec["kind"] == "number" and isinstance(value, str):
+        try:
+            return ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            return value
+    return value
+
+
 def render_value(name, spec, value):
     """Turn a user-supplied parameter into the exact source text placed in the plan."""
     kind = spec["kind"]
@@ -86,10 +118,7 @@ def render_value(name, spec, value):
     if kind == "string":
         return repr(str(value))
     if kind == "string_list":
-        items = value.split(",") if isinstance(value, str) else value
-        if not isinstance(items, list) or not items or not all(isinstance(i, str) and i.strip() for i in items):
-            raise PresetError(f"{label} must be a non-empty list of text values")
-        return repr(tuple(i.strip() for i in items))
+        return repr(tuple(string_list_value(value, label)))
     if kind == "number":
         number = value
         if isinstance(value, str):

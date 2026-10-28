@@ -110,7 +110,7 @@ def validate_score(score):
         for node in body:
             count[0] += 1
             if count[0] > MAX_NODES:
-                raise ScoreError("Score exceeds 256 body elements")
+                raise ScoreError(f"A module exceeds {MAX_NODES} body elements")
             if (not isinstance(node, dict) or not isinstance(node.get("kind"), str)
                     or node["kind"] not in NOTES or node["kind"] == "function"):
                 raise ScoreError("Unknown template element")
@@ -185,6 +185,9 @@ def validate_score(score):
                         raise ScoreError("Allowed calls must be dotted symbol names")
 
     for module in modules:
+        # The element cap is per module (at most 32 x 256 per plan), so applying several
+        # blueprints into one project is not limited by the sum of their sizes.
+        count[0] = 0
         keys(module, {"path", "imports", "constants", "functions", "entry"}, {"path", "functions"}, "Module")
         module_path(module["path"])
         if module["path"].casefold() in paths:

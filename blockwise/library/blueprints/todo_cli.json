@@ -2,7 +2,7 @@
   "id": "todo_cli",
   "title": "Command-line to-do list",
   "category": "blueprint",
-  "summary": "A runnable to-do app: list, add and done commands, saved to a JSON file. Six functions plus a main block.",
+  "summary": "A runnable to-do app: list, add and done commands, saved to a JSON file. A damaged file is reported, never overwritten. Seven functions plus a main block.",
   "params": {
     "file": {"kind": "identifier", "default": "todo"},
     "store": {"kind": "string", "default": "todo.json"}
@@ -15,11 +15,17 @@
       "constants": [{"name": "STORE", "value": "{{store}}"}],
       "functions": [
         {"name": "load_items", "parameters": [{"name": "path", "type": "str"}], "returns": "list",
-         "requirements": ["A missing or broken file means an empty list."], "body": [
-          {"kind": "try", "exception": "(OSError, ValueError)", "body": [
+         "requirements": ["A missing file means an empty list. A file that is not a JSON list of to-do items is an error, and is never overwritten."], "body": [
+          {"kind": "try", "exception": "FileNotFoundError", "body": [
             {"kind": "with", "context": "open(path, encoding='utf-8')", "alias": "handle", "body": [
-              {"kind": "return", "expression": "json.load(handle)"}]}],
-           "handler": [{"kind": "return", "expression": "[]"}]}]},
+              {"kind": "assign", "target": "text", "expression": "handle.read()"}]}],
+           "handler": [{"kind": "return", "expression": "[]"}]},
+          {"kind": "try", "exception": "ValueError", "body": [
+            {"kind": "assign", "target": "items", "expression": "json.loads(text)"}],
+           "handler": [{"kind": "raise", "expression": "ValueError(f'{path} is not valid JSON; fix or remove it')"}]},
+          {"kind": "branch", "condition": "not isinstance(items, list) or not all((isinstance(item, dict) and isinstance(item.get('text'), str) and isinstance(item.get('done'), bool) for item in items))", "body": [
+            {"kind": "raise", "expression": "ValueError(f'{path} is not a to-do list; fix or remove it')"}]},
+          {"kind": "return", "expression": "items"}]},
         {"name": "save_items", "parameters": [{"name": "path", "type": "str"}, {"name": "items", "type": "list"}], "returns": "None", "body": [
           {"kind": "with", "context": "open(path, 'w', encoding='utf-8')", "alias": "handle", "body": [
             {"kind": "call", "expression": "json.dump(items, handle, indent=2)"}]}]},
@@ -31,6 +37,11 @@
           {"kind": "branch", "condition": "number < 1 or number > len(items)", "body": [{"kind": "raise", "expression": "IndexError(f'no item {number}')"}]},
           {"kind": "call", "expression": "items[number - 1].update(done=True)"},
           {"kind": "return", "expression": "items"}]},
+        {"name": "item_number", "parameters": [{"name": "args", "type": "list"}], "returns": "int",
+         "requirements": ["done takes exactly one whole number."], "body": [
+          {"kind": "branch", "condition": "len(args) != 2 or not args[1].isdecimal()", "body": [
+            {"kind": "raise", "expression": "ValueError('done needs one item number, like: done 2')"}]},
+          {"kind": "return", "expression": "int(args[1])"}]},
         {"name": "format_items", "parameters": [{"name": "items", "type": "list"}], "returns": "str", "body": [
           {"kind": "branch", "condition": "not items", "body": [{"kind": "return", "expression": "'Nothing to do.'"}]},
           {"kind": "assign", "target": "lines", "expression": "[]"},
@@ -42,15 +53,15 @@
           {"kind": "return", "expression": "'\\n'.join(lines)"}]},
         {"name": "main", "parameters": [{"name": "args", "type": "list"}], "returns": "int",
          "requirements": ["Commands: list, add TEXT, done NUMBER. Returns the exit code."], "body": [
-          {"kind": "assign", "target": "items", "expression": "load_items(STORE)"},
-          {"kind": "try", "exception": "(IndexError, ValueError)", "alias": "error", "body": [
+          {"kind": "try", "exception": "(IndexError, OSError, ValueError)", "alias": "error", "body": [
+            {"kind": "assign", "target": "items", "expression": "load_items(STORE)"},
             {"kind": "branch", "condition": "not args or args[0] == 'list'", "body": [
               {"kind": "call", "expression": "print(format_items(items))"}], "otherwise": [
               {"kind": "branch", "condition": "args[0] == 'add'", "body": [
                 {"kind": "call", "expression": "save_items(STORE, add_item(items, ' '.join(args[1:])))"},
                 {"kind": "call", "expression": "print('Added.')"}], "otherwise": [
                 {"kind": "branch", "condition": "args[0] == 'done'", "body": [
-                  {"kind": "call", "expression": "save_items(STORE, complete_item(items, int(args[1])))"},
+                  {"kind": "call", "expression": "save_items(STORE, complete_item(items, item_number(args)))"},
                   {"kind": "call", "expression": "print('Marked done.')"}], "otherwise": [
                   {"kind": "call", "expression": "print('usage: {{file}}.py [list | add TEXT | done NUMBER]')"},
                   {"kind": "return", "expression": "2"}]}]}]}],
@@ -68,6 +79,13 @@
     {"argv": ["list"], "stdout": "1. [x] buy milk\n2. [ ] call mom\n", "exit": 0},
     {"argv": ["done", "9"], "stdout": "error: no item 9\n", "exit": 1},
     {"argv": ["add", "   "], "stdout": "error: text must not be empty\n", "exit": 1},
-    {"argv": ["fly"], "stdout": "usage: todo.py [list | add TEXT | done NUMBER]\n", "exit": 2}
+    {"argv": ["fly"], "stdout": "usage: todo.py [list | add TEXT | done NUMBER]\n", "exit": 2},
+    {"argv": ["done", "abc"], "stdout": "error: done needs one item number, like: done 2\n", "exit": 1},
+    {"argv": ["done"], "stdout": "error: done needs one item number, like: done 2\n", "exit": 1},
+    {"argv": ["done", "1", "2"], "stdout": "error: done needs one item number, like: done 2\n", "exit": 1},
+    {"files": {"todo.json": "{\"text\": \"a dict, not a list\"}"}, "argv": ["list"], "stdout": "error: todo.json is not a to-do list; fix or remove it\n", "exit": 1},
+    {"files": {"todo.json": "[{\"text\": 5}]"}, "argv": ["list"], "stdout": "error: todo.json is not a to-do list; fix or remove it\n", "exit": 1},
+    {"files": {"todo.json": "not json"}, "argv": ["add", "x"], "stdout": "error: todo.json is not valid JSON; fix or remove it\n", "exit": 1},
+    {"argv": ["list"], "stdout": "error: todo.json is not valid JSON; fix or remove it\n", "exit": 1}
   ]
 }

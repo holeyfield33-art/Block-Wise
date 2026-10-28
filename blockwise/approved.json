@@ -2,24 +2,26 @@
   "format": "blockwise-approved-v1",
   "note": "SHA-256 of each approved blueprint's canonical JSON (blueprints), of the files it generates at default parameters (reference_outputs: pins the generator, so a compiler change is refused until re-approved), and the detector-check record a person committed for each approved security block (security_reviews, from `blockwise security-review`). Only people edit this file.",
   "blueprints": {
-    "csv_report": "sha256:5d813cd980fa229dae20619e37081ddb9a717fb29c890306225a6415cd9675ee",
+    "csv_report": "sha256:77f6e24c27f656c67557b8b92b7ba22fdead70bae018d9fadbde17b352744938",
     "data_validator": "sha256:6d58ad9f0d14caf932b0894486afedf38958ad21fd8e5cd7a8c1d3455252e05a",
     "fetch_json": "sha256:ddc9facae58f2867c9ba2d70d0e5ab4a5ecb6ae29371e491bc110acf8e3fe47c",
     "file_organizer": "sha256:ba5c0f886c69bc6fd69c7bc60630e693846933d756578be781ffabc85bc2756b",
-    "kv_store": "sha256:e68c9e866214514814c34ea64248b21abc1bf1e7feabce381e7ec405fde96b0c",
+    "kv_store": "sha256:9b7d010fbe8d3bd4dbf15177692b87231891aec1449719d529e5883056120fef",
     "log_stats": "sha256:5eb10e5ab91c1fc3e2d16fe0eea9b0f3c80a580e08505da4e6e1351fcae42b98",
-    "todo_cli": "sha256:d801a31a6298739993afe9fcc52de8dbb613a2efdda9682ffd6f7ff9645ae407",
-    "safe_write_text": "sha256:9de786263b3e979fa181abdfdbb244cd9422ef428f6d6ca472f92fb45c606e21"
+    "safe_write_text": "sha256:9de786263b3e979fa181abdfdbb244cd9422ef428f6d6ca472f92fb45c606e21",
+    "todo_cli": "sha256:4b6963836e82e8a5383b600bd57614773efbb8de716bf00d64ca4840cd1596f2",
+    "url_allowlist": "sha256:79bd402b085712a31b46345f5c678fcb04992f35ef078e4a7c1d102dbbaf1781"
   },
   "reference_outputs": {
-    "csv_report": "sha256:4cda39dccaa32865f859a3c0bbe6eb668c8481384e46c539886dc6af50691db1",
+    "csv_report": "sha256:b568deb77f30085912d63ef0ab82dd9384ece65c068961494da9d2d254c80137",
     "data_validator": "sha256:be0364c92417e3330d2dd5da8560c6f60208bd7ae49e25c82f3ff5127adabc0a",
     "fetch_json": "sha256:4a66aec181fdea56b8d221aa3e504fb3c5f639f07767c7c09fbf59ff85b38bd8",
     "file_organizer": "sha256:c4c5d5870df41213b410690c2f059bdbae101de2ca98de6beadb2857c4963b63",
-    "kv_store": "sha256:9952962dc850260c2ecdc1e4c4dadcbddc1d5a0dfc4efe8158f0ef0359303a7c",
+    "kv_store": "sha256:f6714ce9a8817f7038f18d8249f77dad25e21af0fa020c4106bd6cc015da843a",
     "log_stats": "sha256:809704762a52b481413406de95dc1bd324e86d1a2ad4f665f9d3ff22459808de",
     "safe_write_text": "sha256:ca5c68560de62b253b5350850a0f29215a3d2b2bc559fcfe7f91286d9143f1c0",
-    "todo_cli": "sha256:130be2588cb62e3d0f958740eb42958834240f9bb7d60c610dc9dea60d1a1089"
+    "todo_cli": "sha256:2295e21e59c5402069117076ba92f946f9f7de0f401f94e7e5bf1bb29a0d5044",
+    "url_allowlist": "sha256:6ba2ad9946903c06e4e00f9519159e0d5c8c7ffc55f7b6834b953ef9e9559203"
   },
   "security_reviews": {
     "safe_write_text": {
@@ -31,6 +33,23 @@
       "params": {
         "file": "safe_write",
         "max_bytes": 1000000
+      },
+      "platform": "linux",
+      "python": "3.14.4",
+      "date": "2026-10-13"
+    },
+    "url_allowlist": {
+      "block_version": "sha256:79bd402b085712a31b46345f5c678fcb04992f35ef078e4a7c1d102dbbaf1781",
+      "real_block": "held",
+      "killed": 10,
+      "total": 10,
+      "mutant_suite": "sha256:5490ea7b9218606f74f4f796c17fd88b987a3a821b40d8ec3a72101b50fed127",
+      "params": {
+        "file": "url_check",
+        "allowed_hosts": [
+          "example.com",
+          "api.example.com"
+        ]
       },
       "platform": "linux",
       "python": "3.14.4",

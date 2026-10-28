@@ -302,3 +302,15 @@ JavaScript blocks, any merge. The two Agent B scanners stay in
   (the command line ignores `MAX_BYTES`), which only P8 catches.
 - Not changed: the review's `mutant_suite` digest is pinned by a test in CI, not
   re-checked at apply time, because mutants stay in `tests/` (owner decision 2).
+
+## 13. Second block: `url_allowlist` (SSRF), 2026-10-14
+
+`check_url(url, allowed_hosts)` returns the URL only if its host is exactly on the allowlist. It
+always refuses internal targets, even allowlisted ones: IP literals, numeric shorthands such as
+`127.1`, `localhost`, and `*.internal` / `.local` / `.localhost` / `.localdomain` / `.home.arpa`.
+It also refuses credentials, schemes other than http(s), bad ports, backslashes, spaces and control
+characters. It never resolves names or makes requests. 6 threats, 19 probes and 9 mutants. M2, M5,
+M6, M7, M8 and M9 are each caught by exactly one probe, so each of those probes is load-bearing.
+The `not_verified` list covers DNS resolution and rebinding, redirects, IDN look-alikes, ports on
+allowlisted hosts, and parser differences with a particular HTTP client. `fetch_json` does not use
+it yet; wiring it in is a separate, re-approved change.

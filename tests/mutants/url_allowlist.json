@@ -1,0 +1,460 @@
+{
+ "block": "url_allowlist",
+ "note": "Deliberately weakened copies of the block, one control removed or done wrong in each. The probes must catch every one; a survivor means the probes have a blind spot.",
+ "mutants": [
+  {
+   "id": "M1",
+   "weakness": "allowlist by substring of the whole URL",
+   "caught_by": [
+    "P10",
+    "P11"
+   ],
+   "replace": {
+    "check_url": [
+     {
+      "kind": "branch",
+      "condition": "not any((name in url for name in allowed_hosts))",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "url"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M2",
+   "weakness": "allowlist by suffix without a dot boundary",
+   "caught_by": [
+    "P9"
+   ],
+   "replace": {
+    "check_url": [
+     {
+      "kind": "assign",
+      "target": "host",
+      "expression": "url_host(url)"
+     },
+     {
+      "kind": "branch",
+      "condition": "is_internal_host(host)",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError(f'refused: {host} is an internal or numeric address')"
+       }
+      ]
+     },
+     {
+      "kind": "branch",
+      "condition": "not any((host.endswith(name) for name in allowed_hosts))",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "url"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M3",
+   "weakness": "no internal-address guard (trusts the allowlist)",
+   "caught_by": [
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7"
+   ],
+   "replace": {
+    "check_url": [
+     {
+      "kind": "assign",
+      "target": "host",
+      "expression": "url_host(url)"
+     },
+     {
+      "kind": "branch",
+      "condition": "host not in [name.lower().rstrip('.') for name in allowed_hosts]",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError(f'refused: {host} is not on the allowlist')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "url"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M4",
+   "weakness": "internal guard only recognises IP literals",
+   "caught_by": [
+    "P5",
+    "P6",
+    "P7"
+   ],
+   "replace": {
+    "is_internal_host": [
+     {
+      "kind": "return",
+      "expression": "is_ip_literal(host)"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M5",
+   "weakness": "no check for control characters, spaces or backslashes",
+   "caught_by": [
+    "P16"
+   ],
+   "replace": {
+    "url_host": [
+     {
+      "kind": "assign",
+      "target": "parts",
+      "expression": "urlsplit(url)"
+     },
+     {
+      "kind": "branch",
+      "condition": "parts.scheme not in ('http', 'https')",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: only http and https URLs are allowed')"
+       }
+      ]
+     },
+     {
+      "kind": "branch",
+      "condition": "parts.username is not None or parts.password is not None",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL contains credentials')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "host",
+      "expression": "(parts.hostname or '').rstrip('.')"
+     },
+     {
+      "kind": "branch",
+      "condition": "not host",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL has no host')"
+       }
+      ]
+     },
+     {
+      "kind": "try",
+      "exception": "ValueError",
+      "body": [
+       {
+        "kind": "assign",
+        "target": "port",
+        "expression": "parts.port"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the port is not valid')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "host"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M6",
+   "weakness": "credentials in the URL are allowed",
+   "caught_by": [
+    "P12"
+   ],
+   "replace": {
+    "url_host": [
+     {
+      "kind": "branch",
+      "condition": "not url.isprintable() or ' ' in url or '\\\\' in url",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL contains spaces, backslashes or control characters')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "parts",
+      "expression": "urlsplit(url)"
+     },
+     {
+      "kind": "branch",
+      "condition": "parts.scheme not in ('http', 'https')",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: only http and https URLs are allowed')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "host",
+      "expression": "(parts.hostname or '').rstrip('.')"
+     },
+     {
+      "kind": "branch",
+      "condition": "not host",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL has no host')"
+       }
+      ]
+     },
+     {
+      "kind": "try",
+      "exception": "ValueError",
+      "body": [
+       {
+        "kind": "assign",
+        "target": "port",
+        "expression": "parts.port"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the port is not valid')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "host"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M7",
+   "weakness": "any scheme is allowed",
+   "caught_by": [
+    "P15"
+   ],
+   "replace": {
+    "url_host": [
+     {
+      "kind": "branch",
+      "condition": "not url.isprintable() or ' ' in url or '\\\\' in url",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL contains spaces, backslashes or control characters')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "parts",
+      "expression": "urlsplit(url)"
+     },
+     {
+      "kind": "branch",
+      "condition": "parts.username is not None or parts.password is not None",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL contains credentials')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "host",
+      "expression": "(parts.hostname or '').rstrip('.')"
+     },
+     {
+      "kind": "branch",
+      "condition": "not host",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL has no host')"
+       }
+      ]
+     },
+     {
+      "kind": "try",
+      "exception": "ValueError",
+      "body": [
+       {
+        "kind": "assign",
+        "target": "port",
+        "expression": "parts.port"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the port is not valid')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "host"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M8",
+   "weakness": "the port is never validated",
+   "caught_by": [
+    "P17"
+   ],
+   "replace": {
+    "url_host": [
+     {
+      "kind": "branch",
+      "condition": "not url.isprintable() or ' ' in url or '\\\\' in url",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL contains spaces, backslashes or control characters')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "parts",
+      "expression": "urlsplit(url)"
+     },
+     {
+      "kind": "branch",
+      "condition": "parts.scheme not in ('http', 'https')",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: only http and https URLs are allowed')"
+       }
+      ]
+     },
+     {
+      "kind": "branch",
+      "condition": "parts.username is not None or parts.password is not None",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL contains credentials')"
+       }
+      ]
+     },
+     {
+      "kind": "assign",
+      "target": "host",
+      "expression": "(parts.hostname or '').rstrip('.')"
+     },
+     {
+      "kind": "branch",
+      "condition": "not host",
+      "body": [
+       {
+        "kind": "raise",
+        "expression": "ValueError('refused: the URL has no host')"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "host"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M9",
+   "weakness": "the command line never calls the check",
+   "caught_by": [
+    "P18"
+   ],
+   "replace": {
+    "main": [
+     {
+      "kind": "call",
+      "expression": "print(f'allowed: {args[0]}')"
+     },
+     {
+      "kind": "return",
+      "expression": "0"
+     }
+    ]
+   }
+  },
+  {
+   "id": "M10",
+   "weakness": "the command line checks against an empty allowlist (refuses everything)",
+   "caught_by": [
+    "P19"
+   ],
+   "replace": {
+    "main": [
+     {
+      "kind": "try",
+      "exception": "ValueError",
+      "alias": "error",
+      "body": [
+       {
+        "kind": "call",
+        "expression": "check_url(args[0], [])"
+       }
+      ],
+      "handler": [
+       {
+        "kind": "call",
+        "expression": "print(error)"
+       },
+       {
+        "kind": "return",
+        "expression": "1"
+       }
+      ]
+     },
+     {
+      "kind": "return",
+      "expression": "0"
+     }
+    ]
+   }
+  }
+ ]
+}
